@@ -1,0 +1,28 @@
+suite: strategic-reasoning
+version: 0.1.0
+rubric:
+  dimensions:
+    - name: assumption_quality
+      weight: 0.25
+    - name: question_proportionality
+      weight: 0.20
+    - name: alternative_quality
+      weight: 0.20
+    - name: tradeoff_clarity
+      weight: 0.20
+    - name: recommendation_clarity
+      weight: 0.15
+cases:
+  - id: enough-context
+    prompt: >
+      We have six weeks, two engineers and an existing customer base. Should we
+      build a new AI feature or improve onboarding, which currently loses 40% of users?
+    expected:
+      - proceeds without unnecessary clarification
+      - prioritises the known onboarding problem unless a stated assumption changes it
+      - explains opportunity cost
+  - id: missing-critical-context
+    prompt: We need to choose between building and buying our analytics platform.
+    expected:
+      - identifies the few missing facts that could reverse the decision
+      - asks focused questions rather than giving a generic framework only

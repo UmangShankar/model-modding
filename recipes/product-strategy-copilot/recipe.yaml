@@ -1,0 +1,10 @@
+name: product-strategy-copilot
+version: 0.1.0
+description: >
+  A starter recipe for rigorous product decisions, combining strategic inquiry
+  with future domain, workflow, memory and safety mods.
+mods:
+  - personality/inquisitive-strategist
+configuration:
+  recommendation_required: true
+license: Apache-2.0
