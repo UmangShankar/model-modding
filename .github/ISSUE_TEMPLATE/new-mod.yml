@@ -1,0 +1,48 @@
+name: Propose a new mod
+description: Suggest a reusable mod for the Model Modding ecosystem
+title: "[Mod]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a mod. Keep it focused, observable and independently testable.
+  - type: input
+    id: name
+    attributes:
+      label: Mod name
+      placeholder: socratic-teacher
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this mod solve?
+      placeholder: Describe the user problem and why a reusable mod is useful.
+    validations:
+      required: true
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: Expected behaviour
+      placeholder: Describe what the model should do differently when this mod is active.
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: How could we test it?
+      placeholder: Give 2-3 observable scenarios or acceptance checks.
+    validations:
+      required: true
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: How would you like to contribute?
+      options:
+        - Build the mod
+        - Create evaluation cases
+        - Review as a domain expert
+        - Suggest only
+    validations:
+      required: true
