@@ -1,0 +1,28 @@
+name: my-first-mod
+version: 0.1.0
+status: draft
+
+description: >
+  Describe the single, clearly defined change this mod makes to a
+  language-model-powered system.
+
+category: personality
+
+authors:
+  - name: Your Name
+    github: your-github-username
+
+compatible_models: []
+
+capabilities:
+  - example-capability
+
+dependencies: []
+conflicts: []
+
+evaluation:
+  minimum_score: 0.75
+  suites:
+    - example-suite
+
+license: Apache-2.0
