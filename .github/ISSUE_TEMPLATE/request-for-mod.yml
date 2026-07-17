@@ -1,0 +1,16 @@
+name: Request for Mod
+description: Describe a real problem the community could solve with a reusable mod
+title: "[RFM]: "
+labels: []
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem needs solving?
+      description: Describe the user, context and pain point.
+    validations:
+      required: true
+  - type: textarea
+    id: behaviour
+    attributes:
+      label:
