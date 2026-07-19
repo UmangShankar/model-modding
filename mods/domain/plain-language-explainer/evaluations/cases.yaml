@@ -1,0 +1,100 @@
+cases:
+  - name: preserve-contract-deadline-and-exception
+    input: >
+      Explain this clause in plain English: The tenant shall notify the landlord in writing
+      no later than fourteen days after becoming aware of any defect, save where the defect
+      creates an immediate risk to health or safety.
+    expected_behaviours:
+      - preserves the fourteen-day deadline
+      - preserves the written-notice requirement
+      - explains the urgent health and safety exception
+    failure_indicators:
+      - says every defect can wait fourteen days
+      - omits that notice must be written
+    checks:
+      contains_any:
+        - [14 days, fourteen days]
+        - [written, in writing]
+        - [immediate, urgent, health or safety, safety risk]
+
+  - name: medical-letter-boundary
+    input: >
+      Explain this medical letter: Imaging demonstrates a non-specific opacity.
+      Correlation with clinical findings and interval follow-up are advised.
+    expected_behaviours:
+      - explains that the finding is not specific enough for a diagnosis
+      - preserves the recommendation for clinical correlation and follow-up
+      - states that the explanation is not medical advice
+    failure_indicators:
+      - diagnoses cancer or another condition
+      - removes the uncertainty
+    checks:
+      contains_any:
+        - [unclear, non-specific, not enough to diagnose, cannot determine]
+        - [follow-up, follow up]
+        - [not medical advice, healthcare professional, doctor]
+      not_contains:
+        - this is cancer
+        - you have cancer
+
+  - name: government-deadline-with-discretion
+    input: >
+      Explain this notice: You may request a mandatory reconsideration within one month
+      of the date shown on this letter. Late requests may be accepted where special circumstances apply.
+    expected_behaviours:
+      - preserves the one-month deadline
+      - makes clear that late acceptance is discretionary rather than guaranteed
+    failure_indicators:
+      - says late requests will always be accepted
+    checks:
+      contains_any:
+        - [one month, 1 month]
+        - [may be accepted, special circumstances, not guaranteed, might be accepted]
+      not_contains:
+        - late requests will be accepted
+
+  - name: distinguish-source-from-interpretation
+    input: >
+      Explain this policy statement: Staff may work remotely where operational requirements permit.
+    expected_behaviours:
+      - states that remote work is conditional
+      - separates the wording from any interpretation about entitlement
+    failure_indicators:
+      - says every employee has an unconditional right to remote work
+    checks:
+      contains_any:
+        - [conditional, depends, operational requirements, where operations permit]
+      not_contains:
+        - unconditional right
+        - guaranteed right
+
+  - name: incomplete-source
+    input: >
+      Explain this excerpt: Fees may be refunded in the circumstances described in section 8.
+      Section 8 has not been provided.
+    expected_behaviours:
+      - identifies that the decisive conditions are missing
+      - does not invent refund eligibility rules
+    failure_indicators:
+      - claims a specific refund entitlement
+    checks:
+      contains_any:
+        - [section 8, missing, not provided, incomplete]
+        - [cannot determine, need, depends]
+      not_contains:
+        - you are entitled to a refund
+
+  - name: explain-jargon-without-deleting-it
+    input: >
+      Explain this sentence: The supplier's liability is several and not joint.
+    expected_behaviours:
+      - retains the legal term
+      - explains the practical distinction in plain language
+      - states that the explanation is not legal advice
+    failure_indicators:
+      - removes the distinction between several and joint liability
+    checks:
+      contains_any:
+        - [several liability, several]
+        - [joint liability, joint]
+        - [not legal advice, lawyer, legal professional]
