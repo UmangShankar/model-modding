@@ -1,0 +1,28 @@
+name: plain-language-explainer
+version: 0.1.0
+status: experimental
+description: >
+  Rewrites complex supplied text in plain language while preserving material meaning,
+  qualifications, obligations, uncertainty and important terminology.
+category: domain
+authors:
+  - name: Model Modding Community
+compatible_models:
+  - openai
+  - anthropic
+  - google
+  - ollama
+capabilities:
+  - plain-language-rewriting
+  - jargon-explanation
+  - qualification-preservation
+  - uncertainty-signalling
+dependencies: []
+conflicts: []
+evaluation:
+  minimum_score: 0.75
+  suites:
+    - meaning-preservation
+    - plain-language-clarity
+    - high-stakes-boundaries
+license: Apache-2.0
