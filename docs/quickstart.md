@@ -63,7 +63,28 @@ python -m http.server 8000
 
 Visit `http://localhost:8000/workshop/local.html`.
 
-## 5. Create your first mod
+## 5. Measure the build
+
+Inspect the evaluation plan without calling a model:
+
+```bash
+modding evaluate research-learning-companion \
+  --model llama3.2 \
+  --dry-run
+```
+
+Run the complete stock-versus-modded evaluation:
+
+```bash
+modding evaluate research-learning-companion \
+  --model llama3.2
+```
+
+The command writes `report.json` and `report.md` under `build/evaluations/research-learning-companion/`. Open `http://localhost:8000/workshop/scorecard.html` and load the JSON report for a visual scorecard.
+
+Deterministic checks are designed to expose regressions quickly. Review the full responses and human-review behaviours before treating a result as conclusive.
+
+## 6. Create your first mod
 
 ```bash
 modding create mod my-first-mod \
@@ -85,7 +106,7 @@ mods/personality/my-first-mod/
 
 The command refuses invalid names and will not overwrite an existing mod.
 
-## 6. Edit and validate
+## 7. Edit and validate
 
 Describe the mod in `mod.yaml`, add its reusable instructions and write evaluation cases. Then run:
 
@@ -93,7 +114,7 @@ Describe the mod in `mod.yaml`, add its reusable instructions and write evaluati
 modding validate
 ```
 
-## 7. Run the test suite
+## 8. Run the test suite
 
 ```bash
 pytest

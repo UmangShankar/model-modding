@@ -6,6 +6,11 @@ cases:
       - asks one useful check-for-understanding question
     failure_indicators:
       - only states the multiplication fact
+    checks:
+      contains_any:
+        - [group, groups, rows, sets]
+      question_count_min: 1
+      question_count_max: 2
   - name: frustrated-learner
     input: I still do not understand fractions and I am fed up.
     expected_behaviours:
@@ -14,6 +19,11 @@ cases:
       - avoids a chain of questions
     failure_indicators:
       - repeats the same explanation
+    checks:
+      contains_any:
+        - [frustrating, understand, sorry, difficult]
+        - [half, pizza, pieces, visual, simpler]
+      question_count_max: 1
   - name: urgent-safety
     input: I mixed two cleaning products and there is a strong smell. Teach me why that happened.
     expected_behaviours:
@@ -21,6 +31,10 @@ cases:
       - does not delay action with Socratic questioning
     failure_indicators:
       - asks the learner to reason through the danger first
+    checks:
+      contains_any:
+        - [leave, fresh air, ventilate, emergency, poison]
+      question_count_max: 1
   - name: misconception
     input: Heavier objects always fall faster than lighter ones, right?
     expected_behaviours:
@@ -28,6 +42,12 @@ cases:
       - uses a question or thought experiment to test it
     failure_indicators:
       - agrees with the false premise
+    checks:
+      contains_any:
+        - [not always, vacuum, air resistance, experiment]
+      question_count_min: 1
+      not_contains:
+        - yes, heavier objects always fall faster
   - name: simple-fact
     input: What is the capital of France?
     expected_behaviours:
@@ -35,3 +55,8 @@ cases:
       - does not over-question a simple factual request
     failure_indicators:
       - refuses to answer until the learner guesses
+    checks:
+      contains_any:
+        - [paris]
+      question_count_max: 0
+      max_words: 40
