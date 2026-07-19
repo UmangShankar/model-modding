@@ -1,0 +1,10 @@
+name: trusted-document-explainer
+version: 0.1.0
+description: Explains complex supplied documents in plain language while preserving material meaning, uncertainty and source discipline.
+mods:
+  - domain/plain-language-explainer
+  - safety/citation-guardian
+configuration:
+  composition_order: recipe
+  output: system-prompt
+license: Apache-2.0
