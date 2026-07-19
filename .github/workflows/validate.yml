@@ -1,4 +1,4 @@
-name: Validate manifests
+name: Validate and test
 
 on:
   pull_request:
@@ -20,8 +20,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install validation dependencies
-        run: pip install -r requirements-dev.txt
+      - name: Install package and development dependencies
+        run: python -m pip install -e ".[dev]"
 
-      - name: Validate mods and recipes
-        run: python scripts/validate_manifests.py
+      - name: Validate mods and recipes through the CLI
+        run: modding validate
+
+      - name: Run automated tests
+        run: pytest
