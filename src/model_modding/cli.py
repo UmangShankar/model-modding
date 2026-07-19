@@ -12,14 +12,7 @@ from jsonschema import Draft202012Validator
 
 KEBAB_CASE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MOD_CATEGORIES = (
-    "personality",
-    "domains",
-    "workflows",
-    "tools",
-    "memory",
-    "safety",
-    "interfaces",
-    "experimental",
+    "personality", "domain", "workflow", "tool", "memory", "safety", "interface", "experimental"
 )
 DEFAULT_CATEGORY = "personality"
 
@@ -42,56 +35,30 @@ def validate_group(root: Path, label: str, schema_path: Path, manifests: list[Pa
     Draft202012Validator.check_schema(schema)
     validator = Draft202012Validator(schema)
     failures: list[str] = []
-
     if not manifests:
-        failures.append(f"No {label} manifests found")
-        return failures
-
+        return [f"No {label} manifests found"]
     for manifest_path in manifests:
         try:
             manifest = load_yaml(manifest_path)
         except (OSError, ValueError, yaml.YAMLError) as exc:
             failures.append(f"{manifest_path.relative_to(root)}: {exc}")
             continue
-
-        errors = sorted(validator.iter_errors(manifest), key=lambda error: list(error.path))
-        if errors:
-            for error in errors:
-                location = ".".join(str(part) for part in error.path) or "<root>"
-                failures.append(
-                    f"{manifest_path.relative_to(root)} [{location}]: {error.message}"
-                )
-        else:
+        for error in sorted(validator.iter_errors(manifest), key=lambda item: list(item.path)):
+            location = ".".join(str(part) for part in error.path) or "<root>"
+            failures.append(f"{manifest_path.relative_to(root)} [{location}]: {error.message}")
+        if not list(validator.iter_errors(manifest)):
             print(f"PASS {manifest_path.relative_to(root)}")
-
     return failures
 
 
 def validate_repository(root: Path) -> int:
-    failures: list[str] = []
-    failures.extend(
-        validate_group(
-            root,
-            "mod",
-            root / "schemas" / "mod.schema.json",
-            sorted((root / "mods").glob("**/mod.yaml")),
-        )
-    )
-    failures.extend(
-        validate_group(
-            root,
-            "recipe",
-            root / "schemas" / "recipe.schema.json",
-            sorted((root / "recipes").glob("**/recipe.yaml")),
-        )
-    )
-
+    failures = validate_group(root, "mod", root / "schemas/mod.schema.json", sorted((root / "mods").glob("**/mod.yaml")))
+    failures += validate_group(root, "recipe", root / "schemas/recipe.schema.json", sorted((root / "recipes").glob("**/recipe.yaml")))
     if failures:
         print("\nValidation failed:", file=sys.stderr)
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         return 1
-
     print("\nAll manifests are valid.")
     return 0
 
@@ -101,49 +68,113 @@ def create_mod(root: Path, name: str, category: str, author: str, github: str | 
         print("Mod names must use lowercase kebab-case, for example: socratic-teacher", file=sys.stderr)
         return 2
     if category not in MOD_CATEGORIES:
-        allowed = ", ".join(MOD_CATEGORIES)
-        print(f"Category must be one of: {allowed}", file=sys.stderr)
+        print(f"Category must be one of: {', '.join(MOD_CATEGORIES)}", file=sys.stderr)
         return 2
-
     destination = root / "mods" / category / name
     if destination.exists():
         print(f"Refusing to overwrite existing path: {destination.relative_to(root)}", file=sys.stderr)
         return 2
-
-    template_path = root / "templates" / "mod" / "mod.yaml"
-    template = load_yaml(template_path)
-    template["name"] = name
-    template["category"] = category
-    template["description"] = f"Describe the single, clearly defined change made by the {name} mod."
-    template["authors"] = [{"name": author, **({"github": github} if github else {})}]
-
-    destination.mkdir(parents=True)
-    (destination / "instructions").mkdir()
-    (destination / "examples").mkdir()
-    (destination / "evaluations").mkdir()
-
-    with (destination / "mod.yaml").open("w", encoding="utf-8") as handle:
-        yaml.safe_dump(template, handle, sort_keys=False, allow_unicode=True)
-
-    (destination / "README.md").write_text(
-        f"# {name}\n\nDescribe what this mod changes, when to use it, limitations, and examples.\n",
-        encoding="utf-8",
-    )
-    (destination / "instructions" / "system.md").write_text(
-        "# Behavioural instructions\n\nAdd the reusable instructions for this mod here.\n",
-        encoding="utf-8",
-    )
-    (destination / "examples" / "README.md").write_text(
-        "# Examples\n\nAdd representative inputs and expected outputs here.\n",
-        encoding="utf-8",
-    )
-    (destination / "evaluations" / "cases.yaml").write_text(
-        "cases: []\n",
-        encoding="utf-8",
-    )
-
+    template = load_yaml(root / "templates/mod/mod.yaml")
+    template.update(name=name, category=category,
+                    description=f"Describe the single, clearly defined change made by the {name} mod.",
+                    authors=[{"name": author, **({"github": github} if github else {})}])
+    for folder in ("instructions", "examples", "evaluations"):
+        (destination / folder).mkdir(parents=True, exist_ok=True)
+    (destination / "mod.yaml").write_text(yaml.safe_dump(template, sort_keys=False, allow_unicode=True), encoding="utf-8")
+    (destination / "README.md").write_text(f"# {name}\n\nDescribe purpose, use, limitations and examples.\n", encoding="utf-8")
+    (destination / "instructions/system.md").write_text("# Behavioural instructions\n\nAdd reusable instructions here.\n", encoding="utf-8")
+    (destination / "examples/README.md").write_text("# Examples\n\nAdd representative examples here.\n", encoding="utf-8")
+    (destination / "evaluations/cases.yaml").write_text("cases: []\n", encoding="utf-8")
     print(f"Created {destination.relative_to(root)}")
-    print("Next: edit mod.yaml, add instructions and evaluations, then run `modding validate`.")
+    return 0
+
+
+def resolve_mod(root: Path, reference: str) -> tuple[str, Path, dict[str, Any]]:
+    candidates = [root / "mods" / reference / "mod.yaml"] if "/" in reference else list((root / "mods").glob(f"*/{reference}/mod.yaml"))
+    candidates = [path for path in candidates if path.exists()]
+    if not candidates:
+        raise ValueError(f"Mod not found: {reference}")
+    if len(candidates) > 1:
+        raise ValueError(f"Mod name is ambiguous; use category/name: {reference}")
+    path = candidates[0]
+    return str(path.parent.relative_to(root / "mods")), path, load_yaml(path)
+
+
+def evaluation_count(mod_dir: Path) -> int:
+    total = 0
+    for path in sorted((mod_dir / "evaluations").glob("*.yaml")) if (mod_dir / "evaluations").exists() else []:
+        data = load_yaml(path)
+        cases = data.get("cases", [])
+        if isinstance(cases, list):
+            total += len(cases)
+    return total
+
+
+def inspect_mod(root: Path, reference: str, as_json: bool = False) -> int:
+    try:
+        resolved, manifest_path, manifest = resolve_mod(root, reference)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    mod_dir = manifest_path.parent
+    instruction_files = sorted(str(p.relative_to(mod_dir)) for p in (mod_dir / "instructions").glob("**/*") if p.is_file())
+    report = {
+        "reference": resolved, "name": manifest["name"], "version": manifest["version"],
+        "status": manifest["status"], "description": manifest["description"],
+        "capabilities": manifest.get("capabilities", []), "compatible_models": manifest.get("compatible_models", []),
+        "dependencies": manifest.get("dependencies", []), "conflicts": manifest.get("conflicts", []),
+        "instruction_files": instruction_files, "evaluation_cases": evaluation_count(mod_dir),
+    }
+    if as_json:
+        print(json.dumps(report, indent=2))
+    else:
+        print(f"{report['name']} {report['version']} [{report['status']}]\n{report['description']}")
+        print(f"Reference: {resolved}\nCapabilities: {', '.join(report['capabilities']) or 'none'}")
+        print(f"Compatible models: {', '.join(report['compatible_models']) or 'not documented'}")
+        print(f"Instructions: {len(instruction_files)} file(s)\nEvaluation cases: {report['evaluation_cases']}")
+        if report["dependencies"]: print(f"Dependencies: {', '.join(report['dependencies'])}")
+        if report["conflicts"]: print(f"Conflicts: {', '.join(report['conflicts'])}")
+    return 0
+
+
+def compose_recipe(root: Path, name: str, output: Path | None = None) -> int:
+    recipe_path = root / "recipes" / name / "recipe.yaml"
+    if not recipe_path.exists():
+        print(f"Recipe not found: {name}", file=sys.stderr)
+        return 2
+    recipe = load_yaml(recipe_path)
+    loaded: list[tuple[str, Path, dict[str, Any]]] = []
+    try:
+        for reference in recipe["mods"]:
+            loaded.append(resolve_mod(root, reference))
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    selected = {reference for reference, _, _ in loaded}
+    failures: list[str] = []
+    for reference, _, manifest in loaded:
+        for dependency in manifest.get("dependencies", []):
+            if dependency not in selected:
+                failures.append(f"{reference} requires missing dependency {dependency}")
+        for conflict in manifest.get("conflicts", []):
+            if conflict in selected:
+                failures.append(f"{reference} conflicts with {conflict}")
+    if failures:
+        for failure in failures: print(f"- {failure}", file=sys.stderr)
+        return 1
+    sections = [f"# {recipe['name']}\n", recipe["description"].strip(), "\n## Compiled instructions\n"]
+    metadata: list[dict[str, Any]] = []
+    for reference, manifest_path, manifest in loaded:
+        files = sorted((manifest_path.parent / "instructions").glob("**/*.md"))
+        sections.append(f"\n### Mod: {reference}\n")
+        for path in files:
+            sections.append(path.read_text(encoding="utf-8").strip() + "\n")
+        metadata.append({"reference": reference, "version": manifest["version"], "instruction_files": [str(p.relative_to(root)) for p in files]})
+    destination = (output or root / "build" / name).resolve()
+    destination.mkdir(parents=True, exist_ok=True)
+    (destination / "system.md").write_text("\n".join(sections).strip() + "\n", encoding="utf-8")
+    (destination / "manifest.json").write_text(json.dumps({"recipe": recipe, "mods": metadata}, indent=2) + "\n", encoding="utf-8")
+    print(f"Compiled {name}\nSystem prompt: {destination / 'system.md'}\nManifest: {destination / 'manifest.json'}")
     return 0
 
 
@@ -151,9 +182,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="modding", description="Model Modding developer tools")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
     subcommands = parser.add_subparsers(dest="command", required=True)
-
     subcommands.add_parser("validate", help="Validate all mod and recipe manifests")
-
+    inspect = subcommands.add_parser("inspect", help="Inspect a mod")
+    inspect.add_argument("reference")
+    inspect.add_argument("--json", action="store_true")
+    compose = subcommands.add_parser("compose", help="Compile a recipe into reusable instructions")
+    compose.add_argument("name")
+    compose.add_argument("--output", type=Path)
     create = subcommands.add_parser("create", help="Create a project asset")
     create_subcommands = create.add_subparsers(dest="asset", required=True)
     create_mod_parser = create_subcommands.add_parser("mod", help="Create a mod from the starter template")
@@ -167,12 +202,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = args.root.resolve()
-
-    if args.command == "validate":
-        return validate_repository(root)
-    if args.command == "create" and args.asset == "mod":
-        return create_mod(root, args.name, args.category, args.author, args.github)
-
+    if args.command == "validate": return validate_repository(root)
+    if args.command == "inspect": return inspect_mod(root, args.reference, args.json)
+    if args.command == "compose": return compose_recipe(root, args.name, args.output)
+    if args.command == "create" and args.asset == "mod": return create_mod(root, args.name, args.category, args.author, args.github)
     return 2
 
 
