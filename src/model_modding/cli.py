@@ -11,6 +11,16 @@ import yaml
 from jsonschema import Draft202012Validator
 
 KEBAB_CASE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+MOD_CATEGORIES = (
+    "personality",
+    "domains",
+    "workflows",
+    "tools",
+    "memory",
+    "safety",
+    "interfaces",
+    "experimental",
+)
 DEFAULT_CATEGORY = "personality"
 
 
@@ -90,8 +100,9 @@ def create_mod(root: Path, name: str, category: str, author: str, github: str | 
     if not KEBAB_CASE.fullmatch(name):
         print("Mod names must use lowercase kebab-case, for example: socratic-teacher", file=sys.stderr)
         return 2
-    if not KEBAB_CASE.fullmatch(category):
-        print("Categories must use lowercase kebab-case.", file=sys.stderr)
+    if category not in MOD_CATEGORIES:
+        allowed = ", ".join(MOD_CATEGORIES)
+        print(f"Category must be one of: {allowed}", file=sys.stderr)
         return 2
 
     destination = root / "mods" / category / name
@@ -147,7 +158,7 @@ def build_parser() -> argparse.ArgumentParser:
     create_subcommands = create.add_subparsers(dest="asset", required=True)
     create_mod_parser = create_subcommands.add_parser("mod", help="Create a mod from the starter template")
     create_mod_parser.add_argument("name")
-    create_mod_parser.add_argument("--category", default=DEFAULT_CATEGORY)
+    create_mod_parser.add_argument("--category", choices=MOD_CATEGORIES, default=DEFAULT_CATEGORY)
     create_mod_parser.add_argument("--author", default="Model Modding Contributor")
     create_mod_parser.add_argument("--github")
     return parser
