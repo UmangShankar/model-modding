@@ -5,21 +5,36 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "model-modding"
 version = "0.1.0"
-description = "Create, validate and compose reusable mods for language-model-powered systems."
+description = "Create, validate, compose, run and evaluate reusable mods for language-model-powered systems."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Model Modding Community" }]
+keywords = ["llm", "prompt-engineering", "ollama", "evaluation", "ai"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
 dependencies = [
   "jsonschema>=4.25,<5",
   "PyYAML>=6,<7",
 ]
 
+[project.urls]
+Homepage = "https://github.com/UmangShankar/model-modding"
+Repository = "https://github.com/UmangShankar/model-modding"
+Issues = "https://github.com/UmangShankar/model-modding/issues"
+
 [project.optional-dependencies]
-dev = ["pytest>=8,<9"]
+dev = ["pytest>=8,<9", "build>=1.2,<2"]
 
 [project.scripts]
-modding = "model_modding.cli:main"
+modding = "model_modding.entry:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

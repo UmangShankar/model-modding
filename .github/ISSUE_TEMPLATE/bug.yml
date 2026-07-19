@@ -1,0 +1,38 @@
+name: Bug report
+description: Report reproducible incorrect behaviour in the CLI, schemas, runtime or Workshop
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include API keys, private prompts or personal data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed and expected behaviour.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: Include commands, recipe/mod names and minimal files where possible.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python, operating system, model/runtime and relevant versions.
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Doctor output or logs
+      description: Paste redacted `modding doctor` output and relevant errors.

@@ -1,47 +1,63 @@
 # Contributing to Model Modding
 
-Thank you for helping build an open standard for reusable LLM modifications.
+Model Modding welcomes developers, domain experts, evaluators, educators, designers and writers.
 
-## Ways to contribute
+## Before you start
 
-You can contribute code, mods, evaluations, examples, documentation, research, design, translations or domain review. Many useful contributions require no production coding.
+1. Search existing issues and pull requests.
+2. Keep each contribution focused on one problem.
+3. Do not include secrets, private data, copyrighted datasets, or provider credentials.
+4. For substantial format or governance changes, open an issue before implementation.
 
-## Before starting
+## Development setup
 
-1. Search existing issues and discussions.
-2. Open an issue for substantial changes.
-3. Keep each pull request focused on one problem.
-4. Never include private data, API keys, proprietary prompts or copyrighted datasets without permission.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+modding doctor
+modding validate
+pytest
+```
 
-## Mod contribution checklist
+On Windows PowerShell use `.venv\Scripts\Activate.ps1`.
 
-A mod should include:
+## Contributing a mod
 
-- a valid `mod.yaml`
-- a clear README
-- behavioural instructions or implementation
-- at least three examples
-- evaluation scenarios
-- known limitations
-- compatibility notes
-- licence information
+Create the scaffold:
+
+```bash
+modding create mod example-mod --category personality --author "Your Name"
+```
+
+A mod pull request should include:
+
+- a schema-valid `mod.yaml`;
+- a narrow purpose and documented limitations;
+- reusable instructions, not application-specific secrets;
+- examples showing intended and unintended behaviour;
+- evaluation cases with human-review expectations;
+- machine-checkable assertions where they are honest and useful;
+- dependency, conflict and compatibility declarations;
+- confirmation that contributed content is licensed for this repository.
+
+Run:
+
+```bash
+modding validate
+pytest
+```
 
 ## Pull requests
 
-Use a descriptive title and explain:
+Keep commits understandable. Explain what changed, why it matters, how it was tested and any risks or limitations. Avoid unrelated formatting changes.
 
-- the problem being solved
-- the proposed change
-- how it was tested
-- risks or limitations
-- screenshots or examples where relevant
+Automated checks must pass before merge. Review findings should be resolved or explicitly discussed.
 
-By contributing, you agree that your contribution will be licensed under the repository licence unless clearly stated otherwise.
+## Evaluation claims
 
-## Contribution standards
+Do not describe a mod as universally better based on one model or a small deterministic suite. State the model, version, prompts, checks, limitations and observed regressions. Preserve full responses for human review.
 
-Contributions should be modular, understandable, testable, transparent and responsibly designed. Avoid claims that are not supported by evidence or evaluation.
+## No-code contributions
 
-## Good first contributions
-
-Look for issues labelled `good first issue`, `documentation`, `evaluation`, `no-code` or `help wanted`.
+Useful contributions include evaluation prompts, domain reviews, examples, documentation, translations, accessibility feedback and Requests for Mods.
