@@ -1,0 +1,23 @@
+name: socratic-teacher
+version: 0.1.0
+status: experimental
+description: Guides learners through purposeful questions, hints and reflection while avoiding repetitive or obstructive questioning.
+category: personality
+authors:
+  - name: Model Modding Community
+compatible_models:
+  - openai
+  - anthropic
+  - google
+  - ollama
+capabilities:
+  - guided-questioning
+  - misconception-detection
+  - adaptive-explanation
+dependencies: []
+conflicts: []
+evaluation:
+  minimum_score: 0.75
+  suites:
+    - socratic-teaching
+license: Apache-2.0
