@@ -43,10 +43,11 @@ def validate_group(root: Path, label: str, schema_path: Path, manifests: list[Pa
         except (OSError, ValueError, yaml.YAMLError) as exc:
             failures.append(f"{manifest_path.relative_to(root)}: {exc}")
             continue
-        for error in sorted(validator.iter_errors(manifest), key=lambda item: list(item.path)):
+        errors = list(validator.iter_errors(manifest))
+        for error in sorted(errors, key=lambda item: list(item.path)):
             location = ".".join(str(part) for part in error.path) or "<root>"
             failures.append(f"{manifest_path.relative_to(root)} [{location}]: {error.message}")
-        if not list(validator.iter_errors(manifest)):
+        if not errors:
             print(f"PASS {manifest_path.relative_to(root)}")
     return failures
 
@@ -132,8 +133,10 @@ def inspect_mod(root: Path, reference: str, as_json: bool = False) -> int:
         print(f"Reference: {resolved}\nCapabilities: {', '.join(report['capabilities']) or 'none'}")
         print(f"Compatible models: {', '.join(report['compatible_models']) or 'not documented'}")
         print(f"Instructions: {len(instruction_files)} file(s)\nEvaluation cases: {report['evaluation_cases']}")
-        if report["dependencies"]: print(f"Dependencies: {', '.join(report['dependencies'])}")
-        if report["conflicts"]: print(f"Conflicts: {', '.join(report['conflicts'])}")
+        if report["dependencies"]:
+            print(f"Dependencies: {', '.join(report['dependencies'])}")
+        if report["conflicts"]:
+            print(f"Conflicts: {', '.join(report['conflicts'])}")
     return 0
 
 
@@ -160,7 +163,8 @@ def compose_recipe(root: Path, name: str, output: Path | None = None) -> int:
             if conflict in selected:
                 failures.append(f"{reference} conflicts with {conflict}")
     if failures:
-        for failure in failures: print(f"- {failure}", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
         return 1
     sections = [f"# {recipe['name']}\n", recipe["description"].strip(), "\n## Compiled instructions\n"]
     metadata: list[dict[str, Any]] = []
@@ -189,6 +193,13 @@ def build_parser() -> argparse.ArgumentParser:
     compose = subcommands.add_parser("compose", help="Compile a recipe into reusable instructions")
     compose.add_argument("name")
     compose.add_argument("--output", type=Path)
+    run = subcommands.add_parser("run", help="Run a recipe against a local Ollama model")
+    run.add_argument("name", help="Recipe name")
+    run.add_argument("--model", required=True, help="Installed Ollama model, for example llama3.2")
+    run.add_argument("--prompt", required=True, help="User prompt")
+    run.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
+    run.add_argument("--timeout", type=float, default=120.0, help="Request timeout in seconds")
+    run.add_argument("--allow-remote-host", action="store_true", help="Allow a non-loopback Ollama endpoint")
     create = subcommands.add_parser("create", help="Create a project asset")
     create_subcommands = create.add_subparsers(dest="asset", required=True)
     create_mod_parser = create_subcommands.add_parser("mod", help="Create a mod from the starter template")
@@ -202,10 +213,26 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = args.root.resolve()
-    if args.command == "validate": return validate_repository(root)
-    if args.command == "inspect": return inspect_mod(root, args.reference, args.json)
-    if args.command == "compose": return compose_recipe(root, args.name, args.output)
-    if args.command == "create" and args.asset == "mod": return create_mod(root, args.name, args.category, args.author, args.github)
+    if args.command == "validate":
+        return validate_repository(root)
+    if args.command == "inspect":
+        return inspect_mod(root, args.reference, args.json)
+    if args.command == "compose":
+        return compose_recipe(root, args.name, args.output)
+    if args.command == "run":
+        from .ollama import run_recipe
+
+        return run_recipe(
+            root,
+            args.name,
+            args.model,
+            args.prompt,
+            args.host,
+            args.timeout,
+            args.allow_remote_host,
+        )
+    if args.command == "create" and args.asset == "mod":
+        return create_mod(root, args.name, args.category, args.author, args.github)
     return 2
 
 
