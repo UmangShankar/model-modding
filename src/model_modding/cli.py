@@ -200,6 +200,14 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
     run.add_argument("--timeout", type=float, default=120.0, help="Request timeout in seconds")
     run.add_argument("--allow-remote-host", action="store_true", help="Allow a non-loopback Ollama endpoint")
+    evaluate = subcommands.add_parser("evaluate", help="Compare stock and modded behaviour across evaluation cases")
+    evaluate.add_argument("name", help="Recipe name")
+    evaluate.add_argument("--model", required=True, help="Installed Ollama model")
+    evaluate.add_argument("--output", type=Path, help="Report directory")
+    evaluate.add_argument("--dry-run", action="store_true", help="List cases without calling a model")
+    evaluate.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
+    evaluate.add_argument("--timeout", type=float, default=120.0, help="Request timeout in seconds")
+    evaluate.add_argument("--allow-remote-host", action="store_true", help="Allow a non-loopback Ollama endpoint")
     create = subcommands.add_parser("create", help="Create a project asset")
     create_subcommands = create.add_subparsers(dest="asset", required=True)
     create_mod_parser = create_subcommands.add_parser("mod", help="Create a mod from the starter template")
@@ -221,16 +229,10 @@ def main(argv: list[str] | None = None) -> int:
         return compose_recipe(root, args.name, args.output)
     if args.command == "run":
         from .ollama import run_recipe
-
-        return run_recipe(
-            root,
-            args.name,
-            args.model,
-            args.prompt,
-            args.host,
-            args.timeout,
-            args.allow_remote_host,
-        )
+        return run_recipe(root, args.name, args.model, args.prompt, args.host, args.timeout, args.allow_remote_host)
+    if args.command == "evaluate":
+        from .evaluation import evaluate_recipe
+        return evaluate_recipe(root, args.name, args.model, args.output, args.dry_run, args.host, args.timeout, args.allow_remote_host)
     if args.command == "create" and args.asset == "mod":
         return create_mod(root, args.name, args.category, args.author, args.github)
     return 2
