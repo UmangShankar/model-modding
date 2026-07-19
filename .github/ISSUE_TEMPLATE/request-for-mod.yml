@@ -1,16 +1,71 @@
 name: Request for Mod
-description: Describe a real problem the community could solve with a reusable mod
-title: "[RFM]: "
-labels: []
+description: Propose an unmet user need that could be solved by a reusable mod
+title: "[RFM] "
+labels:
+  - request-for-mod
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the user problem before proposing an implementation. Requests should be understandable to developers, evaluators and domain experts.
   - type: textarea
     id: problem
     attributes:
-      label: What problem needs solving?
-      description: Describe the user, context and pain point.
+      label: Problem
+      description: What is difficult today, and why does it matter?
+      placeholder: People struggle to...
+    validations:
+      required: true
+  - type: textarea
+    id: users
+    attributes:
+      label: Intended users and context
+      description: Who experiences the problem, and in what situation?
     validations:
       required: true
   - type: textarea
     id: behaviour
     attributes:
-      label:
+      label: Desired behaviour
+      description: Describe observable outcomes rather than implementation details.
+      placeholder: |
+        - The assistant should...
+        - The assistant should not...
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and boundaries
+      description: What could go wrong? Include safety, privacy, accuracy and misuse risks.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Acceptance and evaluation evidence
+      description: What cases or review would demonstrate that the mod is useful?
+    validations:
+      required: true
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: How can you contribute?
+      options:
+        - Build the mod
+        - Write evaluation cases
+        - Provide domain review
+        - Test across models
+        - Write examples or documentation
+        - I am proposing the need only
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I have searched existing mods, recipes and RFMs for a similar request.
+          required: true
+        - label: This request contains no private data, credentials or proprietary content.
+          required: true
