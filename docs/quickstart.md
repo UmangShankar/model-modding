@@ -28,7 +28,42 @@ A healthy repository ends with:
 All manifests are valid.
 ```
 
-## 3. Create your first mod
+## 3. Inspect and compose a build
+
+```bash
+modding inspect socratic-teacher
+modding compose research-learning-companion
+```
+
+The compiled system contract and manifest are written under `build/research-learning-companion/`.
+
+## 4. Run it locally with Ollama
+
+Install Ollama separately and pull a local model, for example:
+
+```bash
+ollama pull llama3.2
+```
+
+Then run the recipe:
+
+```bash
+modding run research-learning-companion \
+  --model llama3.2 \
+  --prompt "Explain compound interest to a beginner"
+```
+
+The default endpoint is `http://127.0.0.1:11434`. Use `--host` for another endpoint. Non-loopback hosts require the explicit `--allow-remote-host` safety flag.
+
+For a visual stock-versus-modded comparison, serve the repository and open the Local Dyno:
+
+```bash
+python -m http.server 8000
+```
+
+Visit `http://localhost:8000/workshop/local.html`.
+
+## 5. Create your first mod
 
 ```bash
 modding create mod my-first-mod \
@@ -50,7 +85,7 @@ mods/personality/my-first-mod/
 
 The command refuses invalid names and will not overwrite an existing mod.
 
-## 4. Edit and validate
+## 6. Edit and validate
 
 Describe the mod in `mod.yaml`, add its reusable instructions and write evaluation cases. Then run:
 
@@ -58,7 +93,7 @@ Describe the mod in `mod.yaml`, add its reusable instructions and write evaluati
 modding validate
 ```
 
-## 5. Run the test suite
+## 7. Run the test suite
 
 ```bash
 pytest
