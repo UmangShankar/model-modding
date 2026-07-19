@@ -1,10 +1,11 @@
 # Model Modding Workshop
 
-The Workshop now has three browser experiences:
+The Workshop now has four browser experiences:
 
 - `workshop/index.html` — a zero-dependency visual prompt-composition demo
 - `workshop/local.html` — a real stock-versus-modded comparison using a local Ollama model
 - `workshop/scorecard.html` — a local visualiser for CLI-generated evaluation reports
+- `workshop/fitment.html` — a local model-by-model compatibility matrix
 
 Serve the repository locally:
 
@@ -17,65 +18,53 @@ Then visit:
 - `http://localhost:8000/workshop/`
 - `http://localhost:8000/workshop/local.html`
 - `http://localhost:8000/workshop/scorecard.html`
+- `http://localhost:8000/workshop/fitment.html`
 
 ## Static Workshop
 
-The main Workshop demonstrates:
-
-- browsing the current reference mods
-- selecting ready-made recipes
-- assembling a custom build
-- seeing installed capabilities and behavioural rules
-- live deterministic prompt compilation
-- fitment warnings for potentially overlapping behaviours
-- copying or downloading the compiled Markdown contract
+The main Workshop demonstrates browsing mods, selecting recipes, assembling a build, inspecting behavioural rules and downloading compiled contracts.
 
 ## Local Dyno
 
-The Local Dyno connects only to `http://127.0.0.1:11434` and provides:
-
-- detection of the local Ollama service
-- discovery of installed models
-- Product Strategy Copilot and Research Learning Companion builds
-- the same prompt sent to stock and modded configurations
-- side-by-side response comparison
-- no cloud API keys or remote analytics
-
-Install Ollama separately, pull a model, and start its service. For example:
-
-```bash
-ollama pull llama3.2
-ollama serve
-```
-
-Browser access should use the local HTTP server command above rather than opening `local.html` directly from `file://`, because browser security rules may block local API requests from file pages.
+The Local Dyno connects only to `http://127.0.0.1:11434`, discovers installed models and sends the same prompt to stock and modded configurations. It uses no cloud API keys or analytics.
 
 ## Dyno Scorecard
 
-Generate an evaluation report with:
+Generate an evaluation report:
 
 ```bash
 modding evaluate research-learning-companion --model llama3.2
 ```
 
-Then load `build/evaluations/research-learning-companion/report.json` in `scorecard.html`. The report is read locally in the browser and is not uploaded. The scorecard displays stock and modded pass rates, results by mod, individual case outcomes and deterministic regressions.
+Load `build/evaluations/research-learning-companion/report.json` in `scorecard.html`.
+
+## Model Fitment Matrix
+
+Run the same recipe and evaluation suite across multiple installed Ollama models:
+
+```bash
+modding benchmark trusted-document-explainer \
+  --models llama3.2,qwen2.5:3b,mistral
+```
+
+The command writes:
+
+```text
+build/benchmarks/trusted-document-explainer/
+├── benchmark.json
+└── benchmark.md
+```
+
+Load `benchmark.json` in `fitment.html`. The matrix shows availability, stock and modded pass rates, improvement, regressions and average latency. Reports remain local to the browser.
 
 ## CLI source of truth
-
-The Model Modding CLI remains the production source of truth for composition, execution and evaluation:
 
 ```bash
 modding inspect socratic-teacher
 modding compose research-learning-companion
-modding run research-learning-companion \
-  --model llama3.2 \
-  --prompt "Explain compound interest to a beginner"
-modding evaluate research-learning-companion \
-  --model llama3.2
+modding run research-learning-companion --model llama3.2 --prompt "Explain compound interest"
+modding evaluate research-learning-companion --model llama3.2
+modding benchmark trusted-document-explainer --models llama3.2,qwen2.5:3b
 ```
 
-A custom Ollama endpoint can be supplied with `--host`. Non-loopback endpoints are rejected unless `--allow-remote-host` is explicitly provided.
-
-## Current limitation
-
-Workshop recipe data is embedded for a frictionless prototype. A future version should generate its catalogue, local runner contracts and scorecard schemas from repository data so the visual interface and CLI share one automatically generated source.
+Custom Ollama endpoints require `--allow-remote-host` when they are not loopback addresses.
