@@ -1,0 +1,10 @@
+name: research-learning-companion
+version: 0.1.0
+description: Combines guided teaching with transparent sourcing so learners can reason through evidence without losing citation integrity.
+mods:
+  - personality/socratic-teacher
+  - safety/citation-guardian
+configuration:
+  composition_order: recipe
+  output: system-prompt
+license: Apache-2.0
