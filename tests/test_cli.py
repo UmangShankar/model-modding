@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -66,7 +68,26 @@ def test_create_mod_rejects_invalid_name(tmp_path: Path) -> None:
     assert create_mod(root, "Bad Name", "personality", "Ada Example", None) == 2
 
 
+def test_create_mod_rejects_category_outside_schema(tmp_path: Path) -> None:
+    root = copy_repo_contract(tmp_path)
+    assert create_mod(root, "example-mod", "custom", "Ada Example", None) == 2
+    assert not (root / "mods" / "custom" / "example-mod").exists()
+
+
 def test_create_mod_refuses_overwrite(tmp_path: Path) -> None:
     root = copy_repo_contract(tmp_path)
     assert create_mod(root, "new-mod", "personality", "Ada Example", None) == 0
     assert create_mod(root, "new-mod", "personality", "Ada Example", None) == 2
+
+
+def test_legacy_validator_uses_script_repository_from_other_cwd(tmp_path: Path) -> None:
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "validate_manifests.py")],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "All manifests are valid." in result.stdout
