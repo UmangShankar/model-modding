@@ -118,6 +118,10 @@ def stream_chat(
                 yield chunk
 
 
+def display_name(slug: str) -> str:
+    return slug.replace("-", " ").title()
+
+
 def run_recipe(
     root: Path,
     recipe_name: str,
@@ -135,7 +139,7 @@ def run_recipe(
         print(str(exc), file=sys.stderr)
         return 2
 
-    print(f"Recipe: {compiled.name}")
+    print(f"Recipe: {display_name(compiled.name)}")
     print(f"Model: {model}")
     print(f"Ollama: {normalized_host}")
     print(f"Installed mods: {', '.join(compiled.references)}")
