@@ -8,7 +8,8 @@ This catalogue is a human-readable entry point to the packages currently include
 | --- | --- | --- | --- | --- |
 | [Inquisitive Strategist](../mods/personality/inquisitive-strategist/) | Personality | Experimental | Clarifies decisions, challenges assumptions and explores alternatives. | Product Strategy Copilot |
 | [Socratic Teacher](../mods/personality/socratic-teacher/) | Personality | Experimental | Guides learners toward understanding while avoiding unnecessary interrogation. | Research Learning Companion |
-| [Citation Guardian](../mods/safety/citation-guardian/) | Safety | Experimental | Keeps factual claims traceable and makes uncertainty visible. | Research Learning Companion |
+| [Plain Language Explainer](../mods/domain/plain-language-explainer/) | Domain | Experimental | Rewrites complex supplied text clearly while preserving obligations, exceptions and uncertainty. | Trusted Document Explainer |
+| [Citation Guardian](../mods/safety/citation-guardian/) | Safety | Experimental | Keeps factual claims traceable and makes uncertainty visible. | Research Learning Companion, Trusted Document Explainer |
 
 ## Recipes
 
@@ -16,6 +17,7 @@ This catalogue is a human-readable entry point to the packages currently include
 | --- | --- | --- |
 | [Product Strategy Copilot](../recipes/product-strategy-copilot/) | Inquisitive Strategist | Supports structured product and strategic decisions. |
 | [Research Learning Companion](../recipes/research-learning-companion/) | Socratic Teacher, Citation Guardian | Combines guided learning with source discipline. |
+| [Trusted Document Explainer](../recipes/trusted-document-explainer/) | Plain Language Explainer, Citation Guardian | Explains complex documents without hiding qualifications or inventing missing context. |
 
 ## Maturity meaning
 
