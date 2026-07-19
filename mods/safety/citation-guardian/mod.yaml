@@ -1,0 +1,23 @@
+name: citation-guardian
+version: 0.1.0
+status: experimental
+description: Enforces transparent sourcing, uncertainty signalling and a clear separation between supported facts and model reasoning.
+category: safety
+authors:
+  - name: Model Modding Community
+compatible_models:
+  - openai
+  - anthropic
+  - google
+  - ollama
+capabilities:
+  - citation-enforcement
+  - source-quality-checking
+  - uncertainty-signalling
+dependencies: []
+conflicts: []
+evaluation:
+  minimum_score: 0.8
+  suites:
+    - citation-integrity
+license: Apache-2.0
