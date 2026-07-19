@@ -38,6 +38,17 @@ Local execution uses [Ollama](https://ollama.com/) on `127.0.0.1` by default. No
 - three reference mods and two reference recipes
 - a static Workshop, Local Dyno and Evaluation Scorecard
 
+## Join the community build
+
+The next phase is about real contribution patterns: new mods, independent evaluation, domain review and cross-model testing.
+
+- Browse the [community hub](community/README.md).
+- Pick an open [Request for Mod](community/rfms/README.md).
+- Explore the current [mod and recipe catalogue](community/catalogue.md).
+- Use the **Request for Mod** issue template to propose another unmet need.
+
+The first requests include beginner-friendly and specialist opportunities across document explanation, child-safe learning, meeting decisions, health information and product discovery.
+
 ## Try the visual workshop
 
 Serve the repository:
