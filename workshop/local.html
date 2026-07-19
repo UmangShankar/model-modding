@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Model Modding Local Dyno</title>
+<style>
+:root{--bg:#0b0d10;--panel:#15191e;--line:#2a313a;--text:#f5f7f8;--muted:#9ca7b3;--accent:#ff7a1a;--ok:#4fd18b;--danger:#ff6b6b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#2a170d,transparent 35%),var(--bg);color:var(--text);font:15px/1.55 system-ui,sans-serif}.shell{max-width:1250px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:22px}.brand{font-weight:900;font-size:22px}.tag{font-size:12px;color:var(--muted)}.hero,.panel{background:rgba(21,25,30,.96);border:1px solid var(--line);border-radius:18px;padding:20px}.hero{margin-bottom:18px;background:linear-gradient(135deg,rgba(255,122,26,.14),rgba(255,255,255,.02))}.hero h1{font-size:clamp(30px,5vw,52px);line-height:1.05;margin:8px 0}.hero p{max-width:780px;color:#c8d0d8}.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#ffc26b;font-weight:800}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;background:#0e1216;border:1px solid var(--line);color:white;border-radius:10px;padding:11px}textarea{min-height:110px;resize:vertical}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.btn{border:1px solid var(--line);background:#11151a;color:white;padding:11px 15px;border-radius:10px;cursor:pointer;font-weight:800}.btn.primary{background:linear-gradient(135deg,var(--accent),#d85300);border-color:#f0782a;color:#170d07}.btn:disabled{opacity:.55;cursor:not-allowed}.status{margin-top:12px;padding:10px 12px;border-radius:10px;background:#101419;border:1px solid var(--line);color:var(--muted)}.status.ok{border-color:#214a35;color:#b6f5d3}.status.bad{border-color:#5c2727;color:#ffc0c0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.result h2{margin:0 0 8px;font-size:17px}.result .meta{font-size:12px;color:var(--muted);margin-bottom:12px}.output{white-space:pre-wrap;min-height:260px;background:#0a0d10;border:1px solid var(--line);border-radius:12px;padding:15px;color:#dfe6eb}.privacy{margin-top:16px;color:var(--muted);font-size:12px}.privacy strong{color:var(--ok)}a{color:#ffc26b}@media(max-width:760px){.shell{padding:14px}.controls,.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="top"><div><div class="brand">Model Modding · Local Dyno</div><div class="tag">Real stock-versus-modded comparison through Ollama</div></div><a href="index.html">Back to Workshop</a></div>
+<section class="hero">
+<div class="tag">LOCAL EXECUTION</div>
+<h1>Run the same prompt through a stock model and a modded build.</h1>
+<p>This page talks only to Ollama on <code>127.0.0.1</code>. It discovers your installed models, compiles the selected recipe, and shows both responses side by side.</p>
+<div class="controls">
+<div class="field"><label for="host">Ollama host</label><input id="host" value="http://127.0.0.1:11434" readonly></div>
+<div class="field"><label for="model">Installed model</label><select id="model"><option>Check Ollama first</option></select></div>
+<div class="field"><label for="recipe">Recipe</label><select id="recipe"><option value="learning">Research Learning Companion</option><option value="strategy">Product Strategy Copilot</option></select></div>
+<div class="field full"><label for="prompt">Prompt</label><textarea id="prompt">Explain compound interest to a beginner and cite sources only when genuinely needed.</textarea></div>
+</div>
+<div class="actions"><button class="btn" id="check">Check Ollama</button><button class="btn primary" id="run" disabled>Run comparison</button></div>
+<div id="status" class="status">Ollama has not been checked yet.</div>
+<div class="privacy"><strong>Privacy:</strong> requests are sent only to the loopback host shown above. No cloud provider or analytics service is called.</div>
+</section>
+<div class="grid">
+<section class="panel result"><h2>Stock model</h2><div id="stock-meta" class="meta">Default system behaviour</div><div id="stock" class="output">No run yet.</div></section>
+<section class="panel result"><h2>Modded build</h2><div id="modded-meta" class="meta">Selected recipe instructions</div><div id="modded" class="output">No run yet.</div></section>
+</div>
+</div>
+<script>
+const HOST='http://127.0.0.1:11434';
+const recipes={
+learning:{name:'Research Learning Companion',system:`# Research Learning Companion
+
+## Socratic Teacher
+Help the learner reason toward understanding instead of reflexively giving the final answer.
+- Begin by identifying the learner's goal and current understanding from the available context.
+- Ask one high-value question at a time.
+- Prefer questions that reveal assumptions, misconceptions or the next reasoning step.
+- Give a concise hint when the learner is stuck, frustrated or repeatedly incorrect.
+- Confirm useful reasoning explicitly before moving forward.
+- Adapt vocabulary and difficulty to the learner's demonstrated level.
+- Do not turn simple requests into long interrogations.
+- Give a direct answer when urgency, safety or accessibility makes questioning inappropriate.
+- End with a brief synthesis once the learner reaches the key insight.
+
+## Citation Guardian
+Keep factual claims traceable and make uncertainty visible.
+- Cite sources for non-obvious factual claims when sources are available.
+- Never invent a citation, quotation, author, paper, URL or publication detail.
+- Distinguish sourced facts from analysis, estimates and inference.
+- Prefer primary or authoritative sources for technical, legal, medical and scientific claims.
+- State clearly when a claim could not be verified.
+- Do not use a citation that only loosely relates to the claim it follows.
+- Preserve disagreement between credible sources instead of manufacturing certainty.
+- Keep citations close to the claims they support.
+- For purely creative, conversational or deductive answers, do not add decorative citations.`},
+strategy:{name:'Product Strategy Copilot',system:`# Product Strategy Copilot
+
+## Inquisitive Strategist
+Examine assumptions, ask useful questions and explore strategic alternatives before recommending a decision.
+- Clarify the decision, desired outcome, constraints and evidence before committing to a recommendation.
+- Identify hidden assumptions and distinguish facts from hypotheses.
+- Ask only questions that materially change the decision.
+- Offer reversible experiments before expensive or irreversible commitments.`}
+};
+const model=document.querySelector('#model'),status=document.querySelector('#status'),run=document.querySelector('#run'),stock=document.querySelector('#stock'),modded=document.querySelector('#modded');
+function setStatus(text,kind=''){status.textContent=text;status.className='status '+kind}
+async function check(){setStatus('Checking Ollama…');run.disabled=true;try{const response=await fetch(HOST+'/api/tags');if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();const names=(data.models||[]).map(item=>item.name).filter(Boolean);if(!names.length)throw new Error('Ollama is running, but no models are installed.');model.innerHTML=names.map(name=>`<option>${name}</option>`).join('');run.disabled=false;setStatus(`Connected. ${names.length} model${names.length===1?'':'s'} available.`,'ok')}catch(error){setStatus('Could not reach Ollama. Start Ollama, install a model, and serve this page from localhost. '+error.message,'bad')}}
+async function chat(system,prompt){const response=await fetch(HOST+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:model.value,stream:false,messages:[...(system?[{role:'system',content:system}]:[]),{role:'user',content:prompt}]})});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();return data.message?.content||'Ollama returned no message content.'}
+async function compare(){const prompt=document.querySelector('#prompt').value.trim();if(!prompt){setStatus('Enter a prompt first.','bad');return}const recipe=recipes[document.querySelector('#recipe').value];run.disabled=true;stock.textContent='Running stock model…';modded.textContent='Waiting for stock run…';document.querySelector('#stock-meta').textContent=model.value+' · no Model Modding system contract';document.querySelector('#modded-meta').textContent=model.value+' · '+recipe.name;setStatus('Running both requests locally…');try{stock.textContent=await chat('',prompt);modded.textContent='Running modded build…';modded.textContent=await chat(recipe.system,prompt);setStatus('Comparison completed locally.','ok')}catch(error){setStatus('Run failed: '+error.message,'bad')}finally{run.disabled=false}}
+document.querySelector('#check').addEventListener('click',check);run.addEventListener('click',compare);
+</script>
+</body>
+</html>
