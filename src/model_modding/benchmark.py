@@ -17,6 +17,22 @@ def parse_models(value: str) -> list[str]:
     return list(dict.fromkeys(models))
 
 
+def resolve_model_selector(requested: str, installed: set[str]) -> str | None:
+    """Resolve a user selector to an installed Ollama model name.
+
+    Ollama commonly reports default-tag models as ``name:latest`` while accepting
+    the shorter ``name`` selector. Prefer an exact match, then resolve only the
+    implicit ``:latest`` form so explicit non-default tags remain strict.
+    """
+    if requested in installed:
+        return requested
+    if ":" not in requested:
+        default_tag = f"{requested}:latest"
+        if default_tag in installed:
+            return default_tag
+    return None
+
+
 def markdown_report(report: dict[str, Any]) -> str:
     lines = [
         f"# {report['recipe_display_name']} model fitment benchmark",
@@ -86,21 +102,22 @@ def benchmark_recipe(
 
     model_reports: list[dict[str, Any]] = []
     for model in models:
-        if model not in installed:
+        resolved_model = resolve_model_selector(model, installed)
+        if resolved_model is None:
             print(f"SKIP {model}: not installed")
             model_reports.append({"model": model, "status": "unavailable", "reason": "not installed"})
             continue
 
         rows: list[dict[str, Any]] = []
-        print(f"\nModel: {model}")
+        print(f"\nModel: {model}" + (f" ({resolved_model})" if resolved_model != model else ""))
         try:
             for index, case in enumerate(cases, 1):
                 print(f"[{index}/{len(cases)}] {case.mod}:{case.name}")
                 started = time.monotonic()
-                stock_text = collect_response(normalized_host, model, case.prompt, "", timeout, opener)
+                stock_text = collect_response(normalized_host, resolved_model, case.prompt, "", timeout, opener)
                 stock_latency = time.monotonic() - started
                 started = time.monotonic()
-                modded_text = collect_response(normalized_host, model, case.prompt, compiled.system_prompt, timeout, opener)
+                modded_text = collect_response(normalized_host, resolved_model, case.prompt, compiled.system_prompt, timeout, opener)
                 modded_latency = time.monotonic() - started
                 stock_passed, stock_checks = score_response(stock_text, case.checks)
                 modded_passed, modded_checks = score_response(modded_text, case.checks)
@@ -113,7 +130,7 @@ def benchmark_recipe(
                 })
         except Exception as exc:
             print(f"FAILED {model}: {exc}", file=sys.stderr)
-            model_reports.append({"model": model, "status": "failed", "reason": str(exc)})
+            model_reports.append({"model": model, "resolved_model": resolved_model, "status": "failed", "reason": str(exc)})
             continue
 
         total = len(rows)
@@ -133,7 +150,7 @@ def benchmark_recipe(
             "average_latency_seconds": sum(row["stock"]["latency_seconds"] + row["modded"]["latency_seconds"] for row in rows) / (2 * total) if total else 0,
             "average_modded_words": sum(row["modded"]["words"] for row in rows) / total if total else 0,
         }
-        model_reports.append({"model": model, "status": "completed", "summary": summary, "regressions": regressions, "improvements": improvements, "cases": rows})
+        model_reports.append({"model": model, "resolved_model": resolved_model, "status": "completed", "summary": summary, "regressions": regressions, "improvements": improvements, "cases": rows})
 
     completed = [row for row in model_reports if row["status"] == "completed"]
     report = {
