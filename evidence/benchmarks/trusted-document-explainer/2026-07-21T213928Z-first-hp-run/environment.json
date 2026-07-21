@@ -1,0 +1,61 @@
+{
+    "schema_version":  "0.1",
+    "captured_at":  "2026-07-21T21:39:28.6668849Z",
+    "model_modding_commit":  "3ec2db8a91b411f12b490a6656461148bc917a5d",
+    "platform":  {
+                     "os":  "Microsoft Windows 11 Enterprise 10.0.26200 build 26200",
+                     "architecture":  "AMD64, 64-bit",
+                     "python":  "Python 3.14.4, MSC v.1944 64 bit",
+                     "pip":  "26.1.2",
+                     "ollama":  "0.32.1"
+                 },
+    "hardware":  {
+                     "manufacturer":  "HP",
+                     "model":  "HP EliteBook 830 13 inch G9 Notebook PC",
+                     "cpu":  "12th Gen Intel Core i7-1265U, 10 cores, 12 logical processors",
+                     "memory_gb":  15.64,
+                     "accelerator":  "Intel Iris Xe Graphics",
+                     "graphics_driver":  "32.0.101.7077",
+                     "reported_adapter_memory_bytes":  2147479552
+                 },
+    "models":  [
+                   {
+                       "requested":  "llama3.2",
+                       "resolved":  "llama3.2:latest",
+                       "digest":  "a80c4f17acd5",
+                       "reported_size":  "2.0 GB"
+                   },
+                   {
+                       "requested":  "qwen2.5:3b",
+                       "resolved":  "qwen2.5:3b",
+                       "digest":  "357c53fb659c",
+                       "reported_size":  "1.9 GB"
+                   }
+               ],
+    "source_control":  {
+                           "branch":  "main",
+                           "origin_branch":  "origin/main",
+                           "head_matches_origin":  true,
+                           "working_tree_clean":  false,
+                           "local_cli_patch_fingerprint":  "8754901ddb7fa23965fcccc19673d78c7dbeda82",
+                           "local_patch_purpose":  "Normalize Windows backslash mod references and return canonical forward-slash references.",
+                           "tracked_modifications":  [
+                                                         ".github/pull_request_template.md",
+                                                         "src/model_modding/cli.py"
+                                                     ],
+                           "generated_untracked_outputs":  [
+                                                               "build/",
+                                                               "evidence/benchmarks/",
+                                                               "Python cache and editable-install metadata directories"
+                                                           ]
+                       },
+    "benchmark":  {
+                      "recipe":  "trusted-document-explainer",
+                      "evaluation_cases_per_model":  11,
+                      "completed_models":  2,
+                      "total_model_calls":  44,
+                      "benchmark_exit_code":  0,
+                      "result_field_failures":  0
+                  },
+    "notes":  "The benchmark used the recorded commit plus an uncommitted Windows compatibility patch. No hostname, username, secret or personal filesystem path is included."
+}
