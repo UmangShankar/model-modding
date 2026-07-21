@@ -14,6 +14,56 @@ body{font-family:system-ui,sans-serif;margin:0;background:#f5f5f5;color:#171717}
 <script>
 const app=document.getElementById('app');
 document.getElementById('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{render(JSON.parse(await f.text()))}catch(err){app.className='card empty';app.textContent='Could not read benchmark: '+err.message}});
-function pct(v){return (v*100).toFixed(0)+'%'}
-function render(data){const completed=data.models.filter(m=>m.status==='completed');const best=[...completed].sort((a,b)=>b.summary.modded_pass_rate-a.summary.modded_pass_rate)[0];app.className='card';app.innerHTML=`<h2>${data.recipe_display_name}</h2><div class="grid"><div><div class="metric">${completed.length}/${data.models.length}</div><div class="muted">models completed</div></div><div><div class="metric">${data.case_count}</div><div class="muted">cases per model</div></div><div><div class="metric">${best?best.model:'—'}</div><div class="muted">highest modded pass rate</div></div></div><h3>Fitment</h3><table><thead><tr><th>Model</th><th>Status</th><th>Stock</th><th>Modded</th><th>Change</th><th>Regressions</th><th>Latency</th></tr></thead><tbody>${data.models.map(row=>row.status!=='completed'?`<tr><td>${row.model}</td><td class="warn">${row.status}</td><td colspan="5">${row.reason||'Unavailable'}</td></tr>`:`<tr><td><strong>${row.model}</strong></td><td class="good">completed</td><td>${pct(row.summary.stock_pass_rate)}</td><td>${pct(row.summary.modded_pass_rate)}<div class="bar"><span style="width:${pct(row.summary.modded_pass_rate)}"></span></div></td><td>${row.summary.improvement_points>=0?'+':''}${row.summary.improvement_points.toFixed(1)} pp</td><td>${row.summary.regressions}</td><td>${row.summary.average_latency_seconds.toFixed(2)}s</td></tr>`).join('')}</tbody></table><p class="muted">This matrix shows deterministic fitment evidence, not universal model quality. Review responses and human-review criteria before changing compatibility claims.</p>`}
+function pct(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(100,n*100)).toFixed(0)+'%':'0%'}
+function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=String(text);if(className)node.className=className;return node}
+function metric(value,label){const box=document.createElement('div');box.append(el('div',value,'metric'),el('div',label,'muted'));return box}
+function cell(row,value,className,colSpan){const td=el('td',value,className);if(colSpan)td.colSpan=colSpan;row.append(td);return td}
+function render(data){
+  const models=Array.isArray(data.models)?data.models:[];
+  const completed=models.filter(m=>m&&m.status==='completed'&&m.summary);
+  const best=[...completed].sort((a,b)=>Number(b.summary.modded_pass_rate||0)-Number(a.summary.modded_pass_rate||0))[0];
+  app.className='card';
+  app.replaceChildren();
+  app.append(el('h2',data.recipe_display_name||'Benchmark'));
+  const grid=el('div',undefined,'grid');
+  grid.append(metric(`${completed.length}/${models.length}`,'models completed'));
+  grid.append(metric(Number.isFinite(Number(data.case_count))?Number(data.case_count):0,'cases per model'));
+  grid.append(metric(best?(best.resolved_model||best.model||'—'):'—','highest modded pass rate'));
+  app.append(grid,el('h3','Fitment'));
+  const table=document.createElement('table');
+  const thead=document.createElement('thead');
+  const header=document.createElement('tr');
+  ['Model','Status','Stock','Modded','Change','Regressions','Latency'].forEach(label=>header.append(el('th',label)));
+  thead.append(header);
+  const tbody=document.createElement('tbody');
+  models.forEach(item=>{
+    const row=document.createElement('tr');
+    const modelName=item&&(item.resolved_model||item.model)||'Unknown';
+    if(!item||item.status!=='completed'||!item.summary){
+      cell(row,modelName);
+      cell(row,item&&item.status||'unavailable','warn');
+      cell(row,item&&item.reason||'Unavailable',undefined,5);
+    }else{
+      const summary=item.summary;
+      const modelCell=document.createElement('td');
+      modelCell.append(el('strong',modelName));
+      row.append(modelCell);
+      cell(row,'completed','good');
+      cell(row,pct(summary.stock_pass_rate));
+      const moddedCell=cell(row,pct(summary.modded_pass_rate));
+      const bar=el('div',undefined,'bar');
+      const span=document.createElement('span');
+      span.style.width=pct(summary.modded_pass_rate);
+      bar.append(span);
+      moddedCell.append(bar);
+      const improvement=Number(summary.improvement_points||0);
+      cell(row,`${improvement>=0?'+':''}${improvement.toFixed(1)} pp`);
+      cell(row,Number(summary.regressions||0));
+      cell(row,`${Number(summary.average_latency_seconds||0).toFixed(2)}s`);
+    }
+    tbody.append(row);
+  });
+  table.append(thead,tbody);
+  app.append(table,el('p','This matrix shows deterministic fitment evidence, not universal model quality. Review responses and human-review criteria before changing compatibility claims.','muted'));
+}
 </script></body></html>

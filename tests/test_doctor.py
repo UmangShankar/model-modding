@@ -30,8 +30,16 @@ def test_doctor_treats_ollama_as_optional(capsys) -> None:
     assert "Release readiness: READY" in output
 
 
-def test_console_entry_routes_doctor(capsys) -> None:
+def test_console_entry_routes_doctor_with_command_root(capsys) -> None:
     result = main(["doctor", "--root", str(ROOT), "--host", "http://127.0.0.1:1"])
+    output = capsys.readouterr().out
+
+    assert result == 0
+    assert "Model Modding doctor" in output
+
+
+def test_console_entry_routes_doctor_with_global_root(capsys) -> None:
+    result = main(["--root", str(ROOT), "doctor", "--host", "http://127.0.0.1:1"])
     output = capsys.readouterr().out
 
     assert result == 0
