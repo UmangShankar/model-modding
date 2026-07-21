@@ -34,8 +34,11 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError:
             return cli.main(arguments)
         parser = argparse.ArgumentParser(prog="modding doctor", description="Check Model Modding release and local runtime readiness")
+        parser.add_argument("--root", type=Path, help="Repository root")
         parser.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
         args = parser.parse_args(doctor_arguments)
+        if args.root is not None:
+            root = args.root.resolve()
         return run_doctor(root, args.host)
 
     if "benchmark" in arguments:
