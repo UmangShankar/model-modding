@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "captured_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "model_modding_commit": "FULL_GIT_COMMIT_SHA",
+  "platform": {
+    "os": "REPLACE_ME",
+    "architecture": "REPLACE_ME",
+    "python": "REPLACE_ME",
+    "ollama": "REPLACE_ME"
+  },
+  "hardware": {
+    "cpu": "REPLACE_ME",
+    "memory_gb": 0,
+    "accelerator": "REPLACE_ME_OR_NONE"
+  },
+  "models": [
+    {
+      "requested": "llama3.2",
+      "resolved": "llama3.2:latest",
+      "digest": "REPLACE_ME_IF_AVAILABLE"
+    }
+  ],
+  "notes": "Replace every placeholder before publishing. Do not include hostnames, usernames, secrets or personal file paths."
+}
