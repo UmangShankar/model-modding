@@ -1,13 +1,20 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from model_modding.benchmark import benchmark_recipe, markdown_report, parse_models
+from model_modding.benchmark import benchmark_recipe, markdown_report, parse_models, resolve_model_selector
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_parse_models_deduplicates_and_preserves_order() -> None:
     assert parse_models("llama3.2, qwen2.5:3b,llama3.2") == ["llama3.2", "qwen2.5:3b"]
+
+
+def test_resolve_model_selector_matches_default_latest_tag() -> None:
+    installed = {"llama3.2:latest", "qwen2.5:3b"}
+    assert resolve_model_selector("llama3.2", installed) == "llama3.2:latest"
+    assert resolve_model_selector("qwen2.5:3b", installed) == "qwen2.5:3b"
+    assert resolve_model_selector("qwen2.5", installed) is None
 
 
 def test_benchmark_dry_run_does_not_call_ollama(capsys) -> None:
@@ -18,10 +25,16 @@ def test_benchmark_dry_run_does_not_call_ollama(capsys) -> None:
     assert "stock +" in output
 
 
-def test_benchmark_skips_unavailable_models(tmp_path, capsys) -> None:
+def test_benchmark_resolves_default_tag_and_skips_unavailable_models(tmp_path, capsys) -> None:
     responses = iter(["stock answer", "plain explanation deadline exception uncertain not legal advice"] * 12)
-    with patch("model_modding.benchmark.list_models", return_value=["llama3.2"]), patch(
-        "model_modding.benchmark.collect_response", side_effect=lambda *args, **kwargs: next(responses)
+    seen_models: list[str] = []
+
+    def collect(*args, **kwargs):
+        seen_models.append(args[1])
+        return next(responses)
+
+    with patch("model_modding.benchmark.list_models", return_value=["llama3.2:latest"]), patch(
+        "model_modding.benchmark.collect_response", side_effect=collect
     ):
         result = benchmark_recipe(
             ROOT,
@@ -31,8 +44,12 @@ def test_benchmark_skips_unavailable_models(tmp_path, capsys) -> None:
             opener=object(),
         )
     assert result == 0
-    assert "SKIP missing-model" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "Model: llama3.2 (llama3.2:latest)" in output
+    assert "SKIP missing-model" in output
+    assert set(seen_models) == {"llama3.2:latest"}
     report = (tmp_path / "benchmark.json").read_text(encoding="utf-8")
+    assert '"resolved_model": "llama3.2:latest"' in report
     assert '"status": "unavailable"' in report
     assert '"status": "completed"' in report
 
