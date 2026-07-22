@@ -2,7 +2,7 @@
 
 ## Status
 
-This document defines the target reference product for Model Modding v0.2.0. It is a product and engineering contract, not a claim that the current v0.1 recipe already satisfies every requirement.
+This document defines the target reference product for Model Modding v0.2.0. It is a product and engineering contract, not a claim that the current development line already satisfies every requirement.
 
 ## Purpose
 
@@ -25,7 +25,7 @@ The package should:
 
 ## Material meaning to preserve
 
-The initial invariant vocabulary will focus on:
+The implemented initial invariant vocabulary includes:
 
 - deadlines;
 - dates and durations;
@@ -39,6 +39,8 @@ The initial invariant vocabulary will focus on:
 - sequence;
 - source claims;
 - uncertainty.
+
+These declarations are schema-validated and inspectable. Semantic enforcement remains an evaluator deliverable.
 
 ## Prohibited transformations
 
@@ -197,6 +199,6 @@ The v0.2.0 proof is complete only when:
 
 ## Current limitation
 
-The v0.1 implementation does not yet provide machine-readable invariants, semantic extraction comparison, cloud providers, ABOMs, recipe locks, build digests, matrices or the regression command described above.
+The current development line provides machine-readable invariant declarations and inspection. It does not yet provide semantic extraction comparison, severity-aware enforcement, cloud providers, ABOMs, recipe locks, build digests, matrices or the regression command described above.
 
 Those capabilities are delivered incrementally through the published roadmap.
