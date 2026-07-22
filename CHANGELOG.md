@@ -14,15 +14,23 @@ All notable changes to Model Modding are documented here.
 - Role and invariant output in `modding inspect`, including JSON mode.
 - Initial machine-readable declarations for Plain Language Explainer.
 - Invariant vocabulary, migration and authoring documentation.
+- Deadline Guardian for dates, durations, units, triggers and invented time limits.
+- Obligation Guardian for named parties, duties, permissions and prohibitions.
+- Exception Guardian for conditions, exceptions, eligibility rules and sequence.
+- Source Grounding Guardian for source claims, uncertainty, missing evidence and fabricated citations.
+- Sixteen independent guardian evaluation cases.
+- Source-grounding prohibitions for invented claims, fabricated citations and presented missing evidence.
 
 ### Changed
 
 - New mod scaffolds declare `role: transformation` by default.
 - Legacy v0.1 manifests without role or invariant declarations remain valid during migration.
+- Trusted Document Explainer `0.2.0` now composes one transformation mod and four non-overlapping assurance guardians.
+- Benchmark tests derive mocked response counts from the live evaluation plan.
 
 ### Notes
 
-- This increment validates and exposes invariant declarations; it does not yet semantically enforce them or add severity-aware regression gates.
+- This increment validates, exposes and composes invariant declarations and assurance instructions; it does not yet semantically enforce them or add severity-aware regression gates.
 
 ## [0.1.1] - 2026-07-22
 
