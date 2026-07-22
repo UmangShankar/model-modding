@@ -22,7 +22,7 @@ A prompt file can contain instructions. A Model Modding package is intended to m
 4. **Evidence bundle** — the inputs, outputs, configuration and evaluation results for a run.
 5. **ABOM** — an Agent Behaviour Bill of Materials describing exactly what behavioural components were built and tested.
 
-Mods, recipes and machine-readable invariant declarations are implemented on current `main`. Evidence bundles and ABOMs remain staged v0.2 deliverables.
+Mods, recipes, machine-readable invariant declarations and the provider runtime contract are implemented on current `main`. Evidence bundles and ABOMs remain staged v0.2 deliverables.
 
 ## Current working loop
 
@@ -47,7 +47,7 @@ modding benchmark trusted-document-explainer \
 modding doctor
 ```
 
-Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by default. No cloud API key is required.
+Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by default through the provider adapter. No cloud API key is required.
 
 ## What current `main` provides
 
@@ -68,7 +68,10 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - report schema `0.3` with evaluator layers, pipeline status and blocking failures;
 - deterministic recipe composition;
 - canonical cross-platform mod references;
-- local Ollama execution;
+- provider-neutral request, response, usage and generation-option contracts;
+- an extensible provider registry and normalised provider error boundary;
+- an Ollama adapter with token usage, finish reason, latency and endpoint metadata;
+- backward-compatible Ollama model discovery, streaming and local commands;
 - stock-versus-modded evaluation;
 - latency and response-length evidence;
 - multi-model local benchmarks using the same scoring path;
@@ -78,6 +81,8 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - the static Workshop, Local Dyno, Evaluation Scorecard and Fitment Matrix.
 
 The current evaluator is authoritative for the exact deterministic invariant and structured source assertions encoded by a case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
+
+Only Ollama is currently registered as a built-in provider. Provider selection across every CLI surface, Anthropic, OpenAI and complete provider metadata in evaluation evidence remain separate increments.
 
 ## The flagship product contract
 
@@ -200,6 +205,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 - [Invariant declarations](docs/invariants.md)
 - [Adversarial and paraphrase fixtures](docs/adversarial-fixtures.md)
 - [Structured source-output comparison](docs/source-output-comparison-design.md)
+- [Provider-neutral runtime](docs/provider-runtime.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
 - [Non-goals](docs/non-goals.md)
 - [Five-minute quick start](docs/quickstart.md)
@@ -212,7 +218,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations, four narrow assurance guardians, deterministic severity-aware gates, a 40-case classified fixture set and typed source-output comparison. It does not yet provide unrestricted semantic extraction, cloud-provider portability, ABOMs, recipe locks or evidence-to-evidence regression comparison.
+`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has completed the v0.1.2 flagship evaluator scope and begun v0.1.3 with provider-neutral runtime contracts and Ollama transport behind the provider boundary. It does not yet provide Anthropic or OpenAI adapters, provider selection on every CLI surface, ABOMs, recipe locks or evidence-to-evidence regression comparison.
 
 ## Licence
 
