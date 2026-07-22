@@ -90,15 +90,32 @@ def create_mod(root: Path, name: str, category: str, author: str, github: str | 
     return 0
 
 
+def normalize_mod_reference(reference: str) -> str:
+    """Return a platform-neutral mod reference using POSIX separators."""
+    normalized = reference.strip().replace("\\", "/")
+    if not normalized or normalized.startswith("/") or normalized.endswith("/") or "//" in normalized:
+        raise ValueError(f"Invalid mod reference: {reference}")
+    parts = normalized.split("/")
+    if len(parts) > 2 or any(part in {"", ".", ".."} for part in parts):
+        raise ValueError(f"Invalid mod reference: {reference}")
+    return "/".join(parts)
+
+
 def resolve_mod(root: Path, reference: str) -> tuple[str, Path, dict[str, Any]]:
-    candidates = [root / "mods" / reference / "mod.yaml"] if "/" in reference else list((root / "mods").glob(f"*/{reference}/mod.yaml"))
+    canonical_reference = normalize_mod_reference(reference)
+    if "/" in canonical_reference:
+        category, name = canonical_reference.split("/", 1)
+        candidates = [root / "mods" / category / name / "mod.yaml"]
+    else:
+        candidates = list((root / "mods").glob(f"*/{canonical_reference}/mod.yaml"))
     candidates = [path for path in candidates if path.exists()]
     if not candidates:
         raise ValueError(f"Mod not found: {reference}")
     if len(candidates) > 1:
         raise ValueError(f"Mod name is ambiguous; use category/name: {reference}")
     path = candidates[0]
-    return str(path.parent.relative_to(root / "mods")), path, load_yaml(path)
+    resolved = path.parent.relative_to(root / "mods").as_posix()
+    return resolved, path, load_yaml(path)
 
 
 def evaluation_count(mod_dir: Path) -> int:
@@ -118,7 +135,7 @@ def inspect_mod(root: Path, reference: str, as_json: bool = False) -> int:
         print(str(exc), file=sys.stderr)
         return 2
     mod_dir = manifest_path.parent
-    instruction_files = sorted(str(p.relative_to(mod_dir)) for p in (mod_dir / "instructions").glob("**/*") if p.is_file())
+    instruction_files = sorted(p.relative_to(mod_dir).as_posix() for p in (mod_dir / "instructions").glob("**/*") if p.is_file())
     report = {
         "reference": resolved, "name": manifest["name"], "version": manifest["version"],
         "status": manifest["status"], "description": manifest["description"],
@@ -157,10 +174,10 @@ def compose_recipe(root: Path, name: str, output: Path | None = None) -> int:
     failures: list[str] = []
     for reference, _, manifest in loaded:
         for dependency in manifest.get("dependencies", []):
-            if dependency not in selected:
+            if normalize_mod_reference(dependency) not in selected:
                 failures.append(f"{reference} requires missing dependency {dependency}")
         for conflict in manifest.get("conflicts", []):
-            if conflict in selected:
+            if normalize_mod_reference(conflict) in selected:
                 failures.append(f"{reference} conflicts with {conflict}")
     if failures:
         for failure in failures:
@@ -173,18 +190,26 @@ def compose_recipe(root: Path, name: str, output: Path | None = None) -> int:
         sections.append(f"\n### Mod: {reference}\n")
         for path in files:
             sections.append(path.read_text(encoding="utf-8").strip() + "\n")
-        metadata.append({"reference": reference, "version": manifest["version"], "instruction_files": [str(p.relative_to(root)) for p in files]})
+        metadata.append({
+            "reference": reference,
+            "version": manifest["version"],
+            "instruction_files": [p.relative_to(root).as_posix() for p in files],
+        })
     destination = (output or root / "build" / name).resolve()
     destination.mkdir(parents=True, exist_ok=True)
-    (destination / "system.md").write_text("\n".join(sections).strip() + "\n", encoding="utf-8")
-    (destination / "manifest.json").write_text(json.dumps({"recipe": recipe, "mods": metadata}, indent=2) + "\n", encoding="utf-8")
+    (destination / "system.md").write_text("\n".join(sections).strip() + "\n", encoding="utf-8", newline="\n")
+    (destination / "manifest.json").write_text(
+        json.dumps({"recipe": recipe, "mods": metadata}, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     print(f"Compiled {name}\nSystem prompt: {destination / 'system.md'}\nManifest: {destination / 'manifest.json'}")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="modding", description="Model Modding developer tools")
-    parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
+    parser.add_argument("--root", dest="global_root", type=Path, default=Path.cwd(), help="Repository root")
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("validate", help="Validate all mod and recipe manifests")
     inspect = subcommands.add_parser("inspect", help="Inspect a mod")
@@ -208,6 +233,18 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
     evaluate.add_argument("--timeout", type=float, default=120.0, help="Request timeout in seconds")
     evaluate.add_argument("--allow-remote-host", action="store_true", help="Allow a non-loopback Ollama endpoint")
+    doctor = subcommands.add_parser("doctor", help="Check release and local runtime readiness")
+    doctor.add_argument("--root", dest="command_root", type=Path, help="Repository root")
+    doctor.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
+    benchmark = subcommands.add_parser("benchmark", help="Compare a recipe across local Ollama models")
+    benchmark.add_argument("name", help="Recipe name")
+    benchmark.add_argument("--models", required=True, help="Comma-separated installed Ollama models")
+    benchmark.add_argument("--output", type=Path, help="Report directory")
+    benchmark.add_argument("--dry-run", action="store_true", help="Show the benchmark plan without calling models")
+    benchmark.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
+    benchmark.add_argument("--timeout", type=float, default=120.0, help="Request timeout in seconds")
+    benchmark.add_argument("--allow-remote-host", action="store_true", help="Allow a non-loopback Ollama endpoint")
+    benchmark.add_argument("--root", dest="command_root", type=Path, help="Repository root")
     create = subcommands.add_parser("create", help="Create a project asset")
     create_subcommands = create.add_subparsers(dest="asset", required=True)
     create_mod_parser = create_subcommands.add_parser("mod", help="Create a mod from the starter template")
@@ -220,7 +257,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    root = args.root.resolve()
+    root = (getattr(args, "command_root", None) or args.global_root).resolve()
     if args.command == "validate":
         return validate_repository(root)
     if args.command == "inspect":
@@ -233,6 +270,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "evaluate":
         from .evaluation import evaluate_recipe
         return evaluate_recipe(root, args.name, args.model, args.output, args.dry_run, args.host, args.timeout, args.allow_remote_host)
+    if args.command == "doctor":
+        from .doctor import run_doctor
+        return run_doctor(root, args.host)
+    if args.command == "benchmark":
+        from .benchmark import benchmark_recipe
+        return benchmark_recipe(root, args.name, args.models, args.output, args.dry_run, args.host, args.timeout, args.allow_remote_host)
     if args.command == "create" and args.asset == "mod":
         return create_mod(root, args.name, args.category, args.author, args.github)
     return 2
