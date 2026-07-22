@@ -35,6 +35,18 @@ cases:
         checks:
           contains_any:
             - [date of this notice, notice date]
+    source_facts:
+      - id: submission-period
+        kind: preserve
+        invariant: duration
+        severity: critical
+        source:
+          value: 14 calendar days
+          context: date of this notice
+        output:
+          any_of: [14 calendar days, fourteen calendar days]
+          context_any_of: [date of this notice, notice date]
+          none_of: [14 working days, fourteen working days]
 
   - name: preserve-fixed-date-and-time
     input: >
@@ -69,6 +81,26 @@ cases:
           not_contains:
             - 30 March 2027
             - 1 April 2027
+    source_facts:
+      - id: arrival-time
+        kind: preserve
+        invariant: deadline
+        severity: critical
+        source:
+          value: 5 pm
+          context: 31 March 2027
+        output:
+          any_of: [5 pm, 5:00 pm, 17:00]
+          context_any_of: [31 March 2027, March 31 2027, March 31, 2027]
+      - id: arrival-date
+        kind: preserve
+        invariant: date
+        severity: critical
+        source:
+          value: 31 March 2027
+        output:
+          any_of: [31 March 2027, March 31 2027, March 31, 2027]
+          none_of: [30 March 2027, 1 April 2027]
 
   - name: preserve-working-day-unit
     input: >
@@ -103,6 +135,18 @@ cases:
         checks:
           contains_any:
             - [receiving the notice, receipt of the notice, receives the notice]
+    source_facts:
+      - id: response-period
+        kind: preserve
+        invariant: duration
+        severity: critical
+        source:
+          value: five working days
+          context: receiving the notice
+        output:
+          any_of: [five working days, 5 working days]
+          context_any_of: [receiving the notice, receipt of the notice, receives the notice]
+          none_of: [five calendar days, 5 calendar days]
 
   - name: do-not-invent-deadline
     input: >
@@ -131,3 +175,13 @@ cases:
             - within 14 days
             - within 30 days
             - by the end of the month
+    source_facts:
+      - id: absent-review-deadline
+        kind: prohibit
+        invariant: invented_deadline
+        severity: critical
+        source:
+          value: Applications are reviewed after all supporting evidence is received.
+        output:
+          any_of: [no deadline, does not specify when, no time limit, no timeframe]
+          none_of: [within 14 days, within 30 days, by the end of the month]
