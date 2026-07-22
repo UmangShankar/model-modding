@@ -42,6 +42,12 @@ All notable changes to Model Modding are documented here.
 - Shared runtime configuration for provider endpoints and portable generation settings.
 - Provider-aware report schema `0.4` with exact runtime and per-response execution metadata.
 - Regression tests covering unknown providers, model resolution, token usage and provider evidence.
+- A built-in Anthropic provider adapter behind the same neutral runtime contract.
+- Optional `anthropic` SDK dependency installation.
+- `ANTHROPIC_API_KEY` and SDK diagnostics in `modding doctor`.
+- Anthropic Messages API mapping for system instructions, user content and portable settings.
+- Normalised Anthropic model, token usage, stop reason, message and endpoint metadata.
+- Mocked Anthropic contract tests and an opt-in paid live smoke test.
 
 ### Changed
 
@@ -55,15 +61,18 @@ All notable changes to Model Modding are documented here.
 - Ollama model discovery, streaming and recipe execution now delegate to the provider adapter while preserving existing imports and commands.
 - `modding run` now reports provider identity, endpoint, requested generation settings, finish reason and token usage when available.
 - Provider-aware evaluation and benchmark runs now record provider, endpoint, exact model, requested and effective settings, usage and finish reason.
-- Provider dispatch remains opt-in during v0.1.3 so existing default Ollama scripts and direct Python APIs continue to behave as before.
+- Provider dispatch remains opt-in so existing default Ollama scripts and direct Python APIs continue to behave as before.
+- Anthropic rejects unsupported seed requests before execution instead of silently ignoring them.
+- Anthropic applies and records a deliberate `max_tokens` default of 1024 when the required setting is omitted.
 
 ### Notes
 
 - Deterministic invariant and structured source comparisons block configured severity thresholds and cannot be overridden by aggregate scores.
 - The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
-- Existing published benchmark evidence remains immutable and does not retroactively include the expanded fixture or evaluator layers.
-- Only Ollama is registered as a built-in provider in this increment. Anthropic and OpenAI remain separate adapters.
+- Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers or cloud providers.
+- Ollama and Anthropic are built-in providers. OpenAI remains a separate adapter.
 - Ollama defaults that are not reported by the API are not invented as effective settings.
+- Normal CI does not call Anthropic. Cloud compatibility claims require reviewed evidence from an explicit paid run.
 
 ## [0.1.1] - 2026-07-22
 
