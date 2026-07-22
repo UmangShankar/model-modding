@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import shutil
 import sys
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -25,8 +27,10 @@ def run_doctor(
     root: Path,
     host: str = DEFAULT_OLLAMA_HOST,
     model_loader: Callable[..., list[str]] = list_models,
+    environ: Mapping[str, str] | None = None,
 ) -> int:
     checks: list[Check] = []
+    environment = os.environ if environ is None else environ
     version_ok = sys.version_info >= (3, 10)
     checks.append(Check("Python", "PASS" if version_ok else "FAIL", sys.version.split()[0]))
 
@@ -46,7 +50,7 @@ def run_doctor(
     checks.append(Check("Python dependencies", "PASS" if not absent_dependencies else "FAIL", "installed" if not absent_dependencies else f"missing: {', '.join(absent_dependencies)}"))
 
     providers = provider_names()
-    provider_ok = "ollama" in providers
+    provider_ok = {"ollama", "anthropic"}.issubset(providers)
     checks.append(
         Check(
             "Provider registry",
@@ -54,6 +58,18 @@ def run_doctor(
             f"registered: {', '.join(providers) or 'none'}",
         )
     )
+
+    anthropic_sdk = importlib.util.find_spec("anthropic") is not None
+    anthropic_key = bool(environment.get("ANTHROPIC_API_KEY"))
+    if anthropic_sdk and anthropic_key:
+        anthropic_status, anthropic_detail = "PASS", "SDK installed; ANTHROPIC_API_KEY configured"
+    elif not anthropic_sdk and not anthropic_key:
+        anthropic_status, anthropic_detail = "WARN", 'install "model-modding[anthropic]" and set ANTHROPIC_API_KEY'
+    elif not anthropic_sdk:
+        anthropic_status, anthropic_detail = "WARN", 'ANTHROPIC_API_KEY configured; install "model-modding[anthropic]"'
+    else:
+        anthropic_status, anthropic_detail = "WARN", "SDK installed; ANTHROPIC_API_KEY not configured"
+    checks.append(Check("Anthropic", anthropic_status, anthropic_detail, required=False))
 
     manifests_ok = validate_repository(root) == 0 if not missing else False
     checks.append(Check("Manifest validation", "PASS" if manifests_ok else "FAIL", "valid" if manifests_ok else "validation failed"))
