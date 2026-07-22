@@ -25,6 +25,10 @@ All notable changes to Model Modding are documented here.
 - Configurable `--fail-on critical|major|minor|none` pipeline gates.
 - Report schema `0.2` with evaluator identity, pipeline status and blocking failures.
 - Deliberate regression tests proving that critical invariant failures return a non-zero exit code.
+- Eighteen classified adversarial and paraphrase fixtures across the four assurance guardians.
+- A controlled attack taxonomy covering deadline, actor, modality, exception, sequence and grounding failures.
+- Repository gates enforcing exactly 40 flagship cases, balanced distribution, unique identities and invariant-aware fixture definitions.
+- Authoring documentation for adversarial and paraphrase fixtures.
 
 ### Changed
 
@@ -34,11 +38,13 @@ All notable changes to Model Modding are documented here.
 - Guardian fixtures bind deterministic assertions to manifest-declared invariants and matching severities.
 - Multi-model benchmarks now use the same invariant-scoring path as `modding evaluate`.
 - Benchmark tests derive mocked response counts from the live evaluation plan.
+- The flagship evaluation plan now contains exactly 40 cases rather than 22.
 
 ### Notes
 
 - Deterministic invariant checks now block configured severity thresholds and cannot be overridden by aggregate scores.
-- The evaluator still does not perform general semantic extraction or guarantee detection of every paraphrased meaning change.
+- The 40-case threshold is satisfied, but the evaluator still does not perform general semantic extraction or guarantee detection of every paraphrased meaning change.
+- Existing published benchmark evidence remains immutable and does not retroactively include the expanded fixture set.
 
 ## [0.1.1] - 2026-07-22
 
