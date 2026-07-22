@@ -32,6 +32,26 @@ cases:
           not_contains:
             - late requests will be accepted
             - all late requests are accepted
+    source_facts:
+      - id: special-circumstances-condition
+        kind: preserve
+        invariant: condition
+        severity: critical
+        source:
+          value: special circumstances
+          context: may be accepted
+        output:
+          any_of: [special circumstances]
+          context_any_of: [may be accepted, might be accepted, can sometimes be accepted, not guaranteed]
+      - id: discretionary-late-acceptance
+        kind: prohibit
+        invariant: removed_exception
+        severity: critical
+        source:
+          value: may be accepted
+        output:
+          any_of: [may be accepted, might be accepted, can sometimes be accepted, not guaranteed]
+          none_of: [late requests will be accepted, all late requests are accepted]
 
   - name: preserve-operational-condition
     input: >
@@ -65,6 +85,18 @@ cases:
           not_contains:
             - unconditional right
             - guaranteed right
+    source_facts:
+      - id: operational-remote-work-condition
+        kind: preserve
+        invariant: condition
+        severity: critical
+        source:
+          value: operational requirements
+          context: may work remotely
+        output:
+          any_of: [operational requirements]
+          context_any_of: [conditional, depends, only where, only if, may work remotely, can work remotely]
+          none_of: [unconditional right, guaranteed right]
 
   - name: preserve-eligibility-exclusion
     input: >
@@ -104,6 +136,26 @@ cases:
         checks:
           not_contains:
             - all residents below the threshold are eligible
+    source_facts:
+      - id: residence-and-income-criteria
+        kind: preserve
+        invariant: eligibility_rule
+        severity: critical
+        source:
+          value: resident
+          context: income is below the threshold
+        output:
+          any_of: [resident, residence]
+          context_any_of: [income is below, income below, below the threshold]
+      - id: full-time-student-exclusion
+        kind: preserve
+        invariant: exception
+        severity: critical
+        source:
+          value: except full-time students
+        output:
+          any_of: [except full-time students, full-time students are excluded, not eligible if they are full-time students]
+          none_of: [all residents below the threshold are eligible]
 
   - name: preserve-required-sequence
     input: >
@@ -132,3 +184,15 @@ cases:
           not_contains:
             - appeal immediately
             - skip mandatory reconsideration
+    source_facts:
+      - id: reconsideration-before-appeal
+        kind: preserve
+        invariant: sequence
+        severity: major
+        source:
+          value: only after
+          context: mandatory reconsideration
+        output:
+          any_of: [only after, after it is completed, must be completed first]
+          context_any_of: [mandatory reconsideration]
+          none_of: [appeal immediately, skip mandatory reconsideration]
