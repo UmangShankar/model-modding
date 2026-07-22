@@ -29,11 +29,18 @@ def run_doctor(
     version_ok = sys.version_info >= (3, 10)
     checks.append(Check("Python", "PASS" if version_ok else "FAIL", sys.version.split()[0]))
 
-    required_paths = ["pyproject.toml", "schemas/mod.schema.json", "schemas/recipe.schema.json", "mods", "recipes"]
+    required_paths = [
+        "pyproject.toml",
+        "schemas/mod.schema.json",
+        "schemas/invariant.schema.json",
+        "schemas/recipe.schema.json",
+        "mods",
+        "recipes",
+    ]
     missing = [path for path in required_paths if not (root / path).exists()]
     checks.append(Check("Repository structure", "PASS" if not missing else "FAIL", "complete" if not missing else f"missing: {', '.join(missing)}"))
 
-    dependencies = ["yaml", "jsonschema"]
+    dependencies = ["yaml", "jsonschema", "referencing"]
     absent_dependencies = [name for name in dependencies if importlib.util.find_spec(name) is None]
     checks.append(Check("Python dependencies", "PASS" if not absent_dependencies else "FAIL", "installed" if not absent_dependencies else f"missing: {', '.join(absent_dependencies)}"))
 
