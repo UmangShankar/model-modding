@@ -61,9 +61,11 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - a 40-case Trusted Document Explainer evaluation plan;
 - 18 classified adversarial and paraphrase fixtures across high-risk failure modes;
 - deterministic invariant checks bound to manifest declarations;
+- 23 typed source facts across 16 representative guardian cases;
+- structured source-output comparison for values, context and prohibited transformations;
 - structured critical, major and minor failure records;
 - configurable evaluation gates with critical failures blocking by default;
-- report schema `0.2` with pipeline status and blocking failures;
+- report schema `0.3` with evaluator layers, pipeline status and blocking failures;
 - deterministic recipe composition;
 - canonical cross-platform mod references;
 - local Ollama execution;
@@ -75,7 +77,7 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - reference mods and recipes;
 - the static Workshop, Local Dyno, Evaluation Scorecard and Fitment Matrix.
 
-The current evaluator is authoritative for the exact deterministic assertions encoded by a case. It does not yet perform broad semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
+The current evaluator is authoritative for the exact deterministic invariant and structured source assertions encoded by a case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
 
 ## The flagship product contract
 
@@ -197,6 +199,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 - [Core concepts](docs/concepts.md)
 - [Invariant declarations](docs/invariants.md)
 - [Adversarial and paraphrase fixtures](docs/adversarial-fixtures.md)
+- [Structured source-output comparison](docs/source-output-comparison-design.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
 - [Non-goals](docs/non-goals.md)
 - [Five-minute quick start](docs/quickstart.md)
@@ -209,7 +212,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations, four narrow assurance guardians, deterministic severity-aware evaluation gates and a 40-case classified flagship fixture set. It does not yet provide general semantic extraction, cloud-provider portability, ABOMs, recipe locks or evidence-to-evidence regression comparison.
+`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations, four narrow assurance guardians, deterministic severity-aware gates, a 40-case classified fixture set and typed source-output comparison. It does not yet provide unrestricted semantic extraction, cloud-provider portability, ABOMs, recipe locks or evidence-to-evidence regression comparison.
 
 ## Licence
 
