@@ -58,6 +58,8 @@ def test_report_flags_improvements_and_regressions() -> None:
     report = build_report("research-learning-companion", "llama3.2", cases[:2], rows)
     assert report["summary"]["stock_passed"] == 1
     assert report["summary"]["modded_passed"] == 1
+    assert report["summary"]["average_stock_latency_seconds"] == 0
+    assert report["summary"]["average_modded_words"] == 0
     assert report["improvements"] == [f"{cases[0].mod}:improved"]
     assert report["regressions"] == [f"{cases[0].mod}:regressed"]
     assert "Human review" in markdown_report(report)
@@ -96,4 +98,16 @@ def test_evaluate_writes_json_and_markdown_reports(tmp_path: Path, capsys) -> No
     payload = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
     assert payload["summary"]["cases"] == 10
     assert len(payload["cases"]) == 10
+    assert payload["summary"]["average_stock_latency_seconds"] >= 0
+    assert payload["summary"]["average_modded_latency_seconds"] >= 0
+    assert payload["summary"]["average_stock_words"] > 0
+    assert payload["summary"]["average_modded_words"] > 0
+    assert payload["cases"][0]["stock"]["latency_seconds"] >= 0
+    assert payload["cases"][0]["stock"]["words"] > 0
+    assert payload["cases"][0]["modded"]["latency_seconds"] >= 0
+    assert payload["cases"][0]["modded"]["words"] > 0
+    markdown = (tmp_path / "report.md").read_text(encoding="utf-8")
+    assert "Average stock latency" in markdown
+    assert "Average modded words" in markdown
+    assert "â€”" not in markdown
     assert "JSON report" in captured.out

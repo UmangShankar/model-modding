@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
@@ -7,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-from model_modding.cli import create_mod, validate_repository
+from model_modding.cli import create_mod, inspect_mod, resolve_mod, validate_repository
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,6 +79,34 @@ def test_create_mod_refuses_overwrite(tmp_path: Path) -> None:
     root = copy_repo_contract(tmp_path)
     assert create_mod(root, "new-mod", "personality", "Ada Example", None) == 0
     assert create_mod(root, "new-mod", "personality", "Ada Example", None) == 2
+
+
+def test_resolve_mod_accepts_both_separator_styles(tmp_path: Path) -> None:
+    root = copy_repo_contract(tmp_path)
+
+    posix_reference, _, _ = resolve_mod(root, "personality/existing")
+    windows_reference, _, _ = resolve_mod(root, "personality\\existing")
+
+    assert posix_reference == "personality/existing"
+    assert windows_reference == "personality/existing"
+
+
+def test_inspect_emits_canonical_posix_reference(tmp_path: Path, capsys) -> None:
+    root = copy_repo_contract(tmp_path)
+
+    assert inspect_mod(root, "personality\\existing", as_json=True) == 0
+    report = json.loads(capsys.readouterr().out)
+
+    assert report["reference"] == "personality/existing"
+
+
+def test_repository_has_one_case_insensitive_pull_request_template() -> None:
+    templates = [
+        path.name
+        for path in (ROOT / ".github").iterdir()
+        if path.is_file() and path.name.casefold() == "pull_request_template.md"
+    ]
+    assert templates == ["pull_request_template.md"]
 
 
 def test_legacy_validator_uses_script_repository_from_other_cwd(tmp_path: Path) -> None:

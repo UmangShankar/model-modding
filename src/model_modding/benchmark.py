@@ -45,7 +45,7 @@ def markdown_report(report: dict[str, Any]) -> str:
     ]
     for row in report["models"]:
         if row["status"] != "completed":
-            lines.append(f"| `{row['model']}` | {row['status']} | — | — | — | — | — | — |")
+            lines.append(f"| `{row['model']}` | {row['status']} | n/a | n/a | n/a | n/a | n/a | n/a |")
             continue
         summary = row["summary"]
         lines.append(
@@ -125,8 +125,20 @@ def benchmark_recipe(
                     "mod": case.mod,
                     "case": case.name,
                     "prompt": case.prompt,
-                    "stock": {"passed": stock_passed, "response": stock_text, "checks": stock_checks, "latency_seconds": stock_latency, "words": len(stock_text.split())},
-                    "modded": {"passed": modded_passed, "response": modded_text, "checks": modded_checks, "latency_seconds": modded_latency, "words": len(modded_text.split())},
+                    "stock": {
+                        "passed": stock_passed,
+                        "response": stock_text,
+                        "checks": stock_checks,
+                        "latency_seconds": stock_latency,
+                        "words": len(stock_text.split()),
+                    },
+                    "modded": {
+                        "passed": modded_passed,
+                        "response": modded_text,
+                        "checks": modded_checks,
+                        "latency_seconds": modded_latency,
+                        "words": len(modded_text.split()),
+                    },
                 })
         except Exception as exc:
             print(f"FAILED {model}: {exc}", file=sys.stderr)
@@ -166,8 +178,8 @@ def benchmark_recipe(
     destination.mkdir(parents=True, exist_ok=True)
     json_path = destination / "benchmark.json"
     markdown_path = destination / "benchmark.md"
-    json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    markdown_path.write_text(markdown_report(report), encoding="utf-8")
+    json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
+    markdown_path.write_text(markdown_report(report), encoding="utf-8", newline="\n")
     print(f"\nCompleted models: {len(completed)}/{len(models)}")
     print(f"JSON report: {json_path}")
     print(f"Markdown report: {markdown_path}")

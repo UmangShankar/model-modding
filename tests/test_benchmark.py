@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from model_modding.benchmark import benchmark_recipe, markdown_report, parse_models, resolve_model_selector
+from model_modding.entry import main
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -23,6 +24,20 @@ def test_benchmark_dry_run_does_not_call_ollama(capsys) -> None:
     output = capsys.readouterr().out
     assert "Cases per model" in output
     assert "stock +" in output
+
+
+def test_console_entry_routes_benchmark_with_command_root(capsys) -> None:
+    result = main([
+        "benchmark",
+        "trusted-document-explainer",
+        "--models",
+        "llama3.2",
+        "--dry-run",
+        "--root",
+        str(ROOT),
+    ])
+    assert result == 0
+    assert "Benchmark: Trusted Document Explainer" in capsys.readouterr().out
 
 
 def test_benchmark_resolves_default_tag_and_skips_unavailable_models(tmp_path, capsys) -> None:
@@ -52,6 +67,10 @@ def test_benchmark_resolves_default_tag_and_skips_unavailable_models(tmp_path, c
     assert '"resolved_model": "llama3.2:latest"' in report
     assert '"status": "unavailable"' in report
     assert '"status": "completed"' in report
+    markdown = (tmp_path / "benchmark.md").read_text(encoding="utf-8")
+    assert "Avg latency" in markdown
+    assert "Avg words" in markdown
+    assert "â€”" not in markdown
 
 
 def test_markdown_report_contains_fitment_columns() -> None:
