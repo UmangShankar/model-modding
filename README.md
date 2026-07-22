@@ -1,53 +1,126 @@
 # Model Modding
 
-**An open framework for packaging, combining, running and evaluating reusable behavioural modifications for language models.**
+**Package, test and deploy portable AI-agent behaviour.**
 
-> Start with a stock model. Install transparent mods. Inspect the build. Run it locally. Measure what changed.
+> One versioned behavioural package. Multiple models. Declared preservation goals. Reproducible evidence.
 
-Model Modding treats assistant behaviour like a configurable machine: individual parts are versioned as **mods**, complete configurations are assembled as **recipes**, and their effects are tested with visible evaluation cases.
+Model Modding is an open framework for turning important assistant behaviour into inspectable, testable and portable packages rather than leaving it hidden inside application code or an unversioned prompt.
 
-## The core loop
+The project is moving toward a focused proposition:
+
+> **Model Modding will be the open packaging and assurance layer for portable AI-agent behaviour.**
+
+The first product wedge is **meaning-preserving, evidence-backed transformation for high-stakes work**. The flagship proof is the `trusted-document-explainer` recipe: explain complex official or high-stakes text in plain English without silently changing deadlines, obligations, conditions, exceptions or uncertainty.
+
+## Why this is more than storing a prompt
+
+A prompt file can contain instructions. A Model Modding package is intended to make the complete behavioural contract inspectable and testable:
+
+1. **Mod** — one versioned behavioural capability or safeguard.
+2. **Recipe** — an ordered composition of mods.
+3. **Invariant** — a declared property that must be preserved or a transformation that must be prohibited.
+4. **Evidence bundle** — the inputs, outputs, configuration and evaluation results for a run.
+5. **ABOM** — an Agent Behaviour Bill of Materials describing exactly what behavioural components were built and tested.
+
+Mods and recipes are implemented in v0.1. Invariants, evidence bundles and ABOMs are the central v0.2 delivery target and are documented now so contributors can build toward one coherent contract.
+
+## Current working loop
 
 ```text
-Create → Validate → Inspect → Compose → Run → Evaluate
+Create → Validate → Inspect → Compose → Run → Evaluate → Publish evidence
 ```
 
 ```bash
 python -m pip install -e ".[dev]"
 modding validate
-modding inspect socratic-teacher
-modding compose research-learning-companion
-modding run research-learning-companion \
+modding inspect plain-language-explainer
+modding compose trusted-document-explainer
+modding run trusted-document-explainer \
   --model llama3.2 \
-  --prompt "Explain compound interest to a beginner"
-modding evaluate research-learning-companion \
+  --prompt "Explain this notice in plain English: The applicant shall submit the requested evidence within 14 calendar days of this notice, except where exceptional circumstances prevent compliance."
+modding evaluate trusted-document-explainer \
   --model llama3.2
+modding benchmark trusted-document-explainer \
+  --models llama3.2,qwen2.5:3b
 modding doctor
 ```
 
-Local execution uses [Ollama](https://ollama.com/) on `127.0.0.1` by default. No cloud API key is required.
+Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by default. No cloud API key is required.
 
-## What is included in v0.1.0
+## What v0.1.1 provides
 
-- JSON schemas for mod and recipe manifests
-- a Python CLI and mod scaffolding command
-- deterministic composition with dependency and conflict checks
-- inspection of capabilities, instructions and evaluation coverage
-- local Ollama execution with loopback safety controls
-- stock-versus-modded evaluation reports and regression detection
-- three reference mods and two reference recipes
-- a static Workshop, Local Dyno and Evaluation Scorecard
+- versioned mod and recipe manifests;
+- JSON Schema validation;
+- deterministic recipe composition;
+- canonical cross-platform mod references;
+- local Ollama execution;
+- stock-versus-modded evaluation;
+- latency and response-length evidence;
+- multi-model local benchmarks;
+- a publication protocol for benchmark evidence;
+- a validator for published evidence packages;
+- reference mods and recipes;
+- the static Workshop, Local Dyno, Evaluation Scorecard and Fitment Matrix.
+
+The current evaluator uses transparent deterministic checks. These checks are useful regression signals, but they do not prove factual correctness, safety, legal meaning or overall model quality.
+
+## The flagship product contract
+
+`trusted-document-explainer` is the reference package for the v0.2 programme.
+
+Its target purpose is:
+
+> Rewrite complex official or high-stakes text in plain English while preserving operationally or legally material meaning.
+
+The v0.2 proof must demonstrate the same recipe running through Ollama, Anthropic and OpenAI without changing the mod files, while recording exact models, generation settings, build digests, declared invariants, failures and limitations.
+
+Read the complete [Trusted Document Explainer product contract](docs/trusted-document-explainer-contract.md).
+
+## Evidence before claims
+
+The first published local benchmark is intentionally not presented as a success story. Deterministic scores improved on some cases, but human review found unsupported additions, incorrect interpretations, fabricated source details and instability between runs.
+
+That evidence is the reason v0.2 prioritises invariant-aware evaluation, reproducible builds and regression gates before public cloud-provider comparisons.
+
+Browse published runs under [`evidence/benchmarks/`](evidence/benchmarks/).
+
+## What Model Modding is not
+
+Model Modding is not:
+
+- a foundation-model training or fine-tuning framework;
+- a general agent-orchestration platform;
+- a prompt marketplace;
+- a generic observability product;
+- proof that system prompts guarantee behaviour;
+- a universal model leaderboard;
+- a replacement for human, legal, medical or domain review.
+
+See the complete [non-goals](docs/non-goals.md).
+
+## Reference packages
+
+### Trusted Document Explainer
+
+Combines Plain Language Explainer with Citation Guardian. It is the current foundation for the v0.2 meaning-preservation proof and will be refactored into a transformation capability plus narrow assurance guardians.
+
+### Research Learning Companion
+
+Combines Socratic Teacher with Citation Guardian to guide learning while keeping facts, inference and uncertainty visible.
+
+### Product Strategy Copilot
+
+Uses Inquisitive Strategist to clarify decisions, challenge assumptions and prefer reversible experiments before expensive commitments.
 
 ## Join the community build
 
-The next phase is about real contribution patterns: new mods, independent evaluation, domain review and cross-model testing.
+The project needs developers, evaluators, domain reviewers, technical writers and independent model testers.
 
 - Browse the [community hub](community/README.md).
 - Pick an open [Request for Mod](community/rfms/README.md).
 - Explore the current [mod and recipe catalogue](community/catalogue.md).
-- Use the **Request for Mod** issue template to propose another unmet need.
-
-The first requests include beginner-friendly and specialist opportunities across document explanation, child-safe learning, meeting decisions, health information and product discovery.
+- Review the [v0.2 roadmap](docs/roadmap.md).
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ## Try the visual workshop
 
@@ -62,11 +135,12 @@ Then open:
 - **Workshop:** `http://localhost:8000/workshop/`
 - **Local Dyno:** `http://localhost:8000/workshop/local.html`
 - **Evaluation Scorecard:** `http://localhost:8000/workshop/scorecard.html`
+- **Model Fitment Matrix:** `http://localhost:8000/workshop/fitment.html`
 
 ## Anatomy of a mod
 
 ```text
-mods/personality/socratic-teacher/
+mods/domain/plain-language-explainer/
 ├── mod.yaml
 ├── README.md
 ├── instructions/system.md
@@ -80,56 +154,42 @@ A mod should make one understandable change, document compatibility and limitati
 
 ```bash
 modding create mod my-first-mod \
-  --category personality \
+  --category domain \
   --author "Your Name" \
   --github your-handle
 ```
 
 Read [Creating mods](docs/creating-mods.md), the [manifest reference](docs/manifest-reference.md), and [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
-## Reference builds
-
-### Research Learning Companion
-
-Combines **Socratic Teacher** with **Citation Guardian** to guide learning while keeping facts, inference and uncertainty visible.
-
-### Product Strategy Copilot
-
-Uses **Inquisitive Strategist** to clarify decisions, challenge assumptions and prefer reversible experiments before expensive commitments.
-
 ## Principles
 
-- **Modular:** one clearly defined change per mod
-- **Composable:** dependencies, order and conflicts are explicit
-- **Transparent:** instructions and evaluation evidence remain inspectable
-- **Model-aware, not model-locked:** compatibility is documented rather than assumed
-- **Measurable:** claims of improvement should be backed by repeatable cases
-- **Open to non-developers:** domain experts, educators, researchers and designers can contribute
-- **Responsible:** safety, privacy, uncertainty and misuse risks belong in the package
+- **Portable:** the behavioural package should not be locked to one provider.
+- **Assurable:** important preservation promises must become machine-readable and testable.
+- **Modular:** one clearly defined capability or safeguard per mod.
+- **Transparent:** instructions, configuration, evidence and limitations remain inspectable.
+- **Reproducible:** builds and results should be tied to exact versions and digests.
+- **Evidence-led:** compatibility claims must identify the recipe, model, evaluator, fixture set and configuration.
+- **Responsible:** high-stakes claims require domain review and honest failure reporting.
 
 ## Documentation
 
-- [Concepts](docs/concepts.md)
+- [Core concepts](docs/concepts.md)
+- [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
+- [Non-goals](docs/non-goals.md)
+- [Five-minute quick start](docs/quickstart.md)
 - [Creating mods](docs/creating-mods.md)
 - [Composing recipes](docs/composing-recipes.md)
 - [Running locally](docs/running-locally.md)
 - [Evaluations](docs/evaluations.md)
 - [Manifest reference](docs/manifest-reference.md)
 - [Roadmap](docs/roadmap.md)
-- [Five-minute quick start](docs/quickstart.md)
 
 ## Project status
 
-`v0.1.0` is the first public foundation release. The formats and CLI are usable, but breaking changes remain possible while real contribution patterns emerge.
-
-This project is not a foundation model, training framework, prompt marketplace or claim that one model is universally best. It is an open structure for the layers that turn a base model into a useful, testable system.
-
-## Contributing and security
-
-See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md).
+`v0.1.1` is the stabilised foundation and product-direction release. It packages and evaluates behaviour locally today. It does not yet provide machine-readable invariants, cloud-provider portability, ABOMs, recipe locks or semantic assurance gates; those are the staged v0.2 deliverables.
 
 ## Licence
 
 Apache License 2.0. Individual datasets, integrations or contributed assets may carry additional clearly documented terms.
 
-**Build a mod. Test it. Share it. Remix it.**
+**Package the behaviour. Preserve the meaning. Publish the evidence.**
