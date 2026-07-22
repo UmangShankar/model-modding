@@ -38,6 +38,10 @@ All notable changes to Model Modding are documented here.
 - Portable generation settings for temperature, top-p, token limits, seeds and stop sequences.
 - A first-class Ollama provider adapter with normalised token usage, finish reason and timing metadata.
 - Provider-registry diagnostics in `modding doctor`.
+- Explicit `--provider` selection for `run`, `evaluate` and `benchmark`.
+- Shared runtime configuration for provider endpoints and portable generation settings.
+- Provider-aware report schema `0.4` with exact runtime and per-response execution metadata.
+- Regression tests covering unknown providers, model resolution, token usage and provider evidence.
 
 ### Changed
 
@@ -50,6 +54,8 @@ All notable changes to Model Modding are documented here.
 - The flagship evaluation plan now contains exactly 40 cases rather than 22.
 - Ollama model discovery, streaming and recipe execution now delegate to the provider adapter while preserving existing imports and commands.
 - `modding run` now reports provider identity, endpoint, requested generation settings, finish reason and token usage when available.
+- Provider-aware evaluation and benchmark runs now record provider, endpoint, exact model, requested and effective settings, usage and finish reason.
+- Provider dispatch remains opt-in during v0.1.3 so existing default Ollama scripts and direct Python APIs continue to behave as before.
 
 ### Notes
 
