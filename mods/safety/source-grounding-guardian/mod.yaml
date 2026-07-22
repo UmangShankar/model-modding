@@ -1,0 +1,38 @@
+name: source-grounding-guardian
+version: 0.1.0
+status: experimental
+description: >
+  Keeps transformed claims grounded in supplied source material, preserves uncertainty
+  and prevents invented evidence, citations or unsupported advice.
+category: safety
+role: assurance
+invariants:
+  preserve:
+    - type: source_claim
+      severity: critical
+    - type: uncertainty
+      severity: critical
+  prohibit:
+    - type: unsupported_advice
+      severity: major
+    - type: invented_source_claim
+      severity: critical
+    - type: fabricated_citation
+      severity: critical
+    - type: presented_missing_evidence
+      severity: critical
+authors:
+  - name: Model Modding Community
+compatible_models: []
+capabilities:
+  - source-grounding
+  - uncertainty-preservation
+  - citation-fabrication-prevention
+  - missing-evidence-disclosure
+dependencies: []
+conflicts: []
+evaluation:
+  minimum_score: 0.9
+  suites:
+    - source-grounding-integrity
+license: Apache-2.0
