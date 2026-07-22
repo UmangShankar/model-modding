@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -91,6 +92,11 @@ def collect_response(host: str, model: str, prompt: str, system_prompt: str, tim
     return "".join(stream_chat(host, model, prompt, system_prompt, timeout=timeout, opener=opener))
 
 
+def _average_metric(rows: list[dict[str, Any]], side: str, key: str) -> float:
+    values = [float(row[side][key]) for row in rows if key in row.get(side, {})]
+    return sum(values) / len(values) if values else 0.0
+
+
 def build_report(recipe_name: str, model: str, cases: list[EvaluationCase], rows: list[dict[str, Any]]) -> dict[str, Any]:
     stock_passed = sum(1 for row in rows if row["stock"]["passed"])
     modded_passed = sum(1 for row in rows if row["modded"]["passed"])
@@ -119,6 +125,10 @@ def build_report(recipe_name: str, model: str, cases: list[EvaluationCase], rows
             "stock_pass_rate": stock_passed / total if total else 0,
             "modded_pass_rate": modded_passed / total if total else 0,
             "improvement_points": ((modded_passed - stock_passed) / total * 100) if total else 0,
+            "average_stock_latency_seconds": _average_metric(rows, "stock", "latency_seconds"),
+            "average_modded_latency_seconds": _average_metric(rows, "modded", "latency_seconds"),
+            "average_stock_words": _average_metric(rows, "stock", "words"),
+            "average_modded_words": _average_metric(rows, "modded", "words"),
         },
         "by_mod": dict(by_mod),
         "improvements": improvements,
@@ -137,6 +147,10 @@ def markdown_report(report: dict[str, Any]) -> str:
         f"- Stock passed: {summary['stock_passed']}/{summary['cases']}",
         f"- Modded passed: {summary['modded_passed']}/{summary['cases']}",
         f"- Improvement: {summary['improvement_points']:+.1f} percentage points",
+        f"- Average stock latency: {summary['average_stock_latency_seconds']:.2f}s",
+        f"- Average modded latency: {summary['average_modded_latency_seconds']:.2f}s",
+        f"- Average stock words: {summary['average_stock_words']:.0f}",
+        f"- Average modded words: {summary['average_modded_words']:.0f}",
         "",
         "## Results by mod",
         "",
@@ -147,7 +161,17 @@ def markdown_report(report: dict[str, Any]) -> str:
         lines.append(f"| `{mod}` | {values['stock_passed']}/{values['total']} | {values['modded_passed']}/{values['total']} |")
     lines.extend(["", "## Cases", ""])
     for row in report["cases"]:
-        lines.append(f"- {'PASS' if row['modded']['passed'] else 'FAIL'} `{row['mod']}:{row['case']}` — stock: {'pass' if row['stock']['passed'] else 'fail'}, modded: {'pass' if row['modded']['passed'] else 'fail'}")
+        stock_metrics = ""
+        modded_metrics = ""
+        if "latency_seconds" in row["stock"] and "words" in row["stock"]:
+            stock_metrics = f", {row['stock']['latency_seconds']:.2f}s, {row['stock']['words']} words"
+        if "latency_seconds" in row["modded"] and "words" in row["modded"]:
+            modded_metrics = f", {row['modded']['latency_seconds']:.2f}s, {row['modded']['words']} words"
+        lines.append(
+            f"- {'PASS' if row['modded']['passed'] else 'FAIL'} `{row['mod']}:{row['case']}` -- "
+            f"stock: {'pass' if row['stock']['passed'] else 'fail'}{stock_metrics}; "
+            f"modded: {'pass' if row['modded']['passed'] else 'fail'}{modded_metrics}"
+        )
     if report["regressions"]:
         lines.extend(["", "## Regressions", ""] + [f"- `{item}`" for item in report["regressions"]])
     lines.extend(["", "## Human review", "", "Deterministic checks are indicators, not a substitute for reviewing the expected behaviours and full responses.", ""])
@@ -177,7 +201,7 @@ def evaluate_recipe(
     print(f"Cases: {len(cases)}")
     if dry_run:
         for case in cases:
-            print(f"- {case.mod}:{case.name} — {case.prompt}")
+            print(f"- {case.mod}:{case.name} -- {case.prompt}")
         return 0
 
     actual_opener = opener
@@ -189,8 +213,12 @@ def evaluate_recipe(
     try:
         for index, case in enumerate(cases, 1):
             print(f"[{index}/{len(cases)}] {case.mod}:{case.name}")
+            started = time.monotonic()
             stock_text = collect_response(normalized_host, model, case.prompt, "", timeout, actual_opener)
+            stock_latency = time.monotonic() - started
+            started = time.monotonic()
             modded_text = collect_response(normalized_host, model, case.prompt, compiled.system_prompt, timeout, actual_opener)
+            modded_latency = time.monotonic() - started
             stock_passed, stock_checks = score_response(stock_text, case.checks)
             modded_passed, modded_checks = score_response(modded_text, case.checks)
             rows.append({
@@ -199,8 +227,20 @@ def evaluate_recipe(
                 "prompt": case.prompt,
                 "expected_behaviours": list(case.expected_behaviours),
                 "failure_indicators": list(case.failure_indicators),
-                "stock": {"passed": stock_passed, "response": stock_text, "checks": stock_checks},
-                "modded": {"passed": modded_passed, "response": modded_text, "checks": modded_checks},
+                "stock": {
+                    "passed": stock_passed,
+                    "response": stock_text,
+                    "checks": stock_checks,
+                    "latency_seconds": stock_latency,
+                    "words": len(stock_text.split()),
+                },
+                "modded": {
+                    "passed": modded_passed,
+                    "response": modded_text,
+                    "checks": modded_checks,
+                    "latency_seconds": modded_latency,
+                    "words": len(modded_text.split()),
+                },
             })
     except Exception as exc:
         print(f"Evaluation run failed: {exc}", file=sys.stderr)
@@ -211,12 +251,16 @@ def evaluate_recipe(
     destination.mkdir(parents=True, exist_ok=True)
     json_path = destination / "report.json"
     markdown_path = destination / "report.md"
-    json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    markdown_path.write_text(markdown_report(report), encoding="utf-8")
+    json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
+    markdown_path.write_text(markdown_report(report), encoding="utf-8", newline="\n")
     summary = report["summary"]
     print(f"\nStock passed: {summary['stock_passed']}/{summary['cases']}")
     print(f"Modded passed: {summary['modded_passed']}/{summary['cases']}")
     print(f"Improvement: {summary['improvement_points']:+.1f} percentage points")
+    print(f"Average stock latency: {summary['average_stock_latency_seconds']:.2f}s")
+    print(f"Average modded latency: {summary['average_modded_latency_seconds']:.2f}s")
+    print(f"Average stock words: {summary['average_stock_words']:.0f}")
+    print(f"Average modded words: {summary['average_modded_words']:.0f}")
     print(f"JSON report: {json_path}")
     print(f"Markdown report: {markdown_path}")
     return 0
