@@ -6,15 +6,11 @@
 
 Model Modding is an open framework for turning important assistant behaviour into inspectable, testable and portable packages rather than leaving it hidden inside application code or an unversioned prompt.
 
-The project is moving toward a focused proposition:
-
 > **Model Modding will be the open packaging and assurance layer for portable AI-agent behaviour.**
 
 The first product wedge is **meaning-preserving, evidence-backed transformation for high-stakes work**. The flagship proof is the `trusted-document-explainer` recipe: explain complex official or high-stakes text in plain English without silently changing deadlines, obligations, conditions, exceptions or uncertainty.
 
-## Why this is more than storing a prompt
-
-A prompt file can contain instructions. A Model Modding package is intended to make the complete behavioural contract inspectable and testable:
+## Core concepts
 
 1. **Mod** — one versioned behavioural capability or safeguard.
 2. **Recipe** — an ordered composition of mods.
@@ -22,7 +18,7 @@ A prompt file can contain instructions. A Model Modding package is intended to m
 4. **Evidence bundle** — the inputs, outputs, configuration and evaluation results for a run.
 5. **ABOM** — an Agent Behaviour Bill of Materials describing exactly what behavioural components were built and tested.
 
-Mods, recipes, machine-readable invariant declarations and the provider runtime contract are implemented on current `main`. Evidence bundles and ABOMs remain staged v0.2 deliverables.
+Mods, recipes, machine-readable invariant declarations, deterministic assurance gates and the provider-neutral runtime are implemented. Evidence bundles, ABOMs and evidence-to-evidence comparison remain staged v0.2 deliverables.
 
 ## Current working loop
 
@@ -34,65 +30,82 @@ Create → Validate → Inspect → Compose → Run → Evaluate → Publish evi
 python -m pip install -e ".[dev]"
 modding validate
 modding inspect plain-language-explainer
-modding inspect deadline-guardian
 modding compose trusted-document-explainer
 modding run trusted-document-explainer \
   --model llama3.2 \
-  --prompt "Explain this notice in plain English: The applicant shall submit the requested evidence within 14 calendar days of this notice, except where exceptional circumstances prevent compliance."
+  --prompt "Explain this notice in plain English: The applicant shall submit the requested evidence within 14 calendar days of this notice."
 modding evaluate trusted-document-explainer \
   --model llama3.2 \
   --fail-on critical
-modding benchmark trusted-document-explainer \
-  --models llama3.2,qwen2.5:3b
 modding doctor
 ```
 
-Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by default through the provider adapter. No cloud API key is required.
+Ollama remains the local default and requires no cloud API key.
+
+## Provider-aware execution
+
+Ollama and Anthropic are built-in providers behind the same neutral request and response contract.
+
+Install Anthropic support:
+
+```bash
+python -m pip install -e ".[anthropic]"
+export ANTHROPIC_API_KEY="..."
+```
+
+Run the same recipe through Anthropic:
+
+```bash
+modding evaluate trusted-document-explainer \
+  --provider anthropic \
+  --model claude-sonnet-4-6 \
+  --temperature 0 \
+  --max-tokens 1024 \
+  --fail-on critical
+```
+
+Portable runtime options are shared across `run`, `evaluate` and `benchmark`:
+
+```text
+--temperature
+--top-p
+--max-tokens
+--seed
+--stop
+```
+
+Capability differences remain explicit. Anthropic rejects `seed` before a paid request because its Messages API does not support that option. When `max_tokens` is omitted, the adapter applies and records a deliberate default of 1024 because Anthropic requires the field.
 
 ## What current `main` provides
 
 - versioned mod and recipe manifests;
-- JSON Schema validation with offline cross-schema references;
-- optional `transformation` and `assurance` mod roles;
+- JSON Schema validation with offline references;
+- transformation and assurance mod roles;
 - machine-readable preserved invariants and prohibited transformations;
-- strict reference vocabularies and `critical`, `major` and `minor` severities;
-- invariant-aware `modding inspect` output;
+- critical, major and minor severities;
 - four narrow flagship assurance guardians;
-- a 40-case Trusted Document Explainer evaluation plan;
-- 18 classified adversarial and paraphrase fixtures across high-risk failure modes;
-- deterministic invariant checks bound to manifest declarations;
-- 23 typed source facts across 16 representative guardian cases;
-- structured source-output comparison for values, context and prohibited transformations;
-- structured critical, major and minor failure records;
+- exactly 40 Trusted Document Explainer cases;
+- 18 classified adversarial and paraphrase fixtures;
+- 23 typed source facts across 16 representative cases;
+- deterministic invariant and source-output comparison;
 - configurable evaluation gates with critical failures blocking by default;
-- report schema `0.3` with evaluator layers, pipeline status and blocking failures;
-- deterministic recipe composition;
-- canonical cross-platform mod references;
 - provider-neutral request, response, usage and generation-option contracts;
-- an extensible provider registry and normalised provider error boundary;
-- an Ollama adapter with token usage, finish reason, latency and endpoint metadata;
-- backward-compatible Ollama model discovery, streaming and local commands;
-- stock-versus-modded evaluation;
-- latency and response-length evidence;
-- multi-model local benchmarks using the same scoring path;
-- a publication protocol for benchmark evidence;
-- a validator for published evidence packages;
-- reference mods and recipes;
-- the static Workshop, Local Dyno, Evaluation Scorecard and Fitment Matrix.
+- built-in Ollama and Anthropic adapters;
+- provider selection across `run`, `evaluate` and `benchmark`;
+- schema `0.4` execution evidence with per-response provider, model, settings, usage and finish reason;
+- backward-compatible Ollama commands and imports;
+- optional Anthropic SDK and authentication diagnostics;
+- mocked cloud-provider tests and opt-in paid smoke-test scaffolding;
+- deterministic recipe composition and cross-platform references;
+- local benchmarks and evidence-publication validation.
 
-The current evaluator is authoritative for the exact deterministic invariant and structured source assertions encoded by a case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
+The evaluator is authoritative only for the exact deterministic assertions encoded by each case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
 
-Only Ollama is currently registered as a built-in provider. Provider selection across every CLI surface, Anthropic, OpenAI and complete provider metadata in evaluation evidence remain separate increments.
+No Anthropic compatibility claim is implied merely because the adapter exists. Cloud claims require an actual reviewed evidence bundle tied to an exact model, configuration, fixture set and evaluator version.
 
-## The flagship product contract
+## Flagship product contract
 
-`trusted-document-explainer` is the reference package for the v0.2 programme.
-
-Its target purpose is:
-
-> Rewrite complex official or high-stakes text in plain English while preserving operationally or legally material meaning.
-
-The current recipe separates one transformation capability from four assurance concerns:
+`trusted-document-explainer` combines:
 
 1. `plain-language-explainer` — performs the transformation;
 2. `deadline-guardian` — protects dates, durations, units and triggers;
@@ -100,17 +113,9 @@ The current recipe separates one transformation capability from four assurance c
 4. `exception-guardian` — protects conditions, exceptions, eligibility and sequence;
 5. `source-grounding-guardian` — protects source claims, uncertainty and missing evidence.
 
-The v0.2 proof must demonstrate the same recipe running through Ollama, Anthropic and OpenAI without changing the mod files, while recording exact models, generation settings, build digests, declared invariants, failures and limitations.
+The v0.2 proof must demonstrate the same recipe through Ollama, Anthropic and OpenAI without changing mod files, while recording exact models, settings, build digests, declared invariants, failures and limitations.
 
-Read the complete [Trusted Document Explainer product contract](docs/trusted-document-explainer-contract.md).
-
-## Evidence before claims
-
-The first published local benchmark is intentionally not presented as a success story. Deterministic scores improved on some cases, but human review found unsupported additions, incorrect interpretations, fabricated source details and instability between runs.
-
-That evidence is the reason v0.2 prioritises invariant-aware evaluation, reproducible builds and regression gates before public cloud-provider comparisons.
-
-Browse published runs under [`evidence/benchmarks/`](evidence/benchmarks/).
+Read the [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md).
 
 ## What Model Modding is not
 
@@ -124,101 +129,22 @@ Model Modding is not:
 - a universal model leaderboard;
 - a replacement for human, legal, medical or domain review.
 
-See the complete [non-goals](docs/non-goals.md).
-
-## Reference packages
-
-### Trusted Document Explainer
-
-Combines Plain Language Explainer with Deadline Guardian, Obligation Guardian, Exception Guardian and Source Grounding Guardian. The transformation and assurance responsibilities are versioned and independently inspectable.
-
-### Research Learning Companion
-
-Combines Socratic Teacher with Citation Guardian to guide learning while keeping facts, inference and uncertainty visible.
-
-### Product Strategy Copilot
-
-Uses Inquisitive Strategist to clarify decisions, challenge assumptions and prefer reversible experiments before expensive commitments.
-
-## Join the community build
-
-The project needs developers, evaluators, domain reviewers, technical writers and independent model testers.
-
-- Browse the [community hub](community/README.md).
-- Pick an open [Request for Mod](community/rfms/README.md).
-- Explore the current [mod and recipe catalogue](community/catalogue.md).
-- Review the [v0.2 roadmap](docs/roadmap.md).
-- Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
-
-## Try the visual workshop
-
-Serve the repository:
-
-```bash
-python -m http.server 8000
-```
-
-Then open:
-
-- **Workshop:** `http://localhost:8000/workshop/`
-- **Local Dyno:** `http://localhost:8000/workshop/local.html`
-- **Evaluation Scorecard:** `http://localhost:8000/workshop/scorecard.html`
-- **Model Fitment Matrix:** `http://localhost:8000/workshop/fitment.html`
-
-## Anatomy of a mod
-
-```text
-mods/domain/plain-language-explainer/
-├── mod.yaml
-├── README.md
-├── instructions/system.md
-├── examples/
-└── evaluations/cases.yaml
-```
-
-A mod should make one understandable change, document compatibility and limitations, and include evidence for how its behaviour will be assessed.
-
-## Create a mod
-
-```bash
-modding create mod my-first-mod \
-  --category domain \
-  --author "Your Name" \
-  --github your-handle
-```
-
-Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invariants.md), the [manifest reference](docs/manifest-reference.md), and [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
-
-## Principles
-
-- **Portable:** the behavioural package should not be locked to one provider.
-- **Assurable:** important preservation promises must become machine-readable and testable.
-- **Modular:** one clearly defined capability or safeguard per mod.
-- **Transparent:** instructions, configuration, evidence and limitations remain inspectable.
-- **Reproducible:** builds and results should be tied to exact versions and digests.
-- **Evidence-led:** compatibility claims must identify the recipe, model, evaluator, fixture set and configuration.
-- **Responsible:** high-stakes claims require domain review and honest failure reporting.
-
 ## Documentation
 
 - [Core concepts](docs/concepts.md)
 - [Invariant declarations](docs/invariants.md)
-- [Adversarial and paraphrase fixtures](docs/adversarial-fixtures.md)
+- [Adversarial fixtures](docs/adversarial-fixtures.md)
 - [Structured source-output comparison](docs/source-output-comparison-design.md)
 - [Provider-neutral runtime](docs/provider-runtime.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
-- [Non-goals](docs/non-goals.md)
-- [Five-minute quick start](docs/quickstart.md)
-- [Creating mods](docs/creating-mods.md)
-- [Composing recipes](docs/composing-recipes.md)
 - [Running locally](docs/running-locally.md)
 - [Evaluations](docs/evaluations.md)
-- [Manifest reference](docs/manifest-reference.md)
 - [Roadmap](docs/roadmap.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has completed the v0.1.2 flagship evaluator scope and begun v0.1.3 with provider-neutral runtime contracts and Ollama transport behind the provider boundary. It does not yet provide Anthropic or OpenAI adapters, provider selection on every CLI surface, ABOMs, recipe locks or evidence-to-evidence regression comparison.
+`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, the v0.1.3 provider-neutral runtime, and the v0.1.4 Anthropic adapter implementation. OpenAI, reproducible builds, recipe locks, ABOMs and evidence comparison remain future increments.
 
 ## Licence
 
