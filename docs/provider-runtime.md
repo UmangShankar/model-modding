@@ -50,11 +50,50 @@ provider = create_provider("ollama", host="http://127.0.0.1:11434")
 
 Third-party adapters can use `register_provider` without changing recipe or mod files.
 
+## Command selection
+
+Provider-aware execution is available on `run`, `evaluate` and `benchmark` by supplying `--provider`. Ollama remains the default registered adapter.
+
+```bash
+modding evaluate trusted-document-explainer \
+  --provider ollama \
+  --model llama3.2 \
+  --temperature 0 \
+  --seed 7 \
+  --fail-on critical
+```
+
+The portable settings are available consistently across all three runtime commands:
+
+```text
+--temperature
+--top-p
+--max-tokens
+--seed
+--stop
+```
+
+Existing commands that do not opt into provider selection continue through the legacy compatibility route during the v0.1.3 migration. This preserves established scripts while the provider-aware route is proven.
+
 ## Ollama migration
 
-The existing `model_modding.ollama` functions remain as compatibility wrappers. Model discovery, streaming and recipe execution now delegate to `OllamaProvider`.
+The existing `model_modding.ollama` functions remain as compatibility wrappers. Model discovery, streaming and recipe execution delegate to `OllamaProvider`.
 
 This keeps existing commands and imports working while moving transport ownership behind the provider boundary.
+
+## Execution evidence
+
+Provider-aware evaluation and benchmark reports use schema `0.4` and record:
+
+- selected provider and endpoint;
+- exact requested and resolved model identifiers;
+- requested and effective generation settings;
+- per-response latency;
+- finish reason;
+- normalised input, output and total token counts;
+- labelled provider metadata.
+
+Each stock and modded case result contains its own `execution` object. This prevents a report-level provider label from hiding per-call differences or missing metadata.
 
 ## Metadata boundary
 
@@ -71,10 +110,8 @@ Adapters normalise failures into:
 - `ProviderHTTPError`;
 - `ProviderResponseError`.
 
-Callers should not need provider-specific HTTP or decoding logic.
+Unknown providers and invalid portable options fail before a model request.
 
 ## Current limitation
 
-Only Ollama is registered as a built-in provider. The runtime contract is ready for Anthropic and OpenAI adapters, but those implementations, credentials and live tests are separate delivery increments.
-
-Evaluation and benchmark calls already reach Ollama through the compatibility wrapper and adapter. Provider selection in those command surfaces and complete provider metadata in evidence reports remain the next v0.1.3 increment.
+Only Ollama is registered as a built-in provider. The runtime contract, selection surfaces and evidence schema are ready for Anthropic and OpenAI adapters, but those implementations, credentials and live tests are separate delivery increments.
