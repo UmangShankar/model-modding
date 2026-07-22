@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
   "jsonschema>=4.25,<5",
+  "referencing>=0.35,<1",
   "PyYAML>=6,<7",
 ]
 
