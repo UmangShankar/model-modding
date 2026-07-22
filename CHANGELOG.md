@@ -2,6 +2,33 @@
 
 All notable changes to Model Modding are documented here.
 
+## [0.1.1] - 2026-07-22
+
+### Added
+
+- Portable assured behaviour as the project's primary product direction.
+- Core vocabulary for invariants, evidence bundles and Agent Behaviour Bills of Materials.
+- A formal Trusted Document Explainer product contract for the v0.2 programme.
+- Explicit product non-goals and deferred scope.
+- Evaluation latency and response-length evidence in JSON, Markdown and console output.
+- Regression tests for Windows and POSIX mod references, unified CLI help, report encoding and repository filename hygiene.
+
+### Changed
+
+- Mod references now accept both `/` and `\\` input separators and emit canonical POSIX references.
+- `doctor` and `benchmark` now use the primary CLI parser and appear in top-level help.
+- Evaluation and benchmark reports are written as UTF-8 with LF line endings.
+- The README and quick start now lead with the flagship meaning-preservation use case and distinguish current features from v0.2 targets.
+
+### Removed
+
+- The case-colliding uppercase pull request template; the canonical lowercase template remains.
+
+### Notes
+
+- This release does not yet implement machine-readable invariants, cloud providers, ABOM generation, recipe locks, compatibility matrices or semantic regression gates.
+- The first published benchmark remains immutable and documents material behavioural and evaluator limitations that drive the v0.2 roadmap.
+
 ## [0.1.0] - 2026-07-19
 
 ### Added

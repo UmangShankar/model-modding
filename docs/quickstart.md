@@ -1,5 +1,7 @@
 # Five-minute quick start
 
+This quick start exercises the current v0.1.1 foundation using the flagship `trusted-document-explainer` recipe.
+
 ## 1. Clone and install
 
 ```bash
@@ -16,28 +18,54 @@ On Windows PowerShell, activate the environment with:
 .venv\Scripts\Activate.ps1
 ```
 
-## 2. Validate the repository
+## 2. Validate and diagnose the repository
 
 ```bash
 modding validate
+modding doctor
 ```
 
-A healthy repository ends with:
+A healthy repository ends validation with:
 
 ```text
 All manifests are valid.
 ```
 
-## 3. Inspect and compose a build
+Ollama is optional for repository validation, so `doctor` can report the release foundation as ready while warning that no local runtime is available.
+
+## 3. Inspect the transformation mod
 
 ```bash
-modding inspect socratic-teacher
-modding compose research-learning-companion
+modding inspect plain-language-explainer
 ```
 
-The compiled system contract and manifest are written under `build/research-learning-companion/`.
+You will see its version, status, capabilities, compatibility declarations, instruction files and evaluation-case count.
 
-## 4. Run it locally with Ollama
+Windows-style references are also accepted:
+
+```powershell
+modding inspect domain\plain-language-explainer
+```
+
+Generated references remain canonical POSIX paths such as `domain/plain-language-explainer`.
+
+## 4. Compose the flagship recipe
+
+```bash
+modding compose trusted-document-explainer
+```
+
+The current compiler writes:
+
+```text
+build/trusted-document-explainer/
+├── system.md
+└── manifest.json
+```
+
+The v0.2 roadmap expands this build into a locked, checksummed package with an ABOM. Those outputs do not exist in v0.1.1 yet.
+
+## 5. Run it locally with Ollama
 
 Install Ollama separately and pull a local model, for example:
 
@@ -48,76 +76,85 @@ ollama pull llama3.2
 Then run the recipe:
 
 ```bash
-modding run research-learning-companion \
+modding run trusted-document-explainer \
   --model llama3.2 \
-  --prompt "Explain compound interest to a beginner"
+  --prompt "Explain this in plain English without losing deadlines, conditions, exceptions or obligations: The applicant shall submit the requested evidence within 14 calendar days of this notice, except where exceptional circumstances prevent compliance."
 ```
 
 The default endpoint is `http://127.0.0.1:11434`. Use `--host` for another endpoint. Non-loopback hosts require the explicit `--allow-remote-host` safety flag.
 
-For a visual stock-versus-modded comparison, serve the repository and open the Local Dyno:
+Review the response carefully. The current recipe and evaluator are experimental and the first published benchmark found material meaning and grounding failures.
+
+## 6. Inspect the evaluation plan
+
+```bash
+modding evaluate trusted-document-explainer \
+  --model llama3.2 \
+  --dry-run
+```
+
+This lists the cases without calling the model.
+
+## 7. Run the evaluation
+
+```bash
+modding evaluate trusted-document-explainer \
+  --model llama3.2
+```
+
+The command writes:
+
+```text
+build/evaluations/trusted-document-explainer/
+├── report.json
+└── report.md
+```
+
+The report includes:
+
+- stock and modded responses;
+- deterministic check results;
+- latency;
+- response word counts;
+- improvements and regressions;
+- expected behaviours and failure indicators for human review.
+
+Deterministic checks are transparent regression signals. They do not prove that material meaning was preserved.
+
+## 8. Compare installed local models
+
+```bash
+modding benchmark trusted-document-explainer \
+  --models llama3.2,qwen2.5:3b
+```
+
+This writes a local fitment benchmark under:
+
+```text
+build/benchmarks/trusted-document-explainer/
+```
+
+A result means only that the specified models were evaluated against the same current recipe and cases. It is not a universal model ranking.
+
+## 9. View the local tools
+
+Serve the repository:
 
 ```bash
 python -m http.server 8000
 ```
 
-Visit `http://localhost:8000/workshop/local.html`.
+Then open:
 
-## 5. Measure the build
+- `http://localhost:8000/workshop/`
+- `http://localhost:8000/workshop/local.html`
+- `http://localhost:8000/workshop/scorecard.html`
+- `http://localhost:8000/workshop/fitment.html`
 
-Inspect the evaluation plan without calling a model:
-
-```bash
-modding evaluate research-learning-companion \
-  --model llama3.2 \
-  --dry-run
-```
-
-Run the complete stock-versus-modded evaluation:
-
-```bash
-modding evaluate research-learning-companion \
-  --model llama3.2
-```
-
-The command writes `report.json` and `report.md` under `build/evaluations/research-learning-companion/`. Open `http://localhost:8000/workshop/scorecard.html` and load the JSON report for a visual scorecard.
-
-Deterministic checks are designed to expose regressions quickly. Review the full responses and human-review behaviours before treating a result as conclusive.
-
-## 6. Create your first mod
-
-```bash
-modding create mod my-first-mod \
-  --category personality \
-  --author "Your Name" \
-  --github your-github-username
-```
-
-This creates:
-
-```text
-mods/personality/my-first-mod/
-├── mod.yaml
-├── README.md
-├── instructions/system.md
-├── examples/README.md
-└── evaluations/cases.yaml
-```
-
-The command refuses invalid names and will not overwrite an existing mod.
-
-## 7. Edit and validate
-
-Describe the mod in `mod.yaml`, add its reusable instructions and write evaluation cases. Then run:
-
-```bash
-modding validate
-```
-
-## 8. Run the test suite
+## 10. Run the test suite
 
 ```bash
 pytest
 ```
 
-You are now ready to open a pull request.
+You are now ready to inspect the [v0.2 roadmap](roadmap.md), read the [flagship product contract](trusted-document-explainer-contract.md), or contribute through the [community hub](../community/README.md).

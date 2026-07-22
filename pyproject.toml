@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "model-modding"
-version = "0.1.0"
-description = "Create, validate, compose, run and evaluate reusable mods for language-model-powered systems."
+version = "0.1.1"
+description = "Package, test and deploy portable AI-agent behaviour with inspectable evidence."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Model Modding Community" }]
-keywords = ["llm", "prompt-engineering", "ollama", "evaluation", "ai"]
+keywords = ["llm", "ai-agents", "behaviour", "assurance", "evaluation", "ollama", "reproducibility"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: Apache Software License",
