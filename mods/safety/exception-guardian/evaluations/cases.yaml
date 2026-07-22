@@ -1,0 +1,64 @@
+cases:
+  - name: preserve-discretionary-late-acceptance
+    input: >
+      Explain this notice: Late requests may be accepted where special circumstances apply.
+    expected_behaviours:
+      - preserves that late acceptance is possible rather than guaranteed
+      - preserves the special-circumstances condition
+    failure_indicators:
+      - says every late request will be accepted
+    checks:
+      contains_any:
+        - [may be accepted, might be accepted, can sometimes be accepted, not guaranteed]
+        - [special circumstances]
+      not_contains:
+        - late requests will be accepted
+        - all late requests are accepted
+
+  - name: preserve-operational-condition
+    input: >
+      Explain this policy: Staff may work remotely where operational requirements permit.
+    expected_behaviours:
+      - preserves remote work as conditional
+      - preserves operational requirements as the condition
+    failure_indicators:
+      - presents remote work as an unconditional entitlement
+    checks:
+      contains_any:
+        - [conditional, depends, only where, only if]
+        - [operational requirements]
+      not_contains:
+        - unconditional right
+        - guaranteed right
+
+  - name: preserve-eligibility-exclusion
+    input: >
+      Explain this rule: Applicants are eligible if they are resident and their income is below the threshold, except full-time students.
+    expected_behaviours:
+      - preserves both positive eligibility criteria
+      - preserves the full-time-student exclusion
+    failure_indicators:
+      - says all residents below the threshold are eligible
+    checks:
+      contains_any:
+        - [resident, residence]
+        - [income is below, income below, below the threshold]
+        - [except full-time students, full-time students are excluded, not eligible if they are full-time students]
+      not_contains:
+        - all residents below the threshold are eligible
+
+  - name: preserve-required-sequence
+    input: >
+      Explain this process: An appeal may be submitted only after the mandatory reconsideration has been completed.
+    expected_behaviours:
+      - preserves reconsideration as the first step
+      - preserves that appeal is available only afterwards
+    failure_indicators:
+      - says an appeal can be submitted immediately
+    checks:
+      contains_any:
+        - [mandatory reconsideration]
+        - [only after, after it is completed, must be completed first]
+      not_contains:
+        - appeal immediately
+        - skip mandatory reconsideration
