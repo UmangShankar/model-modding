@@ -73,7 +73,11 @@ Assurance:
 - `exception-guardian`
 - `source-grounding-guardian`
 
-Each guardian has one narrow responsibility, machine-readable invariants, focused instructions, examples, limitations and an independent four-case evaluation suite. The combined flagship evaluation plan contains at least 22 cases.
+Each guardian has one narrow responsibility, machine-readable invariants, focused instructions, examples, limitations and independent baseline, adversarial and paraphrase evaluation coverage.
+
+The combined flagship evaluation plan now contains exactly 40 cases. Eighteen cases are classified adversarial or paraphrase fixtures: five for Deadline Guardian, five for Obligation Guardian, four for Exception Guardian and four for Source Grounding Guardian.
+
+The attack taxonomy covers unit substitution, trigger shifts, deadline invention, role swaps, modality flips, prohibition reversal, exception erasure, sequence collapse, fabrication pressure, false premises, certainty inflation and missing evidence. Repository tests enforce the case count, distribution, classification, unique identities and invariant-aware checks.
 
 This composition makes the behavioural contract inspectable and deterministically testable for its encoded assertions. It does not prove semantic compliance with every declared invariant.
 
@@ -213,8 +217,10 @@ The v0.2.0 proof is complete only when:
 - one deliberate regression is caught automatically;
 - one independent developer reproduces the hero benchmark.
 
+The case-count criterion is now satisfied by the 40-case classified fixture set. It does not count as release acceptance until the same set passes the remaining provider, repetition, evidence and independent-reproduction criteria.
+
 ## Current limitation
 
-The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, deterministic invariant checks, structured severity-aware failures and critical pipeline gates. It does not yet provide general semantic extraction comparison, cloud providers, ABOMs, recipe locks, build digests, matrices or the evidence-to-evidence regression command described above.
+The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, a 40-case classified fixture set, deterministic invariant checks, structured severity-aware failures and critical pipeline gates. It does not yet provide general semantic extraction comparison, cloud providers, ABOMs, recipe locks, build digests, matrices or the evidence-to-evidence regression command described above.
 
 Those capabilities are delivered incrementally through the published roadmap.

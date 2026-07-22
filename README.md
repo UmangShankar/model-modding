@@ -58,7 +58,8 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - strict reference vocabularies and `critical`, `major` and `minor` severities;
 - invariant-aware `modding inspect` output;
 - four narrow flagship assurance guardians;
-- a 22-case Trusted Document Explainer evaluation plan;
+- a 40-case Trusted Document Explainer evaluation plan;
+- 18 classified adversarial and paraphrase fixtures across high-risk failure modes;
 - deterministic invariant checks bound to manifest declarations;
 - structured critical, major and minor failure records;
 - configurable evaluation gates with critical failures blocking by default;
@@ -195,6 +196,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 
 - [Core concepts](docs/concepts.md)
 - [Invariant declarations](docs/invariants.md)
+- [Adversarial and paraphrase fixtures](docs/adversarial-fixtures.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
 - [Non-goals](docs/non-goals.md)
 - [Five-minute quick start](docs/quickstart.md)
@@ -207,7 +209,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations, four narrow assurance guardians and deterministic severity-aware evaluation gates. It does not yet provide general semantic extraction, cloud-provider portability, ABOMs, recipe locks or evidence-to-evidence regression comparison.
+`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations, four narrow assurance guardians, deterministic severity-aware evaluation gates and a 40-case classified flagship fixture set. It does not yet provide general semantic extraction, cloud-provider portability, ABOMs, recipe locks or evidence-to-evidence regression comparison.
 
 ## Licence
 

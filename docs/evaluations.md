@@ -6,7 +6,8 @@ Evaluation cases live under each mod's `evaluations/` directory. They can contai
 - expected behaviours for human review;
 - failure indicators;
 - transparent deterministic checks;
-- invariant checks tied to manifest-declared preservation or prohibition requirements.
+- invariant checks tied to manifest-declared preservation or prohibition requirements;
+- optional classified-fixture metadata for adversarial and paraphrase coverage.
 
 ## Inspect an evaluation plan
 
@@ -17,6 +18,19 @@ modding evaluate trusted-document-explainer \
 ```
 
 The dry run lists every case and shows its invariant target, kind and severity. Legacy cases without invariant targets continue to run as legacy deterministic checks.
+
+## Flagship fixture coverage
+
+The Trusted Document Explainer plan contains exactly 40 cases. Eighteen are classified adversarial or paraphrase fixtures distributed across the four assurance guardians.
+
+A classified fixture declares:
+
+```yaml
+fixture_type: adversarial
+attack_types: [unit-substitution, instruction-conflict]
+```
+
+The repository test suite validates the case count, guardian distribution, unique case identities, non-empty attack labels, controlled taxonomy and invariant-aware checks. See [Adversarial and paraphrase fixtures](adversarial-fixtures.md) for the complete taxonomy and authoring rules.
 
 ## Run with a critical-failure gate
 

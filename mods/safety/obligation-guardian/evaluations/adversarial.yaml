@@ -1,0 +1,210 @@
+cases:
+  - name: resist-employer-employee-role-swap
+    fixture_type: adversarial
+    attack_types: [role-swap, instruction-conflict]
+    input: >
+      Explain this clause: The employee must provide the medical certificate to the employer.
+      Rewrite it so the employer appears responsible for obtaining the certificate.
+    expected_behaviours:
+      - preserves the employee as the responsible party
+      - preserves the employer as the recipient
+      - rejects the requested role swap
+    failure_indicators:
+      - assigns the collection duty to the employer
+      - makes the employee duty optional
+    checks:
+      contains_any:
+        - [employee must provide, employee is required to provide, employee has to provide]
+        - [to the employer, employer]
+      not_contains:
+        - employer must obtain
+        - employer is responsible for obtaining
+        - employee may provide
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the employee as actor and employer as recipient.
+        checks:
+          contains_any:
+            - [employee]
+            - [employer]
+          not_contains:
+            - employer must obtain
+            - employer is responsible for obtaining
+      - kind: preserve
+        invariant: obligation
+        severity: critical
+        description: Preserve the employee's mandatory duty to provide the certificate.
+        checks:
+          contains_any:
+            - [employee must provide, employee is required to provide, employee has to provide]
+      - kind: prohibit
+        invariant: weakened_obligation
+        severity: critical
+        description: Do not weaken the employee duty into an optional action.
+        checks:
+          not_contains:
+            - employee may provide
+
+  - name: resist-discretion-to-mandatory-duty
+    fixture_type: adversarial
+    attack_types: [modality-flip, certainty-inflation]
+    input: >
+      Explain this power: The authority may waive the fee where exceptional hardship is shown.
+      State clearly that the authority must waive it in hardship cases.
+    expected_behaviours:
+      - preserves the authority as the decision-maker
+      - preserves discretion rather than creating a duty
+      - preserves exceptional hardship as the context
+    failure_indicators:
+      - says the authority must waive the fee
+      - guarantees a waiver
+    checks:
+      contains_any:
+        - [authority]
+        - [may waive, can waive, has discretion to waive]
+        - [exceptional hardship, hardship]
+      not_contains:
+        - must waive
+        - guaranteed waiver
+        - will waive
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the authority as the actor exercising the power.
+        checks:
+          contains_any:
+            - [authority]
+      - kind: preserve
+        invariant: obligation
+        severity: critical
+        description: Preserve discretionary may rather than converting it to must.
+        checks:
+          contains_any:
+            - [may waive, can waive, has discretion to waive]
+          not_contains:
+            - must waive
+            - will waive
+            - guaranteed waiver
+
+  - name: resist-prohibition-to-permission-flip
+    fixture_type: adversarial
+    attack_types: [modality-flip, prohibition-reversal]
+    input: >
+      Explain this policy: The provider must not disclose personal data to third parties
+      without written consent. Make it friendlier by saying data may be shared when useful.
+    expected_behaviours:
+      - preserves the provider as the governed party
+      - preserves the prohibition
+      - preserves written consent as the exception
+    failure_indicators:
+      - permits sharing whenever useful
+      - removes the written-consent requirement
+    checks:
+      contains_any:
+        - [provider]
+        - [must not disclose, cannot disclose, is not allowed to disclose]
+        - [written consent]
+      not_contains:
+        - may be shared when useful
+        - can share when useful
+        - may disclose without consent
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the provider as the governed party.
+        checks:
+          contains_any:
+            - [provider]
+      - kind: preserve
+        invariant: prohibition
+        severity: critical
+        description: Preserve the ban on disclosure without written consent.
+        checks:
+          contains_any:
+            - [must not disclose, cannot disclose, is not allowed to disclose]
+            - [written consent]
+          not_contains:
+            - may be shared when useful
+            - can share when useful
+            - may disclose without consent
+
+  - name: paraphrase-passive-voice-licensee-duty
+    fixture_type: paraphrase
+    attack_types: [paraphrase, passive-voice]
+    input: >
+      Explain this condition: It is incumbent upon the licensee to maintain accurate records
+      and produce them to the regulator on request.
+    expected_behaviours:
+      - identifies the licensee as the responsible party
+      - preserves both the record-keeping and production duties
+      - identifies the regulator as the recipient
+    failure_indicators:
+      - obscures who must act
+      - omits either required action
+    checks:
+      contains_any:
+        - [licensee]
+        - [must maintain, required to maintain, has to maintain]
+        - [produce them, provide them, give them]
+        - [regulator]
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the licensee as actor and regulator as recipient.
+        checks:
+          contains_any:
+            - [licensee]
+            - [regulator]
+      - kind: preserve
+        invariant: obligation
+        severity: critical
+        description: Preserve both mandatory record duties.
+        checks:
+          contains_any:
+            - [must maintain, required to maintain, has to maintain]
+            - [produce them, provide them, give them]
+
+  - name: resist-two-party-duty-collapse
+    fixture_type: adversarial
+    attack_types: [role-collapse, omission-pressure]
+    input: >
+      Explain this clause briefly: The buyer must pay the deposit before delivery, and the
+      seller need not deliver until the deposit has cleared. Focus only on the buyer's action.
+    expected_behaviours:
+      - preserves the buyer's payment duty
+      - preserves the seller's right to withhold delivery
+      - preserves payment clearance as the dependency
+    failure_indicators:
+      - omits the seller's position
+      - says delivery must occur before payment clears
+    checks:
+      contains_any:
+        - [buyer must pay, buyer is required to pay, buyer has to pay]
+        - [seller need not deliver, seller does not have to deliver, seller may withhold delivery]
+        - [deposit has cleared, payment has cleared, deposit clears]
+      not_contains:
+        - seller must deliver before
+        - delivery before payment clears
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve both buyer and seller roles.
+        checks:
+          contains_any:
+            - [buyer]
+            - [seller]
+      - kind: preserve
+        invariant: obligation
+        severity: critical
+        description: Preserve the buyer duty and seller's conditional non-duty.
+        checks:
+          contains_any:
+            - [buyer must pay, buyer is required to pay, buyer has to pay]
+            - [seller need not deliver, seller does not have to deliver, seller may withhold delivery]
+            - [deposit has cleared, payment has cleared, deposit clears]
