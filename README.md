@@ -22,7 +22,7 @@ A prompt file can contain instructions. A Model Modding package is intended to m
 4. **Evidence bundle** — the inputs, outputs, configuration and evaluation results for a run.
 5. **ABOM** — an Agent Behaviour Bill of Materials describing exactly what behavioural components were built and tested.
 
-Mods and recipes are implemented in v0.1. Invariants, evidence bundles and ABOMs are the central v0.2 delivery target and are documented now so contributors can build toward one coherent contract.
+Mods, recipes and machine-readable invariant declarations are implemented on current `main`. Evidence bundles and ABOMs remain staged v0.2 deliverables.
 
 ## Current working loop
 
@@ -47,10 +47,14 @@ modding doctor
 
 Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by default. No cloud API key is required.
 
-## What v0.1.1 provides
+## What current `main` provides
 
 - versioned mod and recipe manifests;
-- JSON Schema validation;
+- JSON Schema validation with offline cross-schema references;
+- optional `transformation` and `assurance` mod roles;
+- machine-readable preserved invariants and prohibited transformations;
+- strict reference vocabularies and `critical`, `major` and `minor` severities;
+- invariant-aware `modding inspect` output;
 - deterministic recipe composition;
 - canonical cross-platform mod references;
 - local Ollama execution;
@@ -62,7 +66,7 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - reference mods and recipes;
 - the static Workshop, Local Dyno, Evaluation Scorecard and Fitment Matrix.
 
-The current evaluator uses transparent deterministic checks. These checks are useful regression signals, but they do not prove factual correctness, safety, legal meaning or overall model quality.
+The current evaluator uses transparent deterministic checks. It can validate and display invariant declarations, but it does not yet semantically enforce them. Existing checks remain useful regression signals, not proof of factual correctness, safety, legal meaning or overall model quality.
 
 ## The flagship product contract
 
@@ -159,7 +163,7 @@ modding create mod my-first-mod \
   --github your-handle
 ```
 
-Read [Creating mods](docs/creating-mods.md), the [manifest reference](docs/manifest-reference.md), and [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invariants.md), the [manifest reference](docs/manifest-reference.md), and [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ## Principles
 
@@ -174,6 +178,7 @@ Read [Creating mods](docs/creating-mods.md), the [manifest reference](docs/manif
 ## Documentation
 
 - [Core concepts](docs/concepts.md)
+- [Invariant declarations](docs/invariants.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
 - [Non-goals](docs/non-goals.md)
 - [Five-minute quick start](docs/quickstart.md)
@@ -186,7 +191,7 @@ Read [Creating mods](docs/creating-mods.md), the [manifest reference](docs/manif
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation and product-direction release. It packages and evaluates behaviour locally today. It does not yet provide machine-readable invariants, cloud-provider portability, ABOMs, recipe locks or semantic assurance gates; those are the staged v0.2 deliverables.
+`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations and inspection. It does not yet provide semantic invariant enforcement, cloud-provider portability, ABOMs, recipe locks or severity-aware regression gates.
 
 ## Licence
 
