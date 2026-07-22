@@ -110,8 +110,8 @@ def test_report_counts_failures_and_blocks_at_threshold() -> None:
 
     report = build_report("trusted-document-explainer", "example-model", [case], rows, fail_on="critical")
 
-    assert report["schema_version"] == "0.2"
-    assert report["evaluator"]["version"] == "0.2.0"
+    assert report["schema_version"] == "0.3"
+    assert report["evaluator"]["version"] == "0.3.0"
     assert report["summary"]["modded_failures"] == {"critical": 1, "major": 0, "minor": 0}
     assert report["pipeline"]["status"] == "failed"
     assert report["pipeline"]["blocking_failure_count"] == 1

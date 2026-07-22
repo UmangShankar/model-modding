@@ -28,7 +28,7 @@ Delivered:
 
 ## v0.1.1 — Stabilisation and positioning
 
-Delivered or included in the release branch:
+Delivered:
 
 - Windows and POSIX mod-reference compatibility;
 - canonical POSIX references in generated metadata;
@@ -43,16 +43,21 @@ Delivered or included in the release branch:
 
 ## v0.1.2 — Invariant specification and flagship refactor
 
-Planned:
+Delivered on the development line:
 
-- a small invariant reference vocabulary;
+- a controlled invariant reference vocabulary;
 - machine-readable preserve and prohibit declarations;
 - critical, major and minor severity levels;
 - transformation and assurance semantic roles;
 - backward-compatible schema migration;
 - separate deadline, obligation, exception and source-grounding guardians;
-- Trusted Document Explainer 1.0;
-- at least 30 meaning-preservation evaluation cases.
+- a composed Trusted Document Explainer reference recipe;
+- deterministic invariant evaluator gates;
+- exactly 40 meaning-preservation cases;
+- classified adversarial and paraphrase coverage;
+- 23 typed source facts across 16 representative cases;
+- structured source-output comparison for values, context and prohibited transformations;
+- report schema `0.3` with combined assurance failures.
 
 ## v0.1.3 — Provider-neutral runtime
 

@@ -23,12 +23,16 @@ All notable changes to Model Modding are documented here.
 - Deterministic invariant evaluator v2 with structured failure records.
 - Severity totals for stock and modded responses in evaluation and benchmark reports.
 - Configurable `--fail-on critical|major|minor|none` pipeline gates.
-- Report schema `0.2` with evaluator identity, pipeline status and blocking failures.
 - Deliberate regression tests proving that critical invariant failures return a non-zero exit code.
 - Eighteen classified adversarial and paraphrase fixtures across the four assurance guardians.
 - A controlled attack taxonomy covering deadline, actor, modality, exception, sequence and grounding failures.
 - Repository gates enforcing exactly 40 flagship cases, balanced distribution, unique identities and invariant-aware fixture definitions.
 - Authoring documentation for adversarial and paraphrase fixtures.
+- Twenty-three typed source facts across sixteen representative guardian cases.
+- Structured source-output comparison for accepted values, required context and prohibited output forms.
+- Loader validation proving canonical source facts and context occur in the fixture input.
+- Report schema `0.3` with explicit evaluator layers and source-comparison failures.
+- Tests proving critical source-comparison failures enter the existing severity gate.
 
 ### Changed
 
@@ -36,15 +40,15 @@ All notable changes to Model Modding are documented here.
 - Legacy v0.1 manifests without role or invariant declarations remain valid during migration.
 - Trusted Document Explainer `0.2.0` now composes one transformation mod and four non-overlapping assurance guardians.
 - Guardian fixtures bind deterministic assertions to manifest-declared invariants and matching severities.
-- Multi-model benchmarks now use the same invariant-scoring path as `modding evaluate`.
+- Multi-model benchmarks use the same combined invariant and source-comparison result as `modding evaluate`.
 - Benchmark tests derive mocked response counts from the live evaluation plan.
 - The flagship evaluation plan now contains exactly 40 cases rather than 22.
 
 ### Notes
 
-- Deterministic invariant checks now block configured severity thresholds and cannot be overridden by aggregate scores.
-- The 40-case threshold is satisfied, but the evaluator still does not perform general semantic extraction or guarantee detection of every paraphrased meaning change.
-- Existing published benchmark evidence remains immutable and does not retroactively include the expanded fixture set.
+- Deterministic invariant and structured source comparisons block configured severity thresholds and cannot be overridden by aggregate scores.
+- The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
+- Existing published benchmark evidence remains immutable and does not retroactively include the expanded fixture or evaluator layers.
 
 ## [0.1.1] - 2026-07-22
 

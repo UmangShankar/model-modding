@@ -44,6 +44,29 @@ cases:
         checks:
           not_contains:
             - tenant may notify
+    source_facts:
+      - id: tenant-landlord-roles
+        kind: preserve
+        invariant: named_party
+        severity: critical
+        source:
+          value: The tenant
+          context: the landlord
+        output:
+          any_of: [tenant]
+          context_any_of: [landlord]
+          none_of: [landlord must notify the tenant]
+      - id: written-notification-duty
+        kind: preserve
+        invariant: obligation
+        severity: critical
+        source:
+          value: must notify
+          context: in writing
+        output:
+          any_of: [must notify, required to notify, has to notify]
+          context_any_of: [written, in writing]
+          none_of: [tenant may notify]
 
   - name: preserve-prohibition
     input: >
@@ -81,6 +104,18 @@ cases:
           not_contains:
             - may subcontract without consent
             - can subcontract without consent
+    source_facts:
+      - id: subcontracting-prohibition
+        kind: preserve
+        invariant: prohibition
+        severity: critical
+        source:
+          value: must not subcontract
+          context: prior written consent
+        output:
+          any_of: [must not subcontract, cannot subcontract, is not allowed to subcontract]
+          context_any_of: [prior written consent, written consent]
+          none_of: [may subcontract without consent, can subcontract without consent]
 
   - name: preserve-permission-without-creating-duty
     input: >
@@ -116,6 +151,18 @@ cases:
           not_contains:
             - must inspect every
             - required to inspect every
+    source_facts:
+      - id: discretionary-inspection-power
+        kind: preserve
+        invariant: obligation
+        severity: critical
+        source:
+          value: may inspect
+          context: considers this necessary
+        output:
+          any_of: [may inspect, can inspect, has discretion to inspect]
+          context_any_of: [considers this necessary, considers it necessary, where necessary]
+          none_of: [must inspect every, required to inspect every]
 
   - name: preserve-two-party-actions
     input: >
@@ -154,3 +201,24 @@ cases:
             - [employee need not respond, employee does not have to respond, no requirement for the employee to respond]
           not_contains:
             - employee must respond
+    source_facts:
+      - id: employer-notification-duty
+        kind: preserve
+        invariant: obligation
+        severity: critical
+        source:
+          value: employer must notify
+          context: the employee
+        output:
+          any_of: [employer must notify, employer is required to notify, employer has to notify]
+          context_any_of: [employee]
+          none_of: [employee must notify the employer]
+      - id: no-employee-response-duty
+        kind: preserve
+        invariant: obligation
+        severity: critical
+        source:
+          value: employee need not respond
+        output:
+          any_of: [employee need not respond, employee does not have to respond, no requirement for the employee to respond]
+          none_of: [employee must respond]

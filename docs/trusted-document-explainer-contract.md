@@ -40,7 +40,7 @@ The implemented initial invariant vocabulary includes:
 - source claims;
 - uncertainty.
 
-These declarations are schema-validated, inspectable and can be bound to explicit deterministic evaluator checks. General semantic comparison remains a later evaluator capability.
+These declarations are schema-validated and inspectable. They can be bound both to explicit deterministic invariant checks and to typed source facts that compare canonical source values, required context and prohibited output forms. Unrestricted semantic extraction remains a later capability.
 
 ## Prohibited transformations
 
@@ -75,11 +75,13 @@ Assurance:
 
 Each guardian has one narrow responsibility, machine-readable invariants, focused instructions, examples, limitations and independent baseline, adversarial and paraphrase evaluation coverage.
 
-The combined flagship evaluation plan now contains exactly 40 cases. Eighteen cases are classified adversarial or paraphrase fixtures: five for Deadline Guardian, five for Obligation Guardian, four for Exception Guardian and four for Source Grounding Guardian.
+The combined flagship evaluation plan contains exactly 40 cases. Eighteen cases are classified adversarial or paraphrase fixtures: five for Deadline Guardian, five for Obligation Guardian, four for Exception Guardian and four for Source Grounding Guardian.
 
 The attack taxonomy covers unit substitution, trigger shifts, deadline invention, role swaps, modality flips, prohibition reversal, exception erasure, sequence collapse, fabrication pressure, false premises, certainty inflation and missing evidence. Repository tests enforce the case count, distribution, classification, unique identities and invariant-aware checks.
 
-This composition makes the behavioural contract inspectable and deterministically testable for its encoded assertions. It does not prove semantic compliance with every declared invariant.
+Sixteen representative guardian cases declare 23 typed source facts. These compare source values with accepted output forms, bind facts to actors, triggers or qualifications where required, and detect explicitly prohibited transformations.
+
+This composition makes the behavioural contract inspectable and deterministically testable for its encoded invariant and source assertions. It does not prove semantic compliance with every declared invariant.
 
 ## Portability target
 
@@ -102,7 +104,7 @@ Quality gates are ordered as follows:
 3. optional model-assisted judgement;
 4. recorded human review.
 
-Evaluator v2 implements the first layer. Guardian cases target manifest-declared invariants, require matching severities and produce structured critical, major and minor failures. The default command gate fails on critical modded failures.
+Evaluator `0.3.0` implements the first two layers. Guardian cases target manifest-declared invariants, require matching severities and produce structured critical, major and minor failures. Typed source facts must also be present in the case input, preventing fixtures from inventing their own ground truth. The default command gate fails on critical modded failures from either deterministic layer.
 
 A model judge must never be the sole gate and cannot override an exact deterministic critical failure.
 
@@ -124,7 +126,7 @@ modding evaluate trusted-document-explainer \
 
 Supported thresholds are `critical`, `major`, `minor` and `none`. The `none` setting records failures without blocking and is intended for exploratory evidence collection only.
 
-Evaluation reports use schema `0.2` and include evaluator identity, structured failures, severity totals, per-mod summaries, pipeline status and blocking failures. Multi-model benchmarks use the same invariant-scoring path.
+Evaluation reports use schema `0.3` and include evaluator layers, invariant checks, structured source comparisons, combined failures, severity totals, per-mod summaries, pipeline status and blocking failures. Multi-model benchmarks use the same combined scoring result.
 
 ## Build target
 
@@ -196,6 +198,7 @@ Every release result must identify:
 - generation configuration;
 - evaluator version;
 - case count;
+- structured source-fact count;
 - critical, major and minor failures;
 - evidence-bundle location;
 - ABOM digest;
@@ -221,6 +224,6 @@ The case-count criterion is now satisfied by the 40-case classified fixture set.
 
 ## Current limitation
 
-The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, a 40-case classified fixture set, deterministic invariant checks, structured severity-aware failures and critical pipeline gates. It does not yet provide general semantic extraction comparison, cloud providers, ABOMs, recipe locks, build digests, matrices or the evidence-to-evidence regression command described above.
+The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, a 40-case classified fixture set, deterministic invariant checks, 23 typed source facts, structured source-output comparison, severity-aware failures and critical pipeline gates. It does not provide unrestricted semantic extraction, cloud providers, ABOMs, recipe locks, build digests, matrices or the evidence-to-evidence regression command described above.
 
 Those capabilities are delivered incrementally through the published roadmap.

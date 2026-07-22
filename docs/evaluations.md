@@ -7,6 +7,7 @@ Evaluation cases live under each mod's `evaluations/` directory. They can contai
 - failure indicators;
 - transparent deterministic checks;
 - invariant checks tied to manifest-declared preservation or prohibition requirements;
+- typed source facts for structured source-output comparison;
 - optional classified-fixture metadata for adversarial and paraphrase coverage.
 
 ## Inspect an evaluation plan
@@ -17,7 +18,7 @@ modding evaluate trusted-document-explainer \
   --dry-run
 ```
 
-The dry run lists every case and shows its invariant target, kind and severity. Legacy cases without invariant targets continue to run as legacy deterministic checks.
+The dry run lists every case, its invariant targets and its structured source-fact count. Legacy cases without invariant targets or source facts continue to run.
 
 ## Flagship fixture coverage
 
@@ -32,6 +33,8 @@ attack_types: [unit-substitution, instruction-conflict]
 
 The repository test suite validates the case count, guardian distribution, unique case identities, non-empty attack labels, controlled taxonomy and invariant-aware checks. See [Adversarial and paraphrase fixtures](adversarial-fixtures.md) for the complete taxonomy and authoring rules.
 
+Sixteen representative guardian cases also declare 23 typed source facts. They cover dates, durations, actors, recipients, modality, prohibitions, conditions, exceptions, eligibility, sequence, uncertainty, source claims and missing evidence.
+
 ## Run with a critical-failure gate
 
 ```bash
@@ -40,20 +43,18 @@ modding evaluate trusted-document-explainer \
   --fail-on critical
 ```
 
-`critical` is the default. The command returns exit code `1` when the modded response has a deterministic invariant failure at or above the selected threshold.
+`critical` is the default. The command returns exit code `1` when the modded response has an invariant or source-comparison failure at or above the selected threshold.
 
 Supported thresholds are:
 
-- `critical`: block only critical invariant failures;
+- `critical`: block only critical assurance failures;
 - `major`: block critical and major failures;
-- `minor`: block any declared invariant failure;
+- `minor`: block any declared assurance failure;
 - `none`: record failures without returning a failing exit code.
 
 Use `--fail-on none` only for exploratory evidence collection. It must not be used to present a failing result as passing assurance evidence.
 
 ## Invariant check shape
-
-An evaluation case may include:
 
 ```yaml
 invariant_checks:
@@ -68,41 +69,72 @@ invariant_checks:
         - 14 working days
 ```
 
-The evaluator validates that:
+The evaluator validates that the kind, invariant and severity match the owning mod manifest and that supported deterministic checks are supplied.
 
-1. `kind` is `preserve` or `prohibit`;
-2. the invariant is declared by that mod's manifest;
-3. the case severity exactly matches the manifest severity;
-4. at least one supported deterministic check is supplied.
+## Structured source fact shape
 
-A malformed or undeclared target stops the evaluation plan before a model is called.
+```yaml
+source_facts:
+  - id: submission-period
+    kind: preserve
+    invariant: duration
+    severity: critical
+    source:
+      value: 14 calendar days
+      context: date of this notice
+    output:
+      any_of: [14 calendar days, fourteen calendar days]
+      context_any_of: [date of this notice, notice date]
+      none_of: [14 working days]
+```
+
+The loader validates that:
+
+1. the fact ID is unique within the case;
+2. the kind and invariant are declared by the owning mod;
+3. severity exactly matches the manifest declaration;
+4. the canonical source value and optional context occur in the case input;
+5. at least one accepted output form is supplied;
+6. accepted context and prohibited forms contain no empty values.
+
+This prevents a fixture from quietly inventing the ground truth it later scores.
+
+## Comparison behavior
+
+For each typed fact the evaluator records:
+
+- the canonical source value and optional context;
+- accepted value matches;
+- accepted context matches;
+- prohibited output matches;
+- pass or fail status;
+- a structured source-comparison failure when any required comparison fails.
+
+Source-comparison failures join invariant failures in the same severity gate. Evaluation and multi-model benchmark commands use the same combined result object.
 
 ## Report contract
 
 Reports are written under `build/evaluations/<recipe>/` as JSON and Markdown.
 
-Evaluator v2 uses report schema `0.2` and records:
+Evaluator `0.3.0` uses report schema `0.3` and records:
 
-- evaluator name and version;
+- evaluator identity and active layers;
 - complete stock and modded responses;
-- legacy per-check results;
-- invariant-check results;
-- structured invariant failures;
-- critical, major and minor totals for stock and modded runs;
-- per-mod severity summaries;
+- legacy check results;
+- invariant-check results and failures;
+- structured source comparisons and failures;
+- source-fact count;
+- critical, major and minor totals;
+- per-mod summaries;
 - improvements and regressions;
 - the configured failure threshold;
 - pipeline status and blocking failures;
 - latency and response-length evidence.
 
-Each structured failure identifies the mod, case, invariant kind, invariant type, severity, description and exact deterministic checks that failed.
-
-Multi-model benchmarks use the same evaluator function and include invariant-failure counts, preventing evaluation and benchmark scoring from diverging.
-
 ## Authority and limitations
 
-Deterministic invariant checks are authoritative for the exact assertions they encode. An exact critical failure cannot be overridden by an aggregate score.
+Deterministic invariant and source comparisons are authoritative for the exact assertions they encode. An exact critical failure cannot be overridden by an aggregate score.
 
-They do not yet perform general semantic extraction or prove that every material fact was preserved. Keyword, phrase, question-count and length checks can miss paraphrases or subtle meaning changes. Review full responses and the human rubric before making compatibility, legal, medical, financial or safety claims.
+The source layer is fixture-authored. It can detect missing values, missing required context and explicitly prohibited transformations covered by its matchers. It does not perform unrestricted semantic extraction, resolve every paraphrase or prove that every material source fact was captured.
 
-Structured source-output comparison and optional model-assisted judgement remain separate later increments. A model judge will never be the sole gate and will not override an exact deterministic critical failure.
+Review full responses and the human rubric before making compatibility, legal, medical, financial or safety claims. Optional model-assisted judgement remains a later layer and will never be the sole gate or override an exact deterministic critical failure.

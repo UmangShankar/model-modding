@@ -8,6 +8,7 @@ from typing import Any, Callable
 
 from .evaluation import (
     EVALUATOR_VERSION,
+    REPORT_SCHEMA_VERSION,
     collect_response,
     evaluate_case_response,
     failure_counts,
@@ -41,14 +42,17 @@ def markdown_report(report: dict[str, Any]) -> str:
         "",
         f"- Evaluator: `{report.get('evaluator', {}).get('version', 'legacy')}`",
         f"- Cases per model: {report['case_count']}",
+        f"- Structured source facts: {report.get('source_fact_count', 0)}",
         f"- Requested models: {', '.join(report['requested_models'])}",
         "",
-        "| Model | Status | Stock | Modded | Change | Regressions | Critical | Major | Minor | Avg latency | Avg words |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Model | Status | Stock | Modded | Change | Regressions | Critical | Major | Minor | Source | Avg latency | Avg words |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["models"]:
         if row["status"] != "completed":
-            lines.append(f"| `{row['model']}` | {row['status']} | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |")
+            lines.append(
+                f"| `{row['model']}` | {row['status']} | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |"
+            )
             continue
         summary = row["summary"]
         failures = summary.get("modded_failures", {})
@@ -56,17 +60,23 @@ def markdown_report(report: dict[str, Any]) -> str:
             f"| `{row['model']}` | completed | {summary['stock_passed']}/{summary['cases']} | "
             f"{summary['modded_passed']}/{summary['cases']} | {summary['improvement_points']:+.1f} pp | "
             f"{summary['regressions']} | {failures.get('critical', 0)} | {failures.get('major', 0)} | "
-            f"{failures.get('minor', 0)} | {summary['average_latency_seconds']:.2f}s | "
-            f"{summary['average_modded_words']:.0f} |"
+            f"{failures.get('minor', 0)} | {summary.get('modded_source_comparison_failures', 0)} | "
+            f"{summary['average_latency_seconds']:.2f}s | {summary['average_modded_words']:.0f} |"
         )
     lines.extend([
         "",
         "## Interpretation",
         "",
-        "Deterministic invariant checks expose declared preservation failures and regressions. They do not prove complete semantic correctness or universal model quality. Review full responses before changing compatibility claims.",
+        "Deterministic invariant and structured source comparisons expose declared preservation failures and regressions. They do not prove complete semantic correctness or universal model quality. Review full responses before changing compatibility claims.",
         "",
     ])
     return "\n".join(lines)
+
+
+def _result_failures(result: dict[str, Any]) -> list[dict[str, Any]]:
+    if "failures" in result:
+        return list(result.get("failures", []))
+    return list(result.get("invariant_failures", []))
 
 
 def benchmark_recipe(
@@ -88,9 +98,11 @@ def benchmark_recipe(
         print(str(exc), file=sys.stderr)
         return 2
 
+    source_fact_count = sum(len(case.source_facts) for case in cases)
     print(f"Benchmark: {human_name(recipe_name)}")
     print(f"Models: {', '.join(models)}")
     print(f"Cases per model: {len(cases)}")
+    print(f"Structured source facts: {source_fact_count}")
     if dry_run:
         for model in models:
             print(f"- {model}: {len(cases)} stock + {len(cases)} modded runs")
@@ -123,7 +135,14 @@ def benchmark_recipe(
                 stock_text = collect_response(normalized_host, resolved_model, case.prompt, "", timeout, opener)
                 stock_latency = time.monotonic() - started
                 started = time.monotonic()
-                modded_text = collect_response(normalized_host, resolved_model, case.prompt, compiled.system_prompt, timeout, opener)
+                modded_text = collect_response(
+                    normalized_host,
+                    resolved_model,
+                    case.prompt,
+                    compiled.system_prompt,
+                    timeout,
+                    opener,
+                )
                 modded_latency = time.monotonic() - started
                 stock_result = evaluate_case_response(stock_text, case)
                 modded_result = evaluate_case_response(modded_text, case)
@@ -167,18 +186,11 @@ def benchmark_recipe(
             for row in rows
             if not row["stock"]["passed"] and row["modded"]["passed"]
         ]
-        stock_failures = [
-            failure
-            for row in rows
-            for failure in row["stock"].get("invariant_failures", [])
-        ]
-        modded_failures = [
-            failure
-            for row in rows
-            for failure in row["modded"].get("invariant_failures", [])
-        ]
+        stock_failures = [failure for row in rows for failure in _result_failures(row["stock"])]
+        modded_failures = [failure for row in rows for failure in _result_failures(row["modded"])]
         summary = {
             "cases": total,
+            "source_facts": source_fact_count,
             "stock_passed": stock_passed,
             "modded_passed": modded_passed,
             "stock_pass_rate": stock_passed / total if total else 0,
@@ -188,6 +200,12 @@ def benchmark_recipe(
             "improvements": len(improvements),
             "stock_failures": failure_counts(stock_failures),
             "modded_failures": failure_counts(modded_failures),
+            "stock_source_comparison_failures": sum(
+                1 for failure in stock_failures if failure.get("layer") == "source_comparison"
+            ),
+            "modded_source_comparison_failures": sum(
+                1 for failure in modded_failures if failure.get("layer") == "source_comparison"
+            ),
             "average_latency_seconds": (
                 sum(row["stock"]["latency_seconds"] + row["modded"]["latency_seconds"] for row in rows)
                 / (2 * total)
@@ -209,11 +227,15 @@ def benchmark_recipe(
 
     completed = [row for row in model_reports if row["status"] == "completed"]
     report = {
-        "schema_version": "0.2",
-        "evaluator": {"name": "deterministic-invariant-evaluator", "version": EVALUATOR_VERSION},
+        "schema_version": REPORT_SCHEMA_VERSION,
+        "evaluator": {
+            "name": "deterministic-source-invariant-evaluator",
+            "version": EVALUATOR_VERSION,
+        },
         "recipe": recipe_name,
         "recipe_display_name": human_name(recipe_name),
         "case_count": len(cases),
+        "source_fact_count": source_fact_count,
         "requested_models": models,
         "completed_models": len(completed),
         "models": model_reports,
