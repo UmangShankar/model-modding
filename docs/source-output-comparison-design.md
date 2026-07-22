@@ -15,17 +15,18 @@ A case may declare `source_facts`:
 ```yaml
 source_facts:
   - id: submission-period
+    kind: preserve
     invariant: duration
     severity: critical
     source:
       value: 14 calendar days
-      context: after the date of the notice
+      context: date of this notice
     output:
       any_of:
         - 14 calendar days
         - fourteen calendar days
       context_any_of:
-        - date of the notice
+        - date of this notice
         - notice date
       none_of:
         - 14 working days
@@ -34,12 +35,15 @@ source_facts:
 Every source fact requires:
 
 - a case-unique `id`;
-- a manifest-declared preserved invariant;
+- a `preserve` or `prohibit` kind;
+- a manifest-declared invariant for that kind;
 - the same severity as the owning mod declaration;
-- a canonical source `value`;
+- a canonical source `value` that occurs in the case input;
 - at least one accepted output form.
 
-Optional context matchers bind a value to its trigger, actor, recipient, condition or qualification. Optional prohibited forms identify known materially wrong transformations.
+An optional canonical source context must also occur in the input. This prevents a fixture from inventing the ground truth it later scores.
+
+Optional output context matchers bind a value to its trigger, actor, recipient, condition or qualification. Optional prohibited forms identify known materially wrong transformations.
 
 ## Comparison outcomes
 
@@ -48,11 +52,15 @@ For each fact the evaluator records:
 - whether an accepted value was found;
 - whether required context was found;
 - whether a prohibited form appeared;
-- the canonical source value;
+- the canonical source value and context;
 - the accepted and prohibited forms used for comparison;
 - a structured failure when the comparison fails.
 
 Failures join invariant-check failures in the severity gate. A critical source-comparison failure therefore returns a non-zero evaluation exit code under the default threshold.
+
+## Current coverage
+
+The flagship contains 23 typed source facts across 16 representative cases, distributed across all four assurance guardians.
 
 ## Limits
 
