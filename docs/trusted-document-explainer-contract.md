@@ -58,9 +58,9 @@ The package must detect and report material failures such as:
 - removing a material technical distinction;
 - presenting missing evidence as supplied evidence.
 
-## Composition target
+## Current composition
 
-The v0.2 reference recipe will separate transformation from assurance.
+Trusted Document Explainer `0.2.0` separates transformation from assurance.
 
 Transformation:
 
@@ -73,7 +73,9 @@ Assurance:
 - `exception-guardian`
 - `source-grounding-guardian`
 
-Each guardian must have one narrow responsibility, machine-readable invariants, focused instructions, examples, limitations and independent evaluation cases.
+Each guardian has one narrow responsibility, machine-readable invariants, focused instructions, examples, limitations and an independent four-case evaluation suite. The combined flagship evaluation plan contains at least 22 cases.
+
+This composition makes the behavioural contract inspectable. It does not yet prove semantic compliance with every declared invariant.
 
 ## Portability target
 
@@ -199,6 +201,6 @@ The v0.2.0 proof is complete only when:
 
 ## Current limitation
 
-The current development line provides machine-readable invariant declarations and inspection. It does not yet provide semantic extraction comparison, severity-aware enforcement, cloud providers, ABOMs, recipe locks, build digests, matrices or the regression command described above.
+The current development line provides machine-readable invariant declarations, four narrow assurance guardians and the composed flagship recipe. It does not yet provide semantic extraction comparison, severity-aware enforcement, cloud providers, ABOMs, recipe locks, build digests, matrices or the regression command described above.
 
 Those capabilities are delivered incrementally through the published roadmap.
