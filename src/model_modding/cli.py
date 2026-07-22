@@ -89,15 +89,26 @@ def create_mod(root: Path, name: str, category: str, author: str, github: str | 
         print(f"Refusing to overwrite existing path: {destination.relative_to(root)}", file=sys.stderr)
         return 2
     template = load_yaml(root / "templates/mod/mod.yaml")
-    template.update(name=name, category=category,
-                    description=f"Describe the single, clearly defined change made by the {name} mod.",
-                    authors=[{"name": author, **({"github": github} if github else {})}])
+    template.update(
+        name=name,
+        category=category,
+        description=f"Describe the single, clearly defined change made by the {name} mod.",
+        authors=[{"name": author, **({"github": github} if github else {})}],
+    )
     for folder in ("instructions", "examples", "evaluations"):
         (destination / folder).mkdir(parents=True, exist_ok=True)
-    (destination / "mod.yaml").write_text(yaml.safe_dump(template, sort_keys=False, allow_unicode=True), encoding="utf-8")
-    (destination / "README.md").write_text(f"# {name}\n\nDescribe purpose, use, limitations and examples.\n", encoding="utf-8")
-    (destination / "instructions/system.md").write_text("# Behavioural instructions\n\nAdd reusable instructions here.\n", encoding="utf-8")
-    (destination / "examples/README.md").write_text("# Examples\n\nAdd representative examples here.\n", encoding="utf-8")
+    (destination / "mod.yaml").write_text(
+        yaml.safe_dump(template, sort_keys=False, allow_unicode=True), encoding="utf-8"
+    )
+    (destination / "README.md").write_text(
+        f"# {name}\n\nDescribe purpose, use, limitations and examples.\n", encoding="utf-8"
+    )
+    (destination / "instructions/system.md").write_text(
+        "# Behavioural instructions\n\nAdd reusable instructions here.\n", encoding="utf-8"
+    )
+    (destination / "examples/README.md").write_text(
+        "# Examples\n\nAdd representative examples here.\n", encoding="utf-8"
+    )
     (destination / "evaluations/cases.yaml").write_text("cases: []\n", encoding="utf-8")
     print(f"Created {destination.relative_to(root)}")
     return 0
@@ -133,7 +144,8 @@ def resolve_mod(root: Path, reference: str) -> tuple[str, Path, dict[str, Any]]:
 
 def evaluation_count(mod_dir: Path) -> int:
     total = 0
-    for path in sorted((mod_dir / "evaluations").glob("*.yaml")) if (mod_dir / "evaluations").exists() else []:
+    paths = sorted((mod_dir / "evaluations").glob("*.yaml")) if (mod_dir / "evaluations").exists() else []
+    for path in paths:
         data = load_yaml(path)
         cases = data.get("cases", [])
         if isinstance(cases, list):
@@ -162,17 +174,27 @@ def inspect_mod(root: Path, reference: str, as_json: bool = False) -> int:
         print(str(exc), file=sys.stderr)
         return 2
     mod_dir = manifest_path.parent
-    instruction_files = sorted(p.relative_to(mod_dir).as_posix() for p in (mod_dir / "instructions").glob("**/*") if p.is_file())
+    instruction_files = sorted(
+        p.relative_to(mod_dir).as_posix()
+        for p in (mod_dir / "instructions").glob("**/*")
+        if p.is_file()
+    )
     preserved = _invariant_entries(manifest, "preserve")
     prohibited = _invariant_entries(manifest, "prohibit")
     report = {
-        "reference": resolved, "name": manifest["name"], "version": manifest["version"],
-        "status": manifest["status"], "description": manifest["description"],
+        "reference": resolved,
+        "name": manifest["name"],
+        "version": manifest["version"],
+        "status": manifest["status"],
+        "description": manifest["description"],
         "role": manifest.get("role"),
         "invariants": {"preserve": preserved, "prohibit": prohibited},
-        "capabilities": manifest.get("capabilities", []), "compatible_models": manifest.get("compatible_models", []),
-        "dependencies": manifest.get("dependencies", []), "conflicts": manifest.get("conflicts", []),
-        "instruction_files": instruction_files, "evaluation_cases": evaluation_count(mod_dir),
+        "capabilities": manifest.get("capabilities", []),
+        "compatible_models": manifest.get("compatible_models", []),
+        "dependencies": manifest.get("dependencies", []),
+        "conflicts": manifest.get("conflicts", []),
+        "instruction_files": instruction_files,
+        "evaluation_cases": evaluation_count(mod_dir),
     }
     if as_json:
         print(json.dumps(report, indent=2))
@@ -224,14 +246,18 @@ def compose_recipe(root: Path, name: str, output: Path | None = None) -> int:
         sections.append(f"\n### Mod: {reference}\n")
         for path in files:
             sections.append(path.read_text(encoding="utf-8").strip() + "\n")
-        metadata.append({
-            "reference": reference,
-            "version": manifest["version"],
-            "instruction_files": [p.relative_to(root).as_posix() for p in files],
-        })
+        metadata.append(
+            {
+                "reference": reference,
+                "version": manifest["version"],
+                "instruction_files": [p.relative_to(root).as_posix() for p in files],
+            }
+        )
     destination = (output or root / "build" / name).resolve()
     destination.mkdir(parents=True, exist_ok=True)
-    (destination / "system.md").write_text("\n".join(sections).strip() + "\n", encoding="utf-8", newline="\n")
+    (destination / "system.md").write_text(
+        "\n".join(sections).strip() + "\n", encoding="utf-8", newline="\n"
+    )
     (destination / "manifest.json").write_text(
         json.dumps({"recipe": recipe, "mods": metadata}, indent=2) + "\n",
         encoding="utf-8",
@@ -267,6 +293,12 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
     evaluate.add_argument("--timeout", type=float, default=120.0, help="Request timeout in seconds")
     evaluate.add_argument("--allow-remote-host", action="store_true", help="Allow a non-loopback Ollama endpoint")
+    evaluate.add_argument(
+        "--fail-on",
+        choices=("critical", "major", "minor", "none"),
+        default="critical",
+        help="Return non-zero when modded invariant failures meet this severity threshold",
+    )
     doctor = subcommands.add_parser("doctor", help="Check release and local runtime readiness")
     doctor.add_argument("--root", dest="command_root", type=Path, help="Repository root")
     doctor.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama API base URL")
@@ -300,16 +332,39 @@ def main(argv: list[str] | None = None) -> int:
         return compose_recipe(root, args.name, args.output)
     if args.command == "run":
         from .ollama import run_recipe
+
         return run_recipe(root, args.name, args.model, args.prompt, args.host, args.timeout, args.allow_remote_host)
     if args.command == "evaluate":
         from .evaluation import evaluate_recipe
-        return evaluate_recipe(root, args.name, args.model, args.output, args.dry_run, args.host, args.timeout, args.allow_remote_host)
+
+        return evaluate_recipe(
+            root,
+            args.name,
+            args.model,
+            args.output,
+            args.dry_run,
+            args.host,
+            args.timeout,
+            args.allow_remote_host,
+            fail_on=args.fail_on,
+        )
     if args.command == "doctor":
         from .doctor import run_doctor
+
         return run_doctor(root, args.host)
     if args.command == "benchmark":
         from .benchmark import benchmark_recipe
-        return benchmark_recipe(root, args.name, args.models, args.output, args.dry_run, args.host, args.timeout, args.allow_remote_host)
+
+        return benchmark_recipe(
+            root,
+            args.name,
+            args.models,
+            args.output,
+            args.dry_run,
+            args.host,
+            args.timeout,
+            args.allow_remote_host,
+        )
     if args.command == "create" and args.asset == "mod":
         return create_mod(root, args.name, args.category, args.author, args.github)
     return 2
