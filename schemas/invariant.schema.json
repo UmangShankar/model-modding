@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://model-modding.org/schemas/invariant.schema.json",
+  "title": "Model Modding Invariant Declaration",
+  "description": "Machine-readable preservation promises and prohibited transformations for a mod.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "preserve": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/preservedInvariant" },
+      "default": []
+    },
+    "prohibit": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/prohibitedTransformation" },
+      "default": []
+    }
+  },
+  "anyOf": [
+    {
+      "required": ["preserve"],
+      "properties": { "preserve": { "minItems": 1 } }
+    },
+    {
+      "required": ["prohibit"],
+      "properties": { "prohibit": { "minItems": 1 } }
+    }
+  ],
+  "$defs": {
+    "severity": {
+      "enum": ["critical", "major", "minor"]
+    },
+    "preservedInvariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "severity"],
+      "properties": {
+        "type": {
+          "enum": [
+            "deadline",
+            "date",
+            "duration",
+            "amount",
+            "percentage",
+            "named_party",
+            "obligation",
+            "prohibition",
+            "condition",
+            "exception",
+            "eligibility_rule",
+            "sequence",
+            "source_claim",
+            "uncertainty"
+          ]
+        },
+        "severity": { "$ref": "#/$defs/severity" }
+      }
+    },
+    "prohibitedTransformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "severity"],
+      "properties": {
+        "type": {
+          "enum": [
+            "invented_deadline",
+            "weakened_obligation",
+            "removed_exception",
+            "unsupported_advice"
+          ]
+        },
+        "severity": { "$ref": "#/$defs/severity" }
+      }
+    }
+  }
+}
