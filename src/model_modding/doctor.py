@@ -10,7 +10,7 @@ from urllib.error import URLError
 
 from .cli import validate_repository
 from .ollama import DEFAULT_OLLAMA_HOST, list_models
-from .provider import provider_names
+from .provider import ProviderError, provider_names
 
 
 @dataclass(frozen=True)
@@ -65,7 +65,7 @@ def run_doctor(
         models = model_loader(host, timeout=2.0)
         detail = f"reachable; {len(models)} model(s): {', '.join(models[:3])}" if models else "reachable; no models installed"
         status = "PASS" if models else "WARN"
-    except (OSError, URLError, ValueError) as exc:
+    except (OSError, URLError, ValueError, ProviderError) as exc:
         status, detail = "WARN", f"not reachable at {host}: {exc}"
     checks.append(Check("Ollama", status, detail, required=False))
 
