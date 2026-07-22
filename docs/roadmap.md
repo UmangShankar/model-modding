@@ -1,32 +1,166 @@
 # Roadmap
 
-## v0.1 — Foundation
+## Product direction
+
+Model Modding is becoming the open packaging and assurance layer for portable AI-agent behaviour.
+
+The first market wedge is:
+
+> Meaning-preserving, evidence-backed transformations for high-stakes work.
+
+The flagship proof is one exceptional `trusted-document-explainer` recipe that can run across Ollama, Anthropic and OpenAI while preserving declared invariants, producing reproducible evidence and failing CI when material meaning changes.
+
+The objective is not to create a universal model leaderboard. The objective is to prove that the same versioned behavioural package can be executed, inspected, evaluated and governed across different models.
+
+## v0.1.0 — Foundation
+
+Delivered:
 
 - manifest schemas and validation;
 - mod scaffolding;
 - inspection and deterministic composition;
-- static Workshop;
+- static Workshop experiences;
 - local Ollama execution;
 - stock-versus-modded evaluations and scorecards;
+- multi-model local benchmarks;
+- benchmark evidence publication and validation;
 - release and contribution foundations.
 
-## Next
+## v0.1.1 — Stabilisation and positioning
 
-- generate Workshop catalogues from repository manifests;
-- richer evaluation assertions and reviewer workflows;
-- provider adapters behind a consistent runtime interface;
-- compatibility matrices across model families and versions;
-- signed or checksummed build manifests;
-- third-party mod repositories and registry discovery;
-- recipe lock files for reproducible builds;
-- accessibility and localisation improvements.
+Delivered or included in the release branch:
 
-## Later
+- Windows and POSIX mod-reference compatibility;
+- canonical POSIX references in generated metadata;
+- unified CLI routing and complete top-level help;
+- evaluation latency and response-length evidence;
+- portable UTF-8 and LF report output;
+- repository filename hygiene;
+- portable assured behaviour positioning;
+- invariant, evidence-bundle and ABOM vocabulary;
+- explicit product non-goals;
+- the Trusted Document Explainer product contract.
 
-- community validation workflows;
-- Requests for Mods and Model Modding Proposals;
-- visual recipe authoring;
-- reusable tool, memory and workflow adapters;
-- benchmark packs that report limitations rather than universal rankings.
+## v0.1.2 — Invariant specification and flagship refactor
 
-Roadmap items are proposals, not commitments. Priorities should follow evidence from real users and contributors.
+Planned:
+
+- a small invariant reference vocabulary;
+- machine-readable preserve and prohibit declarations;
+- critical, major and minor severity levels;
+- transformation and assurance semantic roles;
+- backward-compatible schema migration;
+- separate deadline, obligation, exception and source-grounding guardians;
+- Trusted Document Explainer 1.0;
+- at least 30 meaning-preservation evaluation cases.
+
+## v0.1.3 — Provider-neutral runtime
+
+Planned:
+
+- provider request and response contracts;
+- generation-option normalisation;
+- provider registry and configuration;
+- Ollama migration behind the provider boundary;
+- exact provider and model metadata in evidence;
+- backward-compatible local commands.
+
+## v0.1.4 — Anthropic provider
+
+Planned:
+
+- optional dependency group;
+- authentication diagnostics;
+- system and user instruction mapping;
+- usage, latency and finish-reason normalisation;
+- mocked tests and opt-in live smoke tests.
+
+## v0.1.5 — OpenAI provider
+
+Planned:
+
+- the same provider contract and test suite as Anthropic;
+- provider-specific error normalisation;
+- exact model identifiers and generation settings;
+- three-provider portability evidence only after evaluator v2 is credible.
+
+## v0.1.6 — Reproducible builds, locks and ABOM
+
+Planned:
+
+- `modding build`;
+- canonical cross-platform digests;
+- recipe lock files;
+- ABOM JSON and Markdown output;
+- build verification without a model API call;
+- byte-level invalidation tests.
+
+## v0.1.7 — Evidence comparison and regression gates
+
+Planned:
+
+- run evidence bundles;
+- compatibility matrices by invariant;
+- baseline-versus-candidate comparison;
+- critical-failure regression gates;
+- PR summaries;
+- protected and cost-limited cloud workflows.
+
+## v0.2.0 — Portable Assured Behaviour
+
+Definition of done:
+
+- one versioned flagship recipe;
+- four narrow assurance mods;
+- at least 40 benchmark cases;
+- Ollama, Anthropic and OpenAI execution;
+- invariant-aware evaluation;
+- reproducible builds and digests;
+- recipe locks and ABOMs;
+- validated evidence bundles;
+- compatibility matrices;
+- automated regression detection;
+- CI failure when material meaning changes;
+- a public case study that includes failures and limitations;
+- one independent developer reproducing the hero benchmark.
+
+## CI model
+
+Every pull request should run:
+
+1. schema validation;
+2. unit tests;
+3. deterministic fixture tests;
+4. recipe build and ABOM verification when available;
+5. checked-in regression comparison when available.
+
+Cloud evaluation will not be mandatory for untrusted fork pull requests. Full provider benchmarks will use trusted branch events, protected environments, explicit model allowlists and cost limits.
+
+## Explicitly deferred
+
+The v0.2 programme does not include:
+
+- additional personality mods;
+- hosted SaaS;
+- a registry marketplace;
+- a visual recipe builder;
+- Bedrock or Vertex adapters;
+- broad agent orchestration;
+- fine-tuning;
+- user accounts or billing;
+- an enterprise dashboard;
+- a universal model leaderboard;
+- formal certification;
+- automated prompt optimisation.
+
+## Prioritisation rule
+
+A feature belongs in the v0.2 programme only when it materially improves at least one of:
+
+- portability;
+- inspectability;
+- preservation measurement;
+- reproducibility;
+- reusable compatibility evidence.
+
+Otherwise it is deferred.
