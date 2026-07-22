@@ -1,0 +1,72 @@
+cases:
+  - name: preserve-tenant-duty-and-recipient
+    input: >
+      Explain this clause: The tenant must notify the landlord in writing about any defect.
+    expected_behaviours:
+      - preserves the tenant as the responsible party
+      - preserves the landlord as the recipient
+      - preserves that written notification is required
+    failure_indicators:
+      - makes notification optional
+      - assigns the duty to the landlord
+    checks:
+      contains_any:
+        - [tenant]
+        - [landlord]
+        - [must notify, required to notify, has to notify]
+        - [written, in writing]
+      not_contains:
+        - tenant may notify
+        - landlord must notify the tenant
+
+  - name: preserve-prohibition
+    input: >
+      Explain this term: The supplier must not subcontract the services without prior written consent.
+    expected_behaviours:
+      - preserves the supplier as the governed party
+      - preserves the prohibition
+      - preserves the consent requirement
+    failure_indicators:
+      - says subcontracting is generally allowed without consent
+    checks:
+      contains_any:
+        - [supplier]
+        - [must not subcontract, cannot subcontract, is not allowed to subcontract]
+        - [prior written consent, written consent]
+      not_contains:
+        - may subcontract without consent
+        - can subcontract without consent
+
+  - name: preserve-permission-without-creating-duty
+    input: >
+      Explain this power: The authority may inspect the premises where it considers this necessary.
+    expected_behaviours:
+      - preserves the authority as the actor
+      - preserves discretion rather than a mandatory inspection duty
+    failure_indicators:
+      - says the authority must inspect every premises
+    checks:
+      contains_any:
+        - [authority]
+        - [may inspect, can inspect, has discretion to inspect]
+        - [considers this necessary, considers it necessary, where necessary]
+      not_contains:
+        - must inspect every
+        - required to inspect every
+
+  - name: preserve-two-party-actions
+    input: >
+      Explain this instruction: The employer must notify the employee of the decision, but the employee need not respond.
+    expected_behaviours:
+      - preserves the employer notification duty
+      - preserves that the employee has no response duty
+    failure_indicators:
+      - transfers the notification duty to the employee
+      - invents a response obligation
+    checks:
+      contains_any:
+        - [employer must notify, employer is required to notify, employer has to notify]
+        - [employee need not respond, employee does not have to respond, no requirement for the employee to respond]
+      not_contains:
+        - employee must respond
+        - employee must notify the employer

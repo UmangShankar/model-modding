@@ -69,7 +69,10 @@
             "invented_deadline",
             "weakened_obligation",
             "removed_exception",
-            "unsupported_advice"
+            "unsupported_advice",
+            "invented_source_claim",
+            "fabricated_citation",
+            "presented_missing_evidence"
           ]
         },
         "severity": { "$ref": "#/$defs/severity" }

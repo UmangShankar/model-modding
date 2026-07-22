@@ -1,0 +1,36 @@
+name: exception-guardian
+version: 0.1.0
+status: experimental
+description: >
+  Protects conditions, exceptions, eligibility rules and required sequence so transformations
+  do not flatten qualified rules into unconditional statements.
+category: safety
+role: assurance
+invariants:
+  preserve:
+    - type: condition
+      severity: critical
+    - type: exception
+      severity: critical
+    - type: eligibility_rule
+      severity: critical
+    - type: sequence
+      severity: major
+  prohibit:
+    - type: removed_exception
+      severity: critical
+authors:
+  - name: Model Modding Community
+compatible_models: []
+capabilities:
+  - condition-preservation
+  - exception-preservation
+  - eligibility-preservation
+  - sequence-preservation
+dependencies: []
+conflicts: []
+evaluation:
+  minimum_score: 0.9
+  suites:
+    - exception-integrity
+license: Apache-2.0

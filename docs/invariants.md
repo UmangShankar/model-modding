@@ -73,7 +73,7 @@ Unknown terms fail schema validation. New terms must be added deliberately throu
 
 ## Prohibited transformation vocabulary
 
-The first prohibited-transformation vocabulary contains:
+The controlled prohibited-transformation vocabulary contains:
 
 | Type | Meaning |
 | --- | --- |
@@ -81,8 +81,11 @@ The first prohibited-transformation vocabulary contains:
 | `weakened_obligation` | Turning a required action into an optional or weaker one. |
 | `removed_exception` | Omitting a material exception or qualification. |
 | `unsupported_advice` | Adding advice or next steps not supported by the source or package contract. |
+| `invented_source_claim` | Presenting a claim as source-supported when it does not appear in the supplied material. |
+| `fabricated_citation` | Inventing a citation, study, author, quotation, URL or publication detail. |
+| `presented_missing_evidence` | Treating a missing section, attachment or fact as though it had been supplied. |
 
-This list will expand only when a term has a precise definition and an evaluation strategy.
+The three source-grounding terms were added with the Source Grounding Guardian because each has a precise failure definition and focused evaluation cases. Future terms require the same level of definition and evidence strategy.
 
 ## Severity
 
@@ -110,6 +113,17 @@ modding inspect plain-language-explainer --json
 
 Inspection reports the mod's role, preserved invariants and prohibited transformations. Legacy mods without declarations are shown as `not declared` and `none declared` rather than being assigned inferred promises.
 
+## Assurance guardians
+
+The flagship recipe now separates four non-overlapping assurance responsibilities:
+
+- `deadline-guardian`: dates, deadlines, durations and invented time limits;
+- `obligation-guardian`: named parties, duties, permissions and prohibitions;
+- `exception-guardian`: conditions, exceptions, eligibility and sequence;
+- `source-grounding-guardian`: source claims, uncertainty, missing evidence, citations and unsupported advice.
+
+Each guardian has an independent manifest, instructions, examples, limitations and evaluation suite. Their declarations remain requirements rather than proof of semantic enforcement.
+
 ## Migration rules
 
 During the transition period:
@@ -123,4 +137,4 @@ During the transition period:
 
 ## Current implementation boundary
 
-The repository can now validate and inspect invariant declarations. It does not yet perform semantic extraction, severity-aware scoring or automatic critical-failure enforcement. Those are separate delivery increments so that attractive scores are not produced before the evaluator can detect material meaning changes.
+The repository can validate and inspect invariant declarations and can compose the four narrow assurance guardians into the flagship recipe. It does not yet perform semantic extraction, severity-aware scoring or automatic critical-failure enforcement. Those remain separate delivery increments so that attractive scores are not produced before the evaluator can detect material meaning changes.

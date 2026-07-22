@@ -6,8 +6,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+
 def read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
+
 
 
 def test_readme_leads_with_portable_assured_behaviour() -> None:
@@ -17,7 +19,9 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "meaning-preserving, evidence-backed transformation" in readme
     assert "Trusted Document Explainer product contract" in readme
     assert "machine-readable invariant declarations are implemented" in readme
-    assert "does not yet semantically enforce them" in readme
+    assert "four narrow flagship assurance guardians" in readme
+    assert "does not yet semantically enforce those declarations" in readme
+
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
@@ -30,7 +34,9 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "implemented in the v0.1.2 development line" in concepts
     assert "planned for v0.1.6" in concepts
     assert "Unknown terms fail schema validation" in invariants
+    assert "## Assurance guardians" in invariants
     assert "does not yet perform semantic extraction" in invariants
+
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -40,9 +46,11 @@ def test_non_goals_and_flagship_contract_are_explicit() -> None:
     assert "Not a universal model leaderboard" in non_goals
     assert "Not a replacement for domain review" in non_goals
     assert "This document defines the target reference product" in contract
-    assert "provides machine-readable invariant declarations and inspection" in contract
+    assert "provides machine-readable invariant declarations" in contract
+    assert "four narrow assurance guardians" in contract
     assert "does not yet provide semantic extraction comparison" in contract
     assert "zero critical failures" in contract
+
 
 
 def test_roadmap_preserves_incremental_release_sequence() -> None:
@@ -61,6 +69,7 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
 
     positions = [roadmap.index(item) for item in expected]
     assert positions == sorted(positions)
+
 
 
 def test_package_metadata_matches_v011_positioning() -> None:

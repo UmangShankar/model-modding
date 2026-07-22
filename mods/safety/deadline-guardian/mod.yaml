@@ -1,0 +1,33 @@
+name: deadline-guardian
+version: 0.1.0
+status: experimental
+description: >
+  Protects exact dates, deadlines, durations, units and triggering events during
+  behavioural transformations without inventing new time limits.
+category: safety
+role: assurance
+invariants:
+  preserve:
+    - type: deadline
+      severity: critical
+    - type: date
+      severity: critical
+    - type: duration
+      severity: critical
+  prohibit:
+    - type: invented_deadline
+      severity: critical
+authors:
+  - name: Model Modding Community
+compatible_models: []
+capabilities:
+  - deadline-preservation
+  - duration-preservation
+  - deadline-invention-prevention
+dependencies: []
+conflicts: []
+evaluation:
+  minimum_score: 0.9
+  suites:
+    - deadline-integrity
+license: Apache-2.0

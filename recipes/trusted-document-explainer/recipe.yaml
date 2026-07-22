@@ -1,9 +1,14 @@
 name: trusted-document-explainer
-version: 0.1.0
-description: Explains complex supplied documents in plain language while preserving material meaning, uncertainty and source discipline.
+version: 0.2.0
+description: >
+  Explains complex supplied documents in plain language through one transformation mod
+  and four narrow assurance guardians for deadlines, obligations, exceptions and source grounding.
 mods:
   - domain/plain-language-explainer
-  - safety/citation-guardian
+  - safety/deadline-guardian
+  - safety/obligation-guardian
+  - safety/exception-guardian
+  - safety/source-grounding-guardian
 configuration:
   composition_order: recipe
   output: system-prompt

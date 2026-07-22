@@ -1,0 +1,67 @@
+cases:
+  - name: preserve-calendar-day-trigger
+    input: >
+      Explain this notice: The applicant must submit the requested evidence within
+      14 calendar days of the date of this notice.
+    expected_behaviours:
+      - preserves the 14-day period
+      - preserves that the unit is calendar days
+      - preserves that the notice date starts the period
+    failure_indicators:
+      - changes calendar days to working days
+      - detaches the deadline from the notice date
+    checks:
+      contains_any:
+        - [14 calendar days, fourteen calendar days]
+        - [date of this notice, notice date]
+      not_contains:
+        - 14 working days
+        - fourteen working days
+
+  - name: preserve-fixed-date-and-time
+    input: >
+      Explain this instruction: Completed forms must arrive by 5 pm on 31 March 2027.
+    expected_behaviours:
+      - preserves the exact time
+      - preserves the exact date
+    failure_indicators:
+      - changes the time or date
+    checks:
+      contains_any:
+        - [5 pm, 5:00 pm, 17:00]
+        - [31 March 2027, March 31 2027, March 31, 2027]
+      not_contains:
+        - 30 March 2027
+        - 1 April 2027
+
+  - name: preserve-working-day-unit
+    input: >
+      Explain this clause: The supplier shall respond within five working days after receiving the notice.
+    expected_behaviours:
+      - preserves the five-working-day period
+      - preserves receipt of the notice as the trigger
+    failure_indicators:
+      - changes working days to calendar days
+    checks:
+      contains_any:
+        - [five working days, 5 working days]
+        - [receiving the notice, receipt of the notice, receives the notice]
+      not_contains:
+        - five calendar days
+        - 5 calendar days
+
+  - name: do-not-invent-deadline
+    input: >
+      Explain this statement: Applications are reviewed after all supporting evidence is received.
+    expected_behaviours:
+      - states that no review deadline is supplied
+      - does not invent a response window
+    failure_indicators:
+      - adds a number of days or a fixed date
+    checks:
+      contains_any:
+        - [no deadline, does not specify when, no time limit, no timeframe]
+      not_contains:
+        - within 14 days
+        - within 30 days
+        - by the end of the month
