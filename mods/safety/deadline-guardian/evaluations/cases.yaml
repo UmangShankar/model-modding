@@ -17,6 +17,24 @@ cases:
       not_contains:
         - 14 working days
         - fourteen working days
+    invariant_checks:
+      - kind: preserve
+        invariant: duration
+        severity: critical
+        description: Preserve the 14-calendar-day period and its unit.
+        checks:
+          contains_any:
+            - [14 calendar days, fourteen calendar days]
+          not_contains:
+            - 14 working days
+            - fourteen working days
+      - kind: preserve
+        invariant: deadline
+        severity: critical
+        description: Preserve the notice date as the deadline trigger.
+        checks:
+          contains_any:
+            - [date of this notice, notice date]
 
   - name: preserve-fixed-date-and-time
     input: >
@@ -33,6 +51,24 @@ cases:
       not_contains:
         - 30 March 2027
         - 1 April 2027
+    invariant_checks:
+      - kind: preserve
+        invariant: deadline
+        severity: critical
+        description: Preserve the exact 5 pm deadline time.
+        checks:
+          contains_any:
+            - [5 pm, 5:00 pm, 17:00]
+      - kind: preserve
+        invariant: date
+        severity: critical
+        description: Preserve the exact calendar date.
+        checks:
+          contains_any:
+            - [31 March 2027, March 31 2027, March 31, 2027]
+          not_contains:
+            - 30 March 2027
+            - 1 April 2027
 
   - name: preserve-working-day-unit
     input: >
@@ -49,6 +85,24 @@ cases:
       not_contains:
         - five calendar days
         - 5 calendar days
+    invariant_checks:
+      - kind: preserve
+        invariant: duration
+        severity: critical
+        description: Preserve the five-working-day period and unit.
+        checks:
+          contains_any:
+            - [five working days, 5 working days]
+          not_contains:
+            - five calendar days
+            - 5 calendar days
+      - kind: preserve
+        invariant: deadline
+        severity: critical
+        description: Preserve receipt of the notice as the trigger.
+        checks:
+          contains_any:
+            - [receiving the notice, receipt of the notice, receives the notice]
 
   - name: do-not-invent-deadline
     input: >
@@ -65,3 +119,15 @@ cases:
         - within 14 days
         - within 30 days
         - by the end of the month
+    invariant_checks:
+      - kind: prohibit
+        invariant: invented_deadline
+        severity: critical
+        description: Do not add a deadline that the source does not provide.
+        checks:
+          contains_any:
+            - [no deadline, does not specify when, no time limit, no timeframe]
+          not_contains:
+            - within 14 days
+            - within 30 days
+            - by the end of the month
