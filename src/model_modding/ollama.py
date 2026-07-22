@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import json
 import sys
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Iterable
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from urllib.request import urlopen
 
 from .cli import load_yaml, resolve_mod
-
-DEFAULT_OLLAMA_HOST = "http://127.0.0.1:11434"
+from .ollama_provider import DEFAULT_OLLAMA_HOST, OllamaProvider, validate_ollama_host
+from .provider import (
+    GenerationOptions,
+    ProviderError,
+    ProviderRequest,
+    create_provider,
+)
 
 
 @dataclass(frozen=True)
@@ -61,24 +63,14 @@ def compile_recipe_in_memory(root: Path, name: str) -> CompiledRecipe:
     )
 
 
-def validate_ollama_host(host: str, allow_remote: bool = False) -> str:
-    normalized = host.rstrip("/")
-    parsed = urlparse(normalized)
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-        raise ValueError("Ollama host must be an http(s) URL")
-    loopback = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
-    if not loopback and not allow_remote:
-        raise ValueError(
-            "Refusing non-loopback Ollama host. Pass --allow-remote-host only when you trust the endpoint."
-        )
-    return normalized
+def list_models(
+    host: str,
+    timeout: float = 3.0,
+    opener: Callable[..., Any] = urlopen,
+) -> list[str]:
+    """Backward-compatible Ollama model discovery through the provider adapter."""
 
-
-def list_models(host: str, timeout: float = 3.0, opener: Callable[..., Any] = urlopen) -> list[str]:
-    request = Request(f"{host}/api/tags", headers={"Accept": "application/json"})
-    with opener(request, timeout=timeout) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-    return [item["name"] for item in payload.get("models", []) if isinstance(item, dict) and item.get("name")]
+    return OllamaProvider(host=host, opener=opener).list_models(timeout=timeout)
 
 
 def stream_chat(
@@ -89,33 +81,16 @@ def stream_chat(
     timeout: float = 120.0,
     opener: Callable[..., Any] = urlopen,
 ) -> Iterable[str]:
-    body = json.dumps(
-        {
-            "model": model,
-            "stream": True,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
-        }
-    ).encode("utf-8")
-    request = Request(
-        f"{host}/api/chat",
-        data=body,
-        method="POST",
-        headers={"Content-Type": "application/json", "Accept": "application/x-ndjson"},
+    """Backward-compatible Ollama streaming API through the provider adapter."""
+
+    provider = OllamaProvider(host=host, opener=opener)
+    request = ProviderRequest(
+        model=model,
+        prompt=prompt,
+        system_prompt=system_prompt,
+        timeout=timeout,
     )
-    with opener(request, timeout=timeout) as response:
-        for raw_line in response:
-            if not raw_line.strip():
-                continue
-            event = json.loads(raw_line.decode("utf-8"))
-            if event.get("error"):
-                raise RuntimeError(str(event["error"]))
-            message = event.get("message", {})
-            chunk = message.get("content", "") if isinstance(message, dict) else ""
-            if chunk:
-                yield chunk
+    return provider.stream_text(request)
 
 
 def display_name(slug: str) -> str:
@@ -131,44 +106,53 @@ def run_recipe(
     timeout: float = 120.0,
     allow_remote: bool = False,
     opener: Callable[..., Any] = urlopen,
+    provider_name: str = "ollama",
+    generation_options: GenerationOptions | None = None,
 ) -> int:
     try:
-        normalized_host = validate_ollama_host(host, allow_remote)
         compiled = compile_recipe_in_memory(root, recipe_name)
-    except (OSError, ValueError) as exc:
+        provider = create_provider(
+            provider_name,
+            host=host,
+            allow_remote=allow_remote,
+            opener=opener,
+        )
+        request = ProviderRequest(
+            model=model,
+            prompt=prompt,
+            system_prompt=compiled.system_prompt,
+            options=generation_options or GenerationOptions(),
+            timeout=timeout,
+        )
+    except (OSError, ValueError, ProviderError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
 
+    description = provider.describe()
     print(f"Recipe: {display_name(compiled.name)}")
+    print(f"Provider: {provider_name.casefold()}")
     print(f"Model: {model}")
-    print(f"Ollama: {normalized_host}")
+    if description.get("endpoint"):
+        print(f"Endpoint: {description['endpoint']}")
+        if provider_name.casefold() == "ollama":
+            print(f"Ollama: {description['endpoint']}")
     print(f"Installed mods: {', '.join(compiled.references)}")
+    print(f"Generation options: {json.dumps(request.options.supplied(), sort_keys=True)}")
     print("\nResponse:\n")
-    started = time.monotonic()
+
     try:
-        for chunk in stream_chat(
-            normalized_host,
-            model,
-            prompt,
-            compiled.system_prompt,
-            timeout=timeout,
-            opener=opener,
-        ):
-            print(chunk, end="", flush=True)
-    except HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace") if exc.fp else ""
-        print(f"\nOllama returned HTTP {exc.code}: {detail or exc.reason}", file=sys.stderr)
-        return 1
-    except (URLError, TimeoutError, ConnectionError) as exc:
-        print(
-            f"\nCould not reach Ollama at {normalized_host}. Start Ollama and confirm the host. ({exc})",
-            file=sys.stderr,
-        )
-        return 1
-    except (json.JSONDecodeError, RuntimeError) as exc:
-        print(f"\nInvalid Ollama response: {exc}", file=sys.stderr)
+        response = provider.generate(request, on_chunk=lambda chunk: print(chunk, end="", flush=True))
+    except ProviderError as exc:
+        print(f"\n{exc}", file=sys.stderr)
         return 1
 
-    elapsed = time.monotonic() - started
-    print(f"\n\nCompleted in {elapsed:.2f}s")
+    print(f"\n\nCompleted in {response.latency_seconds:.2f}s")
+    print(f"Finish reason: {response.finish_reason or 'not reported'}")
+    if response.usage.total_tokens is not None:
+        print(
+            "Token usage: "
+            f"input={response.usage.input_tokens}, "
+            f"output={response.usage.output_tokens}, "
+            f"total={response.usage.total_tokens}"
+        )
     return 0

@@ -16,10 +16,12 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "Package, test and deploy portable AI-agent behaviour." in readme
     assert "meaning-preserving, evidence-backed transformation" in readme
     assert "Trusted Document Explainer product contract" in readme
-    assert "machine-readable invariant declarations are implemented" in readme
+    assert "machine-readable invariant declarations" in readme
     assert "four narrow flagship assurance guardians" in readme
     assert "deterministic invariant checks bound to manifest declarations" in readme
     assert "structured source-output comparison" in readme
+    assert "provider-neutral request, response, usage and generation-option contracts" in readme
+    assert "Only Ollama is currently registered as a built-in provider" in readme
     assert "does not perform unrestricted semantic extraction" in readme
 
 
@@ -27,6 +29,7 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     concepts = read("docs/concepts.md")
     invariants = read("docs/invariants.md")
     source_comparison = read("docs/source-output-comparison-design.md")
+    provider_runtime = read("docs/provider-runtime.md")
 
     assert "## Invariant" in concepts
     assert "## Evidence bundle" in concepts
@@ -39,6 +42,10 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "does not yet perform general semantic extraction" in invariants
     assert "23 typed source facts" in source_comparison
     assert "cannot prove that every source fact was captured" in source_comparison
+    assert "ProviderRequest" in provider_runtime
+    assert "ProviderResponse" in provider_runtime
+    assert "Only Ollama is registered as a built-in provider" in provider_runtime
+    assert "does not invent an effective value" in provider_runtime
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -71,6 +78,8 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
 
     positions = [roadmap.index(item) for item in expected]
     assert positions == sorted(positions)
+    assert "provider-neutral request, response, usage and generation-option contracts" in roadmap
+    assert "Remaining in v0.1.3" in roadmap
 
 
 def test_package_metadata_matches_v011_positioning() -> None:

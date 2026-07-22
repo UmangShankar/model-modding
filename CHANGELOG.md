@@ -33,6 +33,11 @@ All notable changes to Model Modding are documented here.
 - Loader validation proving canonical source facts and context occur in the fixture input.
 - Report schema `0.3` with explicit evaluator layers and source-comparison failures.
 - Tests proving critical source-comparison failures enter the existing severity gate.
+- Provider-neutral request, response, usage and generation-option contracts.
+- An extensible provider registry with normalised configuration and error boundaries.
+- Portable generation settings for temperature, top-p, token limits, seeds and stop sequences.
+- A first-class Ollama provider adapter with normalised token usage, finish reason and timing metadata.
+- Provider-registry diagnostics in `modding doctor`.
 
 ### Changed
 
@@ -43,12 +48,16 @@ All notable changes to Model Modding are documented here.
 - Multi-model benchmarks use the same combined invariant and source-comparison result as `modding evaluate`.
 - Benchmark tests derive mocked response counts from the live evaluation plan.
 - The flagship evaluation plan now contains exactly 40 cases rather than 22.
+- Ollama model discovery, streaming and recipe execution now delegate to the provider adapter while preserving existing imports and commands.
+- `modding run` now reports provider identity, endpoint, requested generation settings, finish reason and token usage when available.
 
 ### Notes
 
 - Deterministic invariant and structured source comparisons block configured severity thresholds and cannot be overridden by aggregate scores.
 - The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
 - Existing published benchmark evidence remains immutable and does not retroactively include the expanded fixture or evaluator layers.
+- Only Ollama is registered as a built-in provider in this increment. Anthropic and OpenAI remain separate adapters.
+- Ollama defaults that are not reported by the API are not invented as effective settings.
 
 ## [0.1.1] - 2026-07-22
 
