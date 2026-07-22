@@ -19,12 +19,14 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "machine-readable invariant declarations are implemented" in readme
     assert "four narrow flagship assurance guardians" in readme
     assert "deterministic invariant checks bound to manifest declarations" in readme
-    assert "does not yet perform broad semantic extraction" in readme
+    assert "structured source-output comparison" in readme
+    assert "does not perform unrestricted semantic extraction" in readme
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     concepts = read("docs/concepts.md")
     invariants = read("docs/invariants.md")
+    source_comparison = read("docs/source-output-comparison-design.md")
 
     assert "## Invariant" in concepts
     assert "## Evidence bundle" in concepts
@@ -35,6 +37,8 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "## Assurance guardians" in invariants
     assert "produce structured severity-aware failures" in invariants
     assert "does not yet perform general semantic extraction" in invariants
+    assert "23 typed source facts" in source_comparison
+    assert "cannot prove that every source fact was captured" in source_comparison
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -44,9 +48,10 @@ def test_non_goals_and_flagship_contract_are_explicit() -> None:
     assert "Not a universal model leaderboard" in non_goals
     assert "Not a replacement for domain review" in non_goals
     assert "This document defines the target reference product" in contract
-    assert "provides machine-readable invariant declarations" in contract
+    assert "machine-readable invariant declarations" in contract
     assert "four narrow assurance guardians" in contract
-    assert "does not yet provide general semantic extraction comparison" in contract
+    assert "23 typed source facts" in contract
+    assert "does not provide unrestricted semantic extraction" in contract
     assert "zero critical failures" in contract
 
 
