@@ -46,6 +46,8 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "ProviderResponse" in provider_runtime
     assert "Only Ollama is registered as a built-in provider" in provider_runtime
     assert "does not invent an effective value" in provider_runtime
+    assert "Provider-aware evaluation and benchmark reports use schema `0.4`" in provider_runtime
+    assert "Each stock and modded case result contains its own `execution` object" in provider_runtime
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -79,7 +81,9 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
     positions = [roadmap.index(item) for item in expected]
     assert positions == sorted(positions)
     assert "provider-neutral request, response, usage and generation-option contracts" in roadmap
-    assert "Remaining in v0.1.3" in roadmap
+    assert "explicit provider selection on `run`, `evaluate` and `benchmark`" in roadmap
+    assert "provider-aware report schema `0.4`" in roadmap
+    assert "per-response execution metadata including usage and finish reason" in roadmap
 
 
 def test_package_metadata_matches_v011_positioning() -> None:
