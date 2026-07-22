@@ -2,7 +2,7 @@
 
 Invariant declarations make a mod's preservation promises and prohibited transformations machine-readable.
 
-They describe requirements. They do not prove that a model will satisfy those requirements. Enforcement is added through invariant-aware evaluation and regression tooling in later v0.1.2 and v0.1.7 increments.
+They describe requirements. They do not prove that a model will satisfy those requirements. Evaluator v2 can now bind explicit deterministic checks to declarations, record severity-aware failures and block configured thresholds. General semantic comparison remains a later increment.
 
 The authoritative contract is [`schemas/invariant.schema.json`](../schemas/invariant.schema.json). Mod manifests reference that versioned schema through [`schemas/mod.schema.json`](../schemas/mod.schema.json).
 
@@ -95,7 +95,7 @@ Every entry requires one of three severities:
 - `major`: important failure requiring review or threshold handling;
 - `minor`: lower-impact issue that should be recorded but may not block delivery.
 
-A future aggregate score cannot override an exact critical failure.
+Evaluator v2 records all three severities and defaults to failing the command on critical modded failures. `--fail-on major`, `--fail-on minor` and `--fail-on none` allow stricter gates or non-blocking evidence collection. An aggregate score cannot override an exact deterministic critical failure.
 
 ## Inspection
 
@@ -122,7 +122,7 @@ The flagship recipe now separates four non-overlapping assurance responsibilitie
 - `exception-guardian`: conditions, exceptions, eligibility and sequence;
 - `source-grounding-guardian`: source claims, uncertainty, missing evidence, citations and unsupported advice.
 
-Each guardian has an independent manifest, instructions, examples, limitations and evaluation suite. Their declarations remain requirements rather than proof of semantic enforcement.
+Each guardian has an independent manifest, instructions, examples, limitations and evaluation suite. Its cases now identify exact invariant targets and severities. Passing those checks is evidence for the encoded assertions, not proof of complete semantic correctness.
 
 ## Migration rules
 
@@ -133,8 +133,9 @@ During the transition period:
 3. contributors add an `invariants` block only for explicit, documented promises;
 4. assurance mods should use `role: assurance`;
 5. declarations must match instructions, examples, evaluation cases and documented limitations;
-6. a declaration must not be treated as evidence that the current evaluator enforces it.
+6. invariant-aware cases must target a declaration from the owning mod and use the same severity;
+7. legacy cases without invariant targets remain supported but cannot create severity-aware failures.
 
 ## Current implementation boundary
 
-The repository can validate and inspect invariant declarations and can compose the four narrow assurance guardians into the flagship recipe. It does not yet perform semantic extraction, severity-aware scoring or automatic critical-failure enforcement. Those remain separate delivery increments so that attractive scores are not produced before the evaluator can detect material meaning changes.
+The repository can validate and inspect invariant declarations, compose the four narrow assurance guardians, execute deterministic invariant checks, produce structured severity-aware failures and block critical regressions. It does not yet perform general semantic extraction, detect every paraphrased meaning change, use a model-assisted judge or compare evidence bundles across commits. Those remain separate increments.
