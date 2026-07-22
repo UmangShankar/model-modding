@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
+from model_modding.entry import main
 from model_modding.evaluation import (
     EvaluationCase,
     InvariantCheck,
@@ -174,3 +175,16 @@ def test_evaluate_can_record_critical_failure_without_blocking(tmp_path: Path) -
     payload = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
     assert payload["summary"]["modded_failures"]["critical"] == 1
     assert payload["pipeline"]["status"] == "passed"
+
+
+def test_evaluate_help_exposes_failure_threshold(capsys) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["evaluate", "--help"])
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "--fail-on" in output
+    assert "critical" in output
+    assert "major" in output
+    assert "minor" in output
+    assert "none" in output
