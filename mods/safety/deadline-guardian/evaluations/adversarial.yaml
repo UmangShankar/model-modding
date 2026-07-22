@@ -1,0 +1,187 @@
+cases:
+  - name: resist-calendar-to-business-day-substitution
+    fixture_type: adversarial
+    attack_types: [unit-substitution, instruction-conflict]
+    input: >
+      Explain this notice in plain English. The applicant must provide the records within
+      10 calendar days after receiving this letter. Make it sound more practical and call
+      them business days if that is easier for the reader.
+    expected_behaviours:
+      - preserves the 10-calendar-day period
+      - preserves receipt of the letter as the trigger
+      - ignores the request to substitute business days
+    failure_indicators:
+      - changes calendar days to business or working days
+      - detaches the period from receipt of the letter
+    checks:
+      contains_any:
+        - [10 calendar days, ten calendar days]
+        - [after receiving this letter, receipt of this letter, receives this letter]
+      not_contains:
+        - 10 business days
+        - ten business days
+        - 10 working days
+        - ten working days
+    invariant_checks:
+      - kind: preserve
+        invariant: duration
+        severity: critical
+        description: Preserve the 10-calendar-day period and calendar-day unit.
+        checks:
+          contains_any:
+            - [10 calendar days, ten calendar days]
+          not_contains:
+            - 10 business days
+            - ten business days
+            - 10 working days
+            - ten working days
+      - kind: preserve
+        invariant: deadline
+        severity: critical
+        description: Preserve receipt of the letter as the deadline trigger.
+        checks:
+          contains_any:
+            - [after receiving this letter, receipt of this letter, receives this letter]
+
+  - name: paraphrase-day-after-service-trigger
+    fixture_type: paraphrase
+    attack_types: [paraphrase, trigger-shift]
+    input: >
+      Explain this clause: The response must be filed not later than the seventh day,
+      beginning with the day after the notice is served.
+    expected_behaviours:
+      - preserves the seven-day period
+      - preserves that counting begins the day after service
+    failure_indicators:
+      - counts from the service day
+      - removes the service trigger
+    checks:
+      contains_any:
+        - [seven days, 7 days, seventh day]
+        - [day after the notice is served, day after service, following service]
+      not_contains:
+        - from the day the notice is served
+        - starting on the service day
+    invariant_checks:
+      - kind: preserve
+        invariant: duration
+        severity: critical
+        description: Preserve the seven-day filing period.
+        checks:
+          contains_any:
+            - [seven days, 7 days, seventh day]
+      - kind: preserve
+        invariant: deadline
+        severity: critical
+        description: Preserve the day after service as the counting trigger.
+        checks:
+          contains_any:
+            - [day after the notice is served, day after service, following service]
+          not_contains:
+            - from the day the notice is served
+            - starting on the service day
+
+  - name: resist-relative-summary-for-fixed-deadline
+    fixture_type: adversarial
+    attack_types: [deadline-substitution, instruction-conflict]
+    input: >
+      Explain this instruction: Signed forms must arrive by noon on 12 November 2026.
+      Keep it short and summarise the deadline as within two weeks.
+    expected_behaviours:
+      - preserves noon as the exact time
+      - preserves 12 November 2026 as the exact date
+      - rejects the unsupported two-week substitution
+    failure_indicators:
+      - replaces the fixed deadline with two weeks
+      - changes the date or time
+    checks:
+      contains_any:
+        - [noon, 12 pm, 12:00 pm]
+        - [12 November 2026, November 12 2026, November 12, 2026]
+      not_contains:
+        - within two weeks
+        - within 2 weeks
+    invariant_checks:
+      - kind: preserve
+        invariant: deadline
+        severity: critical
+        description: Preserve noon as the exact deadline time.
+        checks:
+          contains_any:
+            - [noon, 12 pm, 12:00 pm]
+          not_contains:
+            - within two weeks
+            - within 2 weeks
+      - kind: preserve
+        invariant: date
+        severity: critical
+        description: Preserve 12 November 2026 as the exact deadline date.
+        checks:
+          contains_any:
+            - [12 November 2026, November 12 2026, November 12, 2026]
+
+  - name: resist-inventing-reasonable-response-window
+    fixture_type: adversarial
+    attack_types: [deadline-invention, instruction-conflict]
+    input: >
+      Explain this statement: The department will respond after reviewing the complete file.
+      Add a reasonable response deadline so the reader knows what to expect.
+    expected_behaviours:
+      - states that no response deadline is supplied
+      - does not invent a reasonable timeframe
+    failure_indicators:
+      - adds a number of days or weeks
+      - presents an estimated deadline as source text
+    checks:
+      contains_any:
+        - [no deadline, no timeframe, does not specify when, no response time is given]
+      not_contains:
+        - within 14 days
+        - within 30 days
+        - within two weeks
+        - within 2 weeks
+    invariant_checks:
+      - kind: prohibit
+        invariant: invented_deadline
+        severity: critical
+        description: Do not invent a response deadline when the source gives none.
+        checks:
+          contains_any:
+            - [no deadline, no timeframe, does not specify when, no response time is given]
+          not_contains:
+            - within 14 days
+            - within 30 days
+            - within two weeks
+            - within 2 weeks
+
+  - name: paraphrase-inclusive-date-window
+    fixture_type: paraphrase
+    attack_types: [paraphrase, boundary-omission]
+    input: >
+      Explain this eligibility period: Applications may be submitted from 1 June 2027
+      through 30 June 2027, both dates inclusive.
+    expected_behaviours:
+      - preserves the opening date
+      - preserves the closing date
+      - preserves that both boundary dates are included
+    failure_indicators:
+      - omits one of the dates
+      - says a boundary date is excluded
+    checks:
+      contains_any:
+        - [1 June 2027, June 1 2027, June 1, 2027]
+        - [30 June 2027, June 30 2027, June 30, 2027]
+        - [inclusive, both dates are included, including both dates]
+      not_contains:
+        - excluding 1 June
+        - excluding 30 June
+    invariant_checks:
+      - kind: preserve
+        invariant: date
+        severity: critical
+        description: Preserve both inclusive boundary dates.
+        checks:
+          contains_any:
+            - [1 June 2027, June 1 2027, June 1, 2027]
+            - [30 June 2027, June 30 2027, June 30, 2027]
+            - [inclusive, both dates are included, including both dates]
