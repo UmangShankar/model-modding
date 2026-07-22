@@ -1,0 +1,33 @@
+name: obligation-guardian
+version: 0.1.0
+status: experimental
+description: >
+  Protects named parties, obligations, permissions and prohibitions so transformations
+  do not change who must, may or must not act.
+category: safety
+role: assurance
+invariants:
+  preserve:
+    - type: named_party
+      severity: critical
+    - type: obligation
+      severity: critical
+    - type: prohibition
+      severity: critical
+  prohibit:
+    - type: weakened_obligation
+      severity: critical
+authors:
+  - name: Model Modding Community
+compatible_models: []
+capabilities:
+  - actor-preservation
+  - obligation-preservation
+  - prohibition-preservation
+dependencies: []
+conflicts: []
+evaluation:
+  minimum_score: 0.9
+  suites:
+    - obligation-integrity
+license: Apache-2.0
