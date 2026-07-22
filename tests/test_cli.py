@@ -22,6 +22,7 @@ def copy_repo_contract(tmp_path: Path) -> Path:
     (root / "recipes" / "sample").mkdir(parents=True)
 
     shutil.copy(ROOT / "schemas" / "mod.schema.json", root / "schemas" / "mod.schema.json")
+    shutil.copy(ROOT / "schemas" / "invariant.schema.json", root / "schemas" / "invariant.schema.json")
     shutil.copy(ROOT / "schemas" / "recipe.schema.json", root / "schemas" / "recipe.schema.json")
     shutil.copy(ROOT / "templates" / "mod" / "mod.yaml", root / "templates" / "mod" / "mod.yaml")
     shutil.copy(
@@ -35,9 +36,62 @@ def copy_repo_contract(tmp_path: Path) -> Path:
     return root
 
 
-def test_validate_repository_accepts_current_contract(tmp_path: Path) -> None:
+def update_existing_manifest(root: Path, **changes: object) -> Path:
+    manifest_path = root / "mods" / "personality" / "existing" / "mod.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    manifest.update(changes)
+    manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
+    return manifest_path
+
+
+def test_validate_repository_accepts_legacy_manifest_without_invariants(tmp_path: Path) -> None:
     root = copy_repo_contract(tmp_path)
     assert validate_repository(root) == 0
+
+
+def test_validate_repository_accepts_declared_invariants(tmp_path: Path) -> None:
+    root = copy_repo_contract(tmp_path)
+    update_existing_manifest(
+        root,
+        role="assurance",
+        invariants={
+            "preserve": [{"type": "deadline", "severity": "critical"}],
+            "prohibit": [{"type": "unsupported_advice", "severity": "major"}],
+        },
+    )
+
+    assert validate_repository(root) == 0
+
+
+def test_validate_repository_rejects_unknown_invariant_term(tmp_path: Path, capsys) -> None:
+    root = copy_repo_contract(tmp_path)
+    update_existing_manifest(
+        root,
+        role="transformation",
+        invariants={"preserve": [{"type": "made_up_term", "severity": "critical"}]},
+    )
+
+    assert validate_repository(root) == 1
+    assert "made_up_term" in capsys.readouterr().err
+
+
+def test_validate_repository_rejects_invalid_invariant_severity(tmp_path: Path, capsys) -> None:
+    root = copy_repo_contract(tmp_path)
+    update_existing_manifest(
+        root,
+        role="transformation",
+        invariants={"preserve": [{"type": "deadline", "severity": "blocker"}]},
+    )
+
+    assert validate_repository(root) == 1
+    assert "blocker" in capsys.readouterr().err
+
+
+def test_validate_repository_rejects_empty_invariant_declaration(tmp_path: Path) -> None:
+    root = copy_repo_contract(tmp_path)
+    update_existing_manifest(root, role="transformation", invariants={})
+
+    assert validate_repository(root) == 1
 
 
 def test_validate_repository_reports_invalid_manifest(tmp_path: Path) -> None:
@@ -61,6 +115,8 @@ def test_create_mod_generates_valid_package(tmp_path: Path) -> None:
     assert (destination / "instructions" / "system.md").exists()
     assert (destination / "examples" / "README.md").exists()
     assert (destination / "evaluations" / "cases.yaml").exists()
+    manifest = yaml.safe_load((destination / "mod.yaml").read_text(encoding="utf-8"))
+    assert manifest["role"] == "transformation"
     assert validate_repository(root) == 0
 
 
@@ -98,6 +154,25 @@ def test_inspect_emits_canonical_posix_reference(tmp_path: Path, capsys) -> None
     report = json.loads(capsys.readouterr().out)
 
     assert report["reference"] == "personality/existing"
+    assert report["role"] is None
+    assert report["invariants"] == {"preserve": [], "prohibit": []}
+
+
+def test_inspect_displays_declared_role_and_invariants(capsys) -> None:
+    assert inspect_mod(ROOT, "plain-language-explainer", as_json=True) == 0
+    report = json.loads(capsys.readouterr().out)
+
+    assert report["role"] == "transformation"
+    assert {entry["type"] for entry in report["invariants"]["preserve"]} >= {
+        "deadline",
+        "obligation",
+        "exception",
+    }
+    assert {entry["type"] for entry in report["invariants"]["prohibit"]} >= {
+        "invented_deadline",
+        "weakened_obligation",
+        "removed_exception",
+    }
 
 
 def test_repository_has_one_case_insensitive_pull_request_template() -> None:
