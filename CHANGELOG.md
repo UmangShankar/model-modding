@@ -20,17 +20,25 @@ All notable changes to Model Modding are documented here.
 - Source Grounding Guardian for source claims, uncertainty, missing evidence and fabricated citations.
 - Sixteen independent guardian evaluation cases.
 - Source-grounding prohibitions for invented claims, fabricated citations and presented missing evidence.
+- Deterministic invariant evaluator v2 with structured failure records.
+- Severity totals for stock and modded responses in evaluation and benchmark reports.
+- Configurable `--fail-on critical|major|minor|none` pipeline gates.
+- Report schema `0.2` with evaluator identity, pipeline status and blocking failures.
+- Deliberate regression tests proving that critical invariant failures return a non-zero exit code.
 
 ### Changed
 
 - New mod scaffolds declare `role: transformation` by default.
 - Legacy v0.1 manifests without role or invariant declarations remain valid during migration.
 - Trusted Document Explainer `0.2.0` now composes one transformation mod and four non-overlapping assurance guardians.
+- Guardian fixtures bind deterministic assertions to manifest-declared invariants and matching severities.
+- Multi-model benchmarks now use the same invariant-scoring path as `modding evaluate`.
 - Benchmark tests derive mocked response counts from the live evaluation plan.
 
 ### Notes
 
-- This increment validates, exposes and composes invariant declarations and assurance instructions; it does not yet semantically enforce them or add severity-aware regression gates.
+- Deterministic invariant checks now block configured severity thresholds and cannot be overridden by aggregate scores.
+- The evaluator still does not perform general semantic extraction or guarantee detection of every paraphrased meaning change.
 
 ## [0.1.1] - 2026-07-22
 
