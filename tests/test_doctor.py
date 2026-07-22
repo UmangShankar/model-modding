@@ -20,6 +20,23 @@ def test_doctor_is_ready_when_required_checks_pass(capsys) -> None:
     assert "llama3.2:latest" in output
 
 
+def test_doctor_requires_invariant_schema(tmp_path: Path, capsys) -> None:
+    root = tmp_path / "repo"
+    (root / "schemas").mkdir(parents=True)
+    (root / "mods").mkdir()
+    (root / "recipes").mkdir()
+    (root / "pyproject.toml").write_text("[project]\nname='example'\n", encoding="utf-8")
+    (root / "schemas" / "mod.schema.json").write_text("{}\n", encoding="utf-8")
+    (root / "schemas" / "recipe.schema.json").write_text("{}\n", encoding="utf-8")
+
+    result = run_doctor(root, model_loader=lambda host, timeout: [])
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "schemas/invariant.schema.json" in output
+    assert "Release readiness: NOT READY" in output
+
+
 def test_doctor_treats_ollama_as_optional(capsys) -> None:
     def unavailable(host, timeout):
         raise OSError("connection refused")

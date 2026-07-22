@@ -16,17 +16,21 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "Package, test and deploy portable AI-agent behaviour." in readme
     assert "meaning-preserving, evidence-backed transformation" in readme
     assert "Trusted Document Explainer product contract" in readme
-    assert "does not yet provide machine-readable invariants" in readme
+    assert "machine-readable invariant declarations are implemented" in readme
+    assert "does not yet semantically enforce them" in readme
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     concepts = read("docs/concepts.md")
+    invariants = read("docs/invariants.md")
 
     assert "## Invariant" in concepts
     assert "## Evidence bundle" in concepts
     assert "## Agent Behaviour Bill of Materials" in concepts
-    assert "planned for v0.1.2" in concepts
+    assert "implemented in the v0.1.2 development line" in concepts
     assert "planned for v0.1.6" in concepts
+    assert "Unknown terms fail schema validation" in invariants
+    assert "does not yet perform semantic extraction" in invariants
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -36,7 +40,8 @@ def test_non_goals_and_flagship_contract_are_explicit() -> None:
     assert "Not a universal model leaderboard" in non_goals
     assert "Not a replacement for domain review" in non_goals
     assert "This document defines the target reference product" in contract
-    assert "The v0.1 implementation does not yet provide" in contract
+    assert "provides machine-readable invariant declarations and inspection" in contract
+    assert "does not yet provide semantic extraction comparison" in contract
     assert "zero critical failures" in contract
 
 

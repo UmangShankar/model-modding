@@ -1,10 +1,34 @@
 name: plain-language-explainer
-version: 0.1.0
+version: 0.1.1
 status: experimental
 description: >
   Rewrites complex supplied text in plain language while preserving material meaning,
   qualifications, obligations, uncertainty and important terminology.
 category: domain
+role: transformation
+invariants:
+  preserve:
+    - type: deadline
+      severity: critical
+    - type: obligation
+      severity: critical
+    - type: condition
+      severity: major
+    - type: exception
+      severity: critical
+    - type: source_claim
+      severity: critical
+    - type: uncertainty
+      severity: major
+  prohibit:
+    - type: invented_deadline
+      severity: critical
+    - type: weakened_obligation
+      severity: critical
+    - type: removed_exception
+      severity: critical
+    - type: unsupported_advice
+      severity: major
 authors:
   - name: Model Modding Community
 compatible_models:

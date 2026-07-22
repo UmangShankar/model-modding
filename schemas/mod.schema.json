@@ -33,6 +33,13 @@
     "category": {
       "enum": ["personality", "domain", "workflow", "tool", "memory", "safety", "interface", "experimental"]
     },
+    "role": {
+      "description": "Whether the mod primarily transforms behaviour or assures declared safeguards.",
+      "enum": ["transformation", "assurance"]
+    },
+    "invariants": {
+      "$ref": "https://model-modding.org/schemas/invariant.schema.json"
+    },
     "authors": {
       "type": "array",
       "minItems": 1,

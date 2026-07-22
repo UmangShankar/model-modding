@@ -9,6 +9,7 @@ from typing import Any
 
 import yaml
 from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
 
 KEBAB_CASE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MOD_CATEGORIES = (
@@ -30,10 +31,22 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
+def build_schema_registry(schema_directory: Path) -> Registry:
+    """Load local versioned schemas so cross-schema references resolve offline."""
+    registry = Registry()
+    for path in sorted(schema_directory.glob("*.schema.json")):
+        schema = load_json(path)
+        Draft202012Validator.check_schema(schema)
+        identifier = schema.get("$id")
+        if isinstance(identifier, str):
+            registry = registry.with_resource(identifier, Resource.from_contents(schema))
+    return registry
+
+
 def validate_group(root: Path, label: str, schema_path: Path, manifests: list[Path]) -> list[str]:
     schema = load_json(schema_path)
     Draft202012Validator.check_schema(schema)
-    validator = Draft202012Validator(schema)
+    validator = Draft202012Validator(schema, registry=build_schema_registry(schema_path.parent))
     failures: list[str] = []
     if not manifests:
         return [f"No {label} manifests found"]
@@ -128,6 +141,20 @@ def evaluation_count(mod_dir: Path) -> int:
     return total
 
 
+def _invariant_entries(manifest: dict[str, Any], key: str) -> list[dict[str, str]]:
+    invariants = manifest.get("invariants", {})
+    if not isinstance(invariants, dict):
+        return []
+    entries = invariants.get(key, [])
+    return entries if isinstance(entries, list) else []
+
+
+def _format_invariant_entries(entries: list[dict[str, str]]) -> str:
+    if not entries:
+        return "none declared"
+    return ", ".join(f"{entry['type']} [{entry['severity']}]" for entry in entries)
+
+
 def inspect_mod(root: Path, reference: str, as_json: bool = False) -> int:
     try:
         resolved, manifest_path, manifest = resolve_mod(root, reference)
@@ -136,9 +163,13 @@ def inspect_mod(root: Path, reference: str, as_json: bool = False) -> int:
         return 2
     mod_dir = manifest_path.parent
     instruction_files = sorted(p.relative_to(mod_dir).as_posix() for p in (mod_dir / "instructions").glob("**/*") if p.is_file())
+    preserved = _invariant_entries(manifest, "preserve")
+    prohibited = _invariant_entries(manifest, "prohibit")
     report = {
         "reference": resolved, "name": manifest["name"], "version": manifest["version"],
         "status": manifest["status"], "description": manifest["description"],
+        "role": manifest.get("role"),
+        "invariants": {"preserve": preserved, "prohibit": prohibited},
         "capabilities": manifest.get("capabilities", []), "compatible_models": manifest.get("compatible_models", []),
         "dependencies": manifest.get("dependencies", []), "conflicts": manifest.get("conflicts", []),
         "instruction_files": instruction_files, "evaluation_cases": evaluation_count(mod_dir),
@@ -147,7 +178,10 @@ def inspect_mod(root: Path, reference: str, as_json: bool = False) -> int:
         print(json.dumps(report, indent=2))
     else:
         print(f"{report['name']} {report['version']} [{report['status']}]\n{report['description']}")
-        print(f"Reference: {resolved}\nCapabilities: {', '.join(report['capabilities']) or 'none'}")
+        print(f"Reference: {resolved}\nRole: {report['role'] or 'not declared'}")
+        print(f"Capabilities: {', '.join(report['capabilities']) or 'none'}")
+        print(f"Preserved invariants: {_format_invariant_entries(preserved)}")
+        print(f"Prohibited transformations: {_format_invariant_entries(prohibited)}")
         print(f"Compatible models: {', '.join(report['compatible_models']) or 'not documented'}")
         print(f"Instructions: {len(instruction_files)} file(s)\nEvaluation cases: {report['evaluation_cases']}")
         if report["dependencies"]:
