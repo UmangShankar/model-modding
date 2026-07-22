@@ -8,6 +8,7 @@ MOD = ROOT / "mods/domain/plain-language-explainer"
 RECIPE = ROOT / "recipes/trusted-document-explainer/recipe.yaml"
 
 
+
 def test_plain_language_explainer_package_is_complete() -> None:
     for relative in (
         "mod.yaml",
@@ -17,6 +18,7 @@ def test_plain_language_explainer_package_is_complete() -> None:
         "evaluations/cases.yaml",
     ):
         assert (MOD / relative).is_file()
+
 
 
 def test_instructions_preserve_material_meaning_and_boundaries() -> None:
@@ -29,6 +31,7 @@ def test_instructions_preserve_material_meaning_and_boundaries() -> None:
         "What you may need to do next",
     ):
         assert expected in content
+
 
 
 def test_evaluations_cover_real_document_risks() -> None:
@@ -47,9 +50,15 @@ def test_evaluations_cover_real_document_risks() -> None:
     assert all(case.get("checks") for case in cases)
 
 
-def test_trusted_document_recipe_composes_citation_guardian() -> None:
+
+def test_trusted_document_recipe_composes_narrow_guardians() -> None:
     recipe = yaml.safe_load(RECIPE.read_text(encoding="utf-8"))
+    assert recipe["version"] == "0.2.0"
     assert recipe["mods"] == [
         "domain/plain-language-explainer",
-        "safety/citation-guardian",
+        "safety/deadline-guardian",
+        "safety/obligation-guardian",
+        "safety/exception-guardian",
+        "safety/source-grounding-guardian",
     ]
+    assert "safety/citation-guardian" not in recipe["mods"]
