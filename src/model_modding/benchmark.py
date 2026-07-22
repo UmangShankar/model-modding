@@ -6,7 +6,14 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
-from .evaluation import collect_response, human_name, load_evaluation_cases, score_response
+from .evaluation import (
+    EVALUATOR_VERSION,
+    collect_response,
+    evaluate_case_response,
+    failure_counts,
+    human_name,
+    load_evaluation_cases,
+)
 from .ollama import DEFAULT_OLLAMA_HOST, list_models, validate_ollama_host
 
 
@@ -18,12 +25,7 @@ def parse_models(value: str) -> list[str]:
 
 
 def resolve_model_selector(requested: str, installed: set[str]) -> str | None:
-    """Resolve a user selector to an installed Ollama model name.
-
-    Ollama commonly reports default-tag models as ``name:latest`` while accepting
-    the shorter ``name`` selector. Prefer an exact match, then resolve only the
-    implicit ``:latest`` form so explicit non-default tags remain strict.
-    """
+    """Resolve a user selector to an installed Ollama model name."""
     if requested in installed:
         return requested
     if ":" not in requested:
@@ -37,27 +39,31 @@ def markdown_report(report: dict[str, Any]) -> str:
     lines = [
         f"# {report['recipe_display_name']} model fitment benchmark",
         "",
+        f"- Evaluator: `{report.get('evaluator', {}).get('version', 'legacy')}`",
         f"- Cases per model: {report['case_count']}",
         f"- Requested models: {', '.join(report['requested_models'])}",
         "",
-        "| Model | Status | Stock | Modded | Change | Regressions | Avg latency | Avg words |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Model | Status | Stock | Modded | Change | Regressions | Critical | Major | Minor | Avg latency | Avg words |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["models"]:
         if row["status"] != "completed":
-            lines.append(f"| `{row['model']}` | {row['status']} | n/a | n/a | n/a | n/a | n/a | n/a |")
+            lines.append(f"| `{row['model']}` | {row['status']} | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |")
             continue
         summary = row["summary"]
+        failures = summary.get("modded_failures", {})
         lines.append(
             f"| `{row['model']}` | completed | {summary['stock_passed']}/{summary['cases']} | "
             f"{summary['modded_passed']}/{summary['cases']} | {summary['improvement_points']:+.1f} pp | "
-            f"{summary['regressions']} | {summary['average_latency_seconds']:.2f}s | {summary['average_modded_words']:.0f} |"
+            f"{summary['regressions']} | {failures.get('critical', 0)} | {failures.get('major', 0)} | "
+            f"{failures.get('minor', 0)} | {summary['average_latency_seconds']:.2f}s | "
+            f"{summary['average_modded_words']:.0f} |"
         )
     lines.extend([
         "",
         "## Interpretation",
         "",
-        "Deterministic checks indicate fitment and regressions; they do not prove overall model quality. Review full responses before changing compatibility claims.",
+        "Deterministic invariant checks expose declared preservation failures and regressions. They do not prove complete semantic correctness or universal model quality. Review full responses before changing compatibility claims.",
         "",
     ])
     return "\n".join(lines)
@@ -92,6 +98,7 @@ def benchmark_recipe(
 
     if opener is None:
         from urllib.request import urlopen
+
         opener = urlopen
 
     try:
@@ -107,7 +114,6 @@ def benchmark_recipe(
             print(f"SKIP {model}: not installed")
             model_reports.append({"model": model, "status": "unavailable", "reason": "not installed"})
             continue
-
         rows: list[dict[str, Any]] = []
         print(f"\nModel: {model}" + (f" ({resolved_model})" if resolved_model != model else ""))
         try:
@@ -119,37 +125,58 @@ def benchmark_recipe(
                 started = time.monotonic()
                 modded_text = collect_response(normalized_host, resolved_model, case.prompt, compiled.system_prompt, timeout, opener)
                 modded_latency = time.monotonic() - started
-                stock_passed, stock_checks = score_response(stock_text, case.checks)
-                modded_passed, modded_checks = score_response(modded_text, case.checks)
+                stock_result = evaluate_case_response(stock_text, case)
+                modded_result = evaluate_case_response(modded_text, case)
+                stock_result.update({
+                    "response": stock_text,
+                    "latency_seconds": stock_latency,
+                    "words": len(stock_text.split()),
+                })
+                modded_result.update({
+                    "response": modded_text,
+                    "latency_seconds": modded_latency,
+                    "words": len(modded_text.split()),
+                })
                 rows.append({
                     "mod": case.mod,
                     "case": case.name,
                     "prompt": case.prompt,
-                    "stock": {
-                        "passed": stock_passed,
-                        "response": stock_text,
-                        "checks": stock_checks,
-                        "latency_seconds": stock_latency,
-                        "words": len(stock_text.split()),
-                    },
-                    "modded": {
-                        "passed": modded_passed,
-                        "response": modded_text,
-                        "checks": modded_checks,
-                        "latency_seconds": modded_latency,
-                        "words": len(modded_text.split()),
-                    },
+                    "stock": stock_result,
+                    "modded": modded_result,
                 })
         except Exception as exc:
             print(f"FAILED {model}: {exc}", file=sys.stderr)
-            model_reports.append({"model": model, "resolved_model": resolved_model, "status": "failed", "reason": str(exc)})
+            model_reports.append({
+                "model": model,
+                "resolved_model": resolved_model,
+                "status": "failed",
+                "reason": str(exc),
+            })
             continue
 
         total = len(rows)
         stock_passed = sum(int(row["stock"]["passed"]) for row in rows)
         modded_passed = sum(int(row["modded"]["passed"]) for row in rows)
-        regressions = [f"{row['mod']}:{row['case']}" for row in rows if row["stock"]["passed"] and not row["modded"]["passed"]]
-        improvements = [f"{row['mod']}:{row['case']}" for row in rows if not row["stock"]["passed"] and row["modded"]["passed"]]
+        regressions = [
+            f"{row['mod']}:{row['case']}"
+            for row in rows
+            if row["stock"]["passed"] and not row["modded"]["passed"]
+        ]
+        improvements = [
+            f"{row['mod']}:{row['case']}"
+            for row in rows
+            if not row["stock"]["passed"] and row["modded"]["passed"]
+        ]
+        stock_failures = [
+            failure
+            for row in rows
+            for failure in row["stock"].get("invariant_failures", [])
+        ]
+        modded_failures = [
+            failure
+            for row in rows
+            for failure in row["modded"].get("invariant_failures", [])
+        ]
         summary = {
             "cases": total,
             "stock_passed": stock_passed,
@@ -159,14 +186,31 @@ def benchmark_recipe(
             "improvement_points": ((modded_passed - stock_passed) / total * 100) if total else 0,
             "regressions": len(regressions),
             "improvements": len(improvements),
-            "average_latency_seconds": sum(row["stock"]["latency_seconds"] + row["modded"]["latency_seconds"] for row in rows) / (2 * total) if total else 0,
+            "stock_failures": failure_counts(stock_failures),
+            "modded_failures": failure_counts(modded_failures),
+            "average_latency_seconds": (
+                sum(row["stock"]["latency_seconds"] + row["modded"]["latency_seconds"] for row in rows)
+                / (2 * total)
+                if total
+                else 0
+            ),
             "average_modded_words": sum(row["modded"]["words"] for row in rows) / total if total else 0,
         }
-        model_reports.append({"model": model, "resolved_model": resolved_model, "status": "completed", "summary": summary, "regressions": regressions, "improvements": improvements, "cases": rows})
+        model_reports.append({
+            "model": model,
+            "resolved_model": resolved_model,
+            "status": "completed",
+            "summary": summary,
+            "regressions": regressions,
+            "improvements": improvements,
+            "failures": {"stock": stock_failures, "modded": modded_failures},
+            "cases": rows,
+        })
 
     completed = [row for row in model_reports if row["status"] == "completed"]
     report = {
-        "schema_version": "0.1",
+        "schema_version": "0.2",
+        "evaluator": {"name": "deterministic-invariant-evaluator", "version": EVALUATOR_VERSION},
         "recipe": recipe_name,
         "recipe_display_name": human_name(recipe_name),
         "case_count": len(cases),
