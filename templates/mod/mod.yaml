@@ -7,6 +7,7 @@ description: >
   language-model-powered system.
 
 category: personality
+role: transformation
 
 authors:
   - name: Your Name
@@ -16,6 +17,9 @@ compatible_models: []
 
 capabilities:
   - example-capability
+
+# Add an invariants block only when this mod makes explicit preservation
+# promises or prohibits named transformations. See docs/invariants.md.
 
 dependencies: []
 conflicts: []
