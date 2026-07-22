@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from model_modding.doctor import run_doctor
 from model_modding.entry import main
 
@@ -44,3 +46,14 @@ def test_console_entry_routes_doctor_with_global_root(capsys) -> None:
 
     assert result == 0
     assert "Model Modding doctor" in output
+
+
+def test_top_level_help_lists_every_available_command(capsys) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["--help"])
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "doctor" in output
+    assert "benchmark" in output
+    assert "evaluate" in output
