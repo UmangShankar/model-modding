@@ -31,9 +31,10 @@ Create → Validate → Inspect → Compose → Run → Evaluate → Publish evi
 ```
 
 ```bash
-python -m pip install -e ".[dev]"
+python -m pip install -e " .[dev]"
 modding validate
 modding inspect plain-language-explainer
+modding inspect deadline-guardian
 modding compose trusted-document-explainer
 modding run trusted-document-explainer \
   --model llama3.2 \
@@ -55,6 +56,8 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - machine-readable preserved invariants and prohibited transformations;
 - strict reference vocabularies and `critical`, `major` and `minor` severities;
 - invariant-aware `modding inspect` output;
+- four narrow flagship assurance guardians;
+- a 22-case Trusted Document Explainer evaluation plan;
 - deterministic recipe composition;
 - canonical cross-platform mod references;
 - local Ollama execution;
@@ -66,7 +69,7 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - reference mods and recipes;
 - the static Workshop, Local Dyno, Evaluation Scorecard and Fitment Matrix.
 
-The current evaluator uses transparent deterministic checks. It can validate and display invariant declarations, but it does not yet semantically enforce them. Existing checks remain useful regression signals, not proof of factual correctness, safety, legal meaning or overall model quality.
+The current evaluator uses transparent deterministic checks. It can validate and display invariant declarations and execute guardian evaluation cases, but it does not yet semantically enforce those declarations. Existing checks remain useful regression signals, not proof of factual correctness, safety, legal meaning or overall model quality.
 
 ## The flagship product contract
 
@@ -75,6 +78,14 @@ The current evaluator uses transparent deterministic checks. It can validate and
 Its target purpose is:
 
 > Rewrite complex official or high-stakes text in plain English while preserving operationally or legally material meaning.
+
+The current recipe separates one transformation capability from four assurance concerns:
+
+1. `plain-language-explainer` — performs the transformation;
+2. `deadline-guardian` — protects dates, durations, units and triggers;
+3. `obligation-guardian` — protects actors, duties, permissions and prohibitions;
+4. `exception-guardian` — protects conditions, exceptions, eligibility and sequence;
+5. `source-grounding-guardian` — protects source claims, uncertainty and missing evidence.
 
 The v0.2 proof must demonstrate the same recipe running through Ollama, Anthropic and OpenAI without changing the mod files, while recording exact models, generation settings, build digests, declared invariants, failures and limitations.
 
@@ -106,7 +117,7 @@ See the complete [non-goals](docs/non-goals.md).
 
 ### Trusted Document Explainer
 
-Combines Plain Language Explainer with Citation Guardian. It is the current foundation for the v0.2 meaning-preservation proof and will be refactored into a transformation capability plus narrow assurance guardians.
+Combines Plain Language Explainer with Deadline Guardian, Obligation Guardian, Exception Guardian and Source Grounding Guardian. The transformation and assurance responsibilities are versioned and independently inspectable.
 
 ### Research Learning Companion
 
@@ -191,7 +202,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations and inspection. It does not yet provide semantic invariant enforcement, cloud-provider portability, ABOMs, recipe locks or severity-aware regression gates.
+`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations and four narrow assurance guardians. It does not yet provide semantic invariant enforcement, cloud-provider portability, ABOMs, recipe locks or severity-aware regression gates.
 
 ## Licence
 
