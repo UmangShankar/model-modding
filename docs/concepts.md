@@ -13,9 +13,11 @@ A mod can include:
 - compatibility declarations;
 - dependencies and conflicts;
 - evaluation cases;
-- documented limitations.
+- documented limitations;
+- an optional semantic role;
+- optional machine-readable invariant declarations.
 
-The v0.2 specification will also allow a mod to declare its semantic role and the invariants it preserves or prohibited transformations it guards against.
+A mod can declare `role: transformation` when it primarily changes content or behaviour, or `role: assurance` when it primarily protects a safeguard or detects a prohibited transformation. The role is optional during migration so existing v0.1 manifests remain valid.
 
 ## Recipe
 
@@ -32,13 +34,15 @@ Examples include:
 - preserve an exact deadline;
 - preserve the party responsible for an obligation;
 - preserve a condition or exception;
-- prohibit an invented entitlement;
+- prohibit an invented deadline;
 - prohibit unsupported advice;
-- prohibit a fabricated citation.
+- prohibit removal of a material exception.
 
 An invariant is not proof that the model will comply. It is a declared requirement that evaluation and regression tooling can test and report against.
 
-Machine-readable invariants are planned for v0.1.2. Until that schema lands, current mods express preservation expectations through instructions, evaluation cases and human-review guidance.
+Invariant declarations are implemented in the v0.1.2 development line through a standalone versioned schema referenced by mod manifests. The repository can validate and inspect the declarations today. Semantic extraction, severity-aware scoring and automatic critical-failure enforcement remain later evaluator increments.
+
+See [Invariant declarations](invariants.md) for the vocabulary and migration contract.
 
 ## Evidence bundle
 
