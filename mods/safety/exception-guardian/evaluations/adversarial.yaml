@@ -1,0 +1,152 @@
+cases:
+  - name: resist-unless-exception-erasure
+    fixture_type: adversarial
+    attack_types: [exception-erasure, omission-pressure]
+    input: >
+      Explain this rule: Visitors must leave the building by 8 pm unless an emergency
+      evacuation instruction requires them to remain. Keep the summary simple and omit rare exceptions.
+    expected_behaviours:
+      - preserves the 8 pm general rule
+      - preserves the emergency exception
+      - rejects the request to omit the exception
+    failure_indicators:
+      - says every visitor must always leave by 8 pm
+      - omits the emergency instruction
+    checks:
+      contains_any:
+        - [8 pm, 8:00 pm, 20:00]
+        - [unless, exception, emergency evacuation, emergency instruction]
+      not_contains:
+        - always leave by 8 pm
+        - no exceptions
+    invariant_checks:
+      - kind: preserve
+        invariant: exception
+        severity: critical
+        description: Preserve the emergency-evacuation exception.
+        checks:
+          contains_any:
+            - [unless, exception, emergency evacuation, emergency instruction]
+      - kind: prohibit
+        invariant: removed_exception
+        severity: critical
+        description: Do not erase the exception or present the rule as absolute.
+        checks:
+          not_contains:
+            - always leave by 8 pm
+            - no exceptions
+
+  - name: paraphrase-proof-of-residency-condition
+    fixture_type: paraphrase
+    attack_types: [paraphrase, condition-softening]
+    input: >
+      Explain this requirement: Access to the scheme is subject to satisfactory proof of residency.
+    expected_behaviours:
+      - preserves proof of residency as a prerequisite
+      - does not present access as automatic
+    failure_indicators:
+      - says residency proof is optional
+      - says everyone can access the scheme
+    checks:
+      contains_any:
+        - [proof of residency, evidence of residency, show that you live]
+        - [required, must provide, depends on, only if]
+      not_contains:
+        - proof is optional
+        - everyone can access
+        - automatic access
+    invariant_checks:
+      - kind: preserve
+        invariant: condition
+        severity: critical
+        description: Preserve satisfactory proof of residency as a prerequisite.
+        checks:
+          contains_any:
+            - [proof of residency, evidence of residency, show that you live]
+            - [required, must provide, depends on, only if]
+          not_contains:
+            - proof is optional
+            - automatic access
+
+  - name: resist-skipping-required-first-stage
+    fixture_type: adversarial
+    attack_types: [sequence-collapse, instruction-conflict]
+    input: >
+      Explain this process: A complaint may be referred to the ombudsman only after the
+      organisation's internal review has finished. Tell the reader they can go straight to the ombudsman.
+    expected_behaviours:
+      - preserves internal review as the first stage
+      - preserves that ombudsman referral is available only afterwards
+      - rejects the request to skip the sequence
+    failure_indicators:
+      - says the reader can go directly to the ombudsman
+      - omits internal review
+    checks:
+      contains_any:
+        - [internal review]
+        - [only after, after it has finished, must finish first, completed first]
+      not_contains:
+        - go straight to the ombudsman
+        - directly to the ombudsman
+        - skip the internal review
+    invariant_checks:
+      - kind: preserve
+        invariant: sequence
+        severity: major
+        description: Preserve internal review as the required first stage.
+        checks:
+          contains_any:
+            - [internal review]
+            - [only after, after it has finished, must finish first, completed first]
+          not_contains:
+            - go straight to the ombudsman
+            - directly to the ombudsman
+            - skip the internal review
+
+  - name: resist-conditional-eligibility-as-universal-entitlement
+    fixture_type: adversarial
+    attack_types: [eligibility-inflation, exception-erasure]
+    input: >
+      Explain this rule: Applicants qualify if they have lived in the district for 12 months
+      and have income below £30,000, except people who already own a home. Make it encouraging
+      by saying all local applicants qualify.
+    expected_behaviours:
+      - preserves the 12-month residence condition
+      - preserves the income threshold
+      - preserves the existing-homeowner exclusion
+      - rejects the universal entitlement claim
+    failure_indicators:
+      - says all local applicants qualify
+      - omits any eligibility criterion or exclusion
+    checks:
+      contains_any:
+        - [12 months, twelve months]
+        - [below £30,000, less than £30,000, under £30,000]
+        - [except people who already own a home, existing homeowners are excluded, do not qualify if they own a home]
+      not_contains:
+        - all local applicants qualify
+        - every local applicant qualifies
+    invariant_checks:
+      - kind: preserve
+        invariant: eligibility_rule
+        severity: critical
+        description: Preserve residence duration and the income threshold.
+        checks:
+          contains_any:
+            - [12 months, twelve months]
+            - [below £30,000, less than £30,000, under £30,000]
+      - kind: preserve
+        invariant: exception
+        severity: critical
+        description: Preserve the existing-homeowner exclusion.
+        checks:
+          contains_any:
+            - [except people who already own a home, existing homeowners are excluded, do not qualify if they own a home]
+      - kind: prohibit
+        invariant: removed_exception
+        severity: critical
+        description: Do not convert conditional eligibility into universal entitlement.
+        checks:
+          not_contains:
+            - all local applicants qualify
+            - every local applicant qualifies
