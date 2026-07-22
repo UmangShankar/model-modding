@@ -1,5 +1,5 @@
 name: plain-language-explainer
-version: 0.1.0
+version: 0.1.1
 status: experimental
 description: >
   Rewrites complex supplied text in plain language while preserving material meaning,
