@@ -61,7 +61,7 @@ Delivered on the development line:
 
 ## v0.1.3 — Provider-neutral runtime
 
-Delivered in the first runtime increment:
+Delivered on the development line:
 
 - provider-neutral request, response, usage and generation-option contracts;
 - validation for `temperature`, `top_p`, `max_tokens`, `seed` and stop sequences;
@@ -71,13 +71,13 @@ Delivered in the first runtime increment:
 - normalised Ollama token usage, latency and finish reason;
 - requested and adapter-effective generation settings;
 - backward-compatible Ollama imports and local commands;
-- provider-registry diagnostics in `modding doctor`.
-
-Remaining in v0.1.3:
-
-- provider selection on all CLI execution surfaces;
-- complete provider and generation metadata in evaluation and benchmark evidence;
-- shared provider configuration conventions for cloud adapters.
+- provider-registry diagnostics in `modding doctor`;
+- explicit provider selection on `run`, `evaluate` and `benchmark`;
+- shared provider configuration across runtime commands;
+- exact provider, endpoint, model and generation metadata in evaluation and benchmark reports;
+- per-response execution metadata including usage and finish reason;
+- provider-aware report schema `0.4`;
+- opt-in migration that preserves existing default Ollama scripts.
 
 ## v0.1.4 — Anthropic provider
 
