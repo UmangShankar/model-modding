@@ -61,14 +61,23 @@ Delivered on the development line:
 
 ## v0.1.3 — Provider-neutral runtime
 
-Planned:
+Delivered in the first runtime increment:
 
-- provider request and response contracts;
-- generation-option normalisation;
-- provider registry and configuration;
-- Ollama migration behind the provider boundary;
-- exact provider and model metadata in evidence;
-- backward-compatible local commands.
+- provider-neutral request, response, usage and generation-option contracts;
+- validation for `temperature`, `top_p`, `max_tokens`, `seed` and stop sequences;
+- an extensible provider registry and configuration boundary;
+- normalised provider configuration, connection, HTTP and response errors;
+- Ollama transport migrated behind the provider boundary;
+- normalised Ollama token usage, latency and finish reason;
+- requested and adapter-effective generation settings;
+- backward-compatible Ollama imports and local commands;
+- provider-registry diagnostics in `modding doctor`.
+
+Remaining in v0.1.3:
+
+- provider selection on all CLI execution surfaces;
+- complete provider and generation metadata in evaluation and benchmark evidence;
+- shared provider configuration conventions for cloud adapters.
 
 ## v0.1.4 — Anthropic provider
 
