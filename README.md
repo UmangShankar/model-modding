@@ -31,7 +31,7 @@ Create → Validate → Inspect → Compose → Run → Evaluate → Publish evi
 ```
 
 ```bash
-python -m pip install -e " .[dev]"
+python -m pip install -e ".[dev]"
 modding validate
 modding inspect plain-language-explainer
 modding inspect deadline-guardian
