@@ -15,14 +15,14 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
 
     assert "Package, test and deploy portable AI-agent behaviour." in readme
     assert "meaning-preserving, evidence-backed transformation" in readme
-    assert "Trusted Document Explainer product contract" in readme
+    assert "Trusted Document Explainer contract" in readme
     assert "machine-readable invariant declarations" in readme
     assert "four narrow flagship assurance guardians" in readme
-    assert "deterministic invariant checks bound to manifest declarations" in readme
-    assert "structured source-output comparison" in readme
+    assert "deterministic invariant and source-output comparison" in readme
     assert "provider-neutral request, response, usage and generation-option contracts" in readme
-    assert "Only Ollama is currently registered as a built-in provider" in readme
+    assert "built-in Ollama and Anthropic adapters" in readme
     assert "does not perform unrestricted semantic extraction" in readme
+    assert "No Anthropic compatibility claim is implied" in readme
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
@@ -44,10 +44,12 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "cannot prove that every source fact was captured" in source_comparison
     assert "ProviderRequest" in provider_runtime
     assert "ProviderResponse" in provider_runtime
-    assert "Only Ollama is registered as a built-in provider" in provider_runtime
-    assert "does not invent an effective value" in provider_runtime
+    assert "Ollama and Anthropic are built-in providers" in provider_runtime
+    assert "ANTHROPIC_API_KEY" in provider_runtime
+    assert "Anthropic rejects `--seed`" in provider_runtime
     assert "Provider-aware evaluation and benchmark reports use schema `0.4`" in provider_runtime
     assert "Each stock and modded case result contains its own `execution` object" in provider_runtime
+    assert "Normal CI never calls Anthropic" in provider_runtime
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -94,3 +96,4 @@ def test_package_metadata_matches_v011_positioning() -> None:
     assert project["description"] == "Package, test and deploy portable AI-agent behaviour with inspectable evidence."
     assert "assurance" in project["keywords"]
     assert "reproducibility" in project["keywords"]
+    assert "anthropic" in project["optional-dependencies"]

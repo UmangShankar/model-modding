@@ -81,13 +81,20 @@ Delivered on the development line:
 
 ## v0.1.4 — Anthropic provider
 
-Planned:
+Delivered on the development line:
 
-- optional dependency group;
-- authentication diagnostics;
-- system and user instruction mapping;
-- usage, latency and finish-reason normalisation;
-- mocked tests and opt-in live smoke tests.
+- an optional `anthropic` dependency group;
+- `ANTHROPIC_API_KEY` and SDK readiness diagnostics;
+- system and user instruction mapping to the Messages API;
+- portable temperature, top-p, token-limit and stop-sequence mapping;
+- explicit rejection of unsupported seed requests before API execution;
+- a recorded Anthropic-required `max_tokens` default when omitted;
+- exact returned model, message and stop metadata;
+- normalised usage, latency and finish reason;
+- model discovery through the provider contract;
+- normalised authentication, connection, HTTP and response errors;
+- mocked contract tests and an opt-in paid live smoke test;
+- no mandatory cloud call in pull-request CI.
 
 ## v0.1.5 — OpenAI provider
 
