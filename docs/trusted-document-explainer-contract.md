@@ -40,7 +40,7 @@ The implemented initial invariant vocabulary includes:
 - source claims;
 - uncertainty.
 
-These declarations are schema-validated and inspectable. Semantic enforcement remains an evaluator deliverable.
+These declarations are schema-validated, inspectable and can be bound to explicit deterministic evaluator checks. General semantic comparison remains a later evaluator capability.
 
 ## Prohibited transformations
 
@@ -75,7 +75,7 @@ Assurance:
 
 Each guardian has one narrow responsibility, machine-readable invariants, focused instructions, examples, limitations and an independent four-case evaluation suite. The combined flagship evaluation plan contains at least 22 cases.
 
-This composition makes the behavioural contract inspectable. It does not yet prove semantic compliance with every declared invariant.
+This composition makes the behavioural contract inspectable and deterministically testable for its encoded assertions. It does not prove semantic compliance with every declared invariant.
 
 ## Portability target
 
@@ -98,7 +98,9 @@ Quality gates are ordered as follows:
 3. optional model-assisted judgement;
 4. recorded human review.
 
-A model judge must never be the sole gate and cannot override an exact critical failure.
+Evaluator v2 implements the first layer. Guardian cases target manifest-declared invariants, require matching severities and produce structured critical, major and minor failures. The default command gate fails on critical modded failures.
+
+A model judge must never be the sole gate and cannot override an exact deterministic critical failure.
 
 ## Severity model
 
@@ -106,7 +108,19 @@ A model judge must never be the sole gate and cannot override an exact critical 
 - **Major** — important clarity, grounding or qualification failure that requires review but does not meet the critical definition.
 - **Minor** — presentation or readability weakness with no material meaning change.
 
-A new critical failure must fail regression comparison regardless of aggregate score.
+A new critical failure must fail the configured evaluation gate regardless of aggregate score.
+
+## Current evaluation command
+
+```text
+modding evaluate trusted-document-explainer \
+  --model llama3.2 \
+  --fail-on critical
+```
+
+Supported thresholds are `critical`, `major`, `minor` and `none`. The `none` setting records failures without blocking and is intended for exploratory evidence collection only.
+
+Evaluation reports use schema `0.2` and include evaluator identity, structured failures, severity totals, per-mod summaries, pipeline status and blocking failures. Multi-model benchmarks use the same invariant-scoring path.
 
 ## Build target
 
@@ -201,6 +215,6 @@ The v0.2.0 proof is complete only when:
 
 ## Current limitation
 
-The current development line provides machine-readable invariant declarations, four narrow assurance guardians and the composed flagship recipe. It does not yet provide semantic extraction comparison, severity-aware enforcement, cloud providers, ABOMs, recipe locks, build digests, matrices or the regression command described above.
+The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, deterministic invariant checks, structured severity-aware failures and critical pipeline gates. It does not yet provide general semantic extraction comparison, cloud providers, ABOMs, recipe locks, build digests, matrices or the evidence-to-evidence regression command described above.
 
 Those capabilities are delivered incrementally through the published roadmap.

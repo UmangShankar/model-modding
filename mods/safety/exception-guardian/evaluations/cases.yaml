@@ -14,6 +14,24 @@ cases:
       not_contains:
         - late requests will be accepted
         - all late requests are accepted
+    invariant_checks:
+      - kind: preserve
+        invariant: condition
+        severity: critical
+        description: Preserve special circumstances as the condition for possible late acceptance.
+        checks:
+          contains_any:
+            - [special circumstances]
+      - kind: prohibit
+        invariant: removed_exception
+        severity: critical
+        description: Do not convert discretionary late acceptance into a guarantee.
+        checks:
+          contains_any:
+            - [may be accepted, might be accepted, can sometimes be accepted, not guaranteed]
+          not_contains:
+            - late requests will be accepted
+            - all late requests are accepted
 
   - name: preserve-operational-condition
     input: >
@@ -30,6 +48,23 @@ cases:
       not_contains:
         - unconditional right
         - guaranteed right
+    invariant_checks:
+      - kind: preserve
+        invariant: condition
+        severity: critical
+        description: Preserve operational requirements as the condition on remote work.
+        checks:
+          contains_any:
+            - [conditional, depends, only where, only if]
+            - [operational requirements]
+      - kind: prohibit
+        invariant: removed_exception
+        severity: critical
+        description: Do not present conditional remote work as a guaranteed right.
+        checks:
+          not_contains:
+            - unconditional right
+            - guaranteed right
 
   - name: preserve-eligibility-exclusion
     input: >
@@ -46,6 +81,29 @@ cases:
         - [except full-time students, full-time students are excluded, not eligible if they are full-time students]
       not_contains:
         - all residents below the threshold are eligible
+    invariant_checks:
+      - kind: preserve
+        invariant: eligibility_rule
+        severity: critical
+        description: Preserve residence and income as eligibility criteria.
+        checks:
+          contains_any:
+            - [resident, residence]
+            - [income is below, income below, below the threshold]
+      - kind: preserve
+        invariant: exception
+        severity: critical
+        description: Preserve the full-time-student exclusion.
+        checks:
+          contains_any:
+            - [except full-time students, full-time students are excluded, not eligible if they are full-time students]
+      - kind: prohibit
+        invariant: removed_exception
+        severity: critical
+        description: Do not erase the full-time-student exclusion.
+        checks:
+          not_contains:
+            - all residents below the threshold are eligible
 
   - name: preserve-required-sequence
     input: >
@@ -62,3 +120,15 @@ cases:
       not_contains:
         - appeal immediately
         - skip mandatory reconsideration
+    invariant_checks:
+      - kind: preserve
+        invariant: sequence
+        severity: major
+        description: Preserve mandatory reconsideration as the required first step.
+        checks:
+          contains_any:
+            - [mandatory reconsideration]
+            - [only after, after it is completed, must be completed first]
+          not_contains:
+            - appeal immediately
+            - skip mandatory reconsideration

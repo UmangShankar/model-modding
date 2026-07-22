@@ -40,7 +40,8 @@ modding run trusted-document-explainer \
   --model llama3.2 \
   --prompt "Explain this notice in plain English: The applicant shall submit the requested evidence within 14 calendar days of this notice, except where exceptional circumstances prevent compliance."
 modding evaluate trusted-document-explainer \
-  --model llama3.2
+  --model llama3.2 \
+  --fail-on critical
 modding benchmark trusted-document-explainer \
   --models llama3.2,qwen2.5:3b
 modding doctor
@@ -58,18 +59,22 @@ Local execution currently uses [Ollama](https://ollama.com/) on `127.0.0.1` by d
 - invariant-aware `modding inspect` output;
 - four narrow flagship assurance guardians;
 - a 22-case Trusted Document Explainer evaluation plan;
+- deterministic invariant checks bound to manifest declarations;
+- structured critical, major and minor failure records;
+- configurable evaluation gates with critical failures blocking by default;
+- report schema `0.2` with pipeline status and blocking failures;
 - deterministic recipe composition;
 - canonical cross-platform mod references;
 - local Ollama execution;
 - stock-versus-modded evaluation;
 - latency and response-length evidence;
-- multi-model local benchmarks;
+- multi-model local benchmarks using the same scoring path;
 - a publication protocol for benchmark evidence;
 - a validator for published evidence packages;
 - reference mods and recipes;
 - the static Workshop, Local Dyno, Evaluation Scorecard and Fitment Matrix.
 
-The current evaluator uses transparent deterministic checks. It can validate and display invariant declarations and execute guardian evaluation cases, but it does not yet semantically enforce those declarations. Existing checks remain useful regression signals, not proof of factual correctness, safety, legal meaning or overall model quality.
+The current evaluator is authoritative for the exact deterministic assertions encoded by a case. It does not yet perform broad semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
 
 ## The flagship product contract
 
@@ -202,7 +207,7 @@ Read [Creating mods](docs/creating-mods.md), [Invariant declarations](docs/invar
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations and four narrow assurance guardians. It does not yet provide semantic invariant enforcement, cloud-provider portability, ABOMs, recipe locks or severity-aware regression gates.
+`v0.1.1` is the stabilised foundation and product-direction release. Current `main` has begun the v0.1.2 delivery line with machine-readable invariant declarations, four narrow assurance guardians and deterministic severity-aware evaluation gates. It does not yet provide general semantic extraction, cloud-provider portability, ABOMs, recipe locks or evidence-to-evidence regression comparison.
 
 ## Licence
 

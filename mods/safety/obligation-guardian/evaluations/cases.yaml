@@ -18,6 +18,32 @@ cases:
       not_contains:
         - tenant may notify
         - landlord must notify the tenant
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the tenant as actor and landlord as recipient.
+        checks:
+          contains_any:
+            - [tenant]
+            - [landlord]
+          not_contains:
+            - landlord must notify the tenant
+      - kind: preserve
+        invariant: obligation
+        severity: critical
+        description: Preserve the mandatory written-notification duty.
+        checks:
+          contains_any:
+            - [must notify, required to notify, has to notify]
+            - [written, in writing]
+      - kind: prohibit
+        invariant: weakened_obligation
+        severity: critical
+        description: Do not weaken the tenant duty into an optional action.
+        checks:
+          not_contains:
+            - tenant may notify
 
   - name: preserve-prohibition
     input: >
@@ -36,6 +62,25 @@ cases:
       not_contains:
         - may subcontract without consent
         - can subcontract without consent
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the supplier as the governed party.
+        checks:
+          contains_any:
+            - [supplier]
+      - kind: preserve
+        invariant: prohibition
+        severity: critical
+        description: Preserve the ban unless prior written consent exists.
+        checks:
+          contains_any:
+            - [must not subcontract, cannot subcontract, is not allowed to subcontract]
+            - [prior written consent, written consent]
+          not_contains:
+            - may subcontract without consent
+            - can subcontract without consent
 
   - name: preserve-permission-without-creating-duty
     input: >
@@ -53,6 +98,24 @@ cases:
       not_contains:
         - must inspect every
         - required to inspect every
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the authority as the actor exercising discretion.
+        checks:
+          contains_any:
+            - [authority]
+      - kind: preserve
+        invariant: obligation
+        severity: critical
+        description: Preserve that inspection is discretionary rather than mandatory.
+        checks:
+          contains_any:
+            - [may inspect, can inspect, has discretion to inspect]
+          not_contains:
+            - must inspect every
+            - required to inspect every
 
   - name: preserve-two-party-actions
     input: >
@@ -70,3 +133,24 @@ cases:
       not_contains:
         - employee must respond
         - employee must notify the employer
+    invariant_checks:
+      - kind: preserve
+        invariant: named_party
+        severity: critical
+        description: Preserve the employer and employee roles.
+        checks:
+          contains_any:
+            - [employer]
+            - [employee]
+          not_contains:
+            - employee must notify the employer
+      - kind: preserve
+        invariant: obligation
+        severity: critical
+        description: Preserve the employer duty and absence of an employee response duty.
+        checks:
+          contains_any:
+            - [employer must notify, employer is required to notify, employer has to notify]
+            - [employee need not respond, employee does not have to respond, no requirement for the employee to respond]
+          not_contains:
+            - employee must respond
