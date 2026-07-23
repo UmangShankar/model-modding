@@ -57,11 +57,17 @@ jobs:
           pytest tests/test_evidence_comparison.py::test_matrix_reports_each_provider_model_by_invariant
           pytest tests/test_evidence_comparison.py::test_matrix_command_writes_json_and_markdown
 
+      - name: Test repeated evidence and release readiness
+        run: pytest tests/test_release_pipeline.py
+
+      - name: Exercise complete synthetic CI evidence pipeline
+        run: python scripts/generate_ci_evidence.py --output /tmp/model-modding-ci-evidence
+
       - name: Test positioning contracts
         run: pytest tests/test_positioning.py
 
       - name: Run behavioural regression tests
-        run: pytest --ignore=tests/test_evidence_bundles.py --ignore=tests/test_evidence_comparison.py --ignore=tests/test_positioning.py
+        run: pytest --ignore=tests/test_evidence_bundles.py --ignore=tests/test_evidence_comparison.py --ignore=tests/test_release_pipeline.py --ignore=tests/test_positioning.py
 
       - name: Build distributions
         run: python -m build
@@ -77,3 +83,8 @@ jobs:
           /tmp/model-modding-wheel/bin/modding verify-evidence --help
           /tmp/model-modding-wheel/bin/modding compare-evidence --help
           /tmp/model-modding-wheel/bin/modding matrix-evidence --help
+          /tmp/model-modding-wheel/bin/modding aggregate-evidence --help
+          /tmp/model-modding-wheel/bin/modding activate-baseline --help
+          /tmp/model-modding-wheel/bin/modding release-check --help
+          /tmp/model-modding-wheel/bin/modding evidence-summary --help
+          /tmp/model-modding-wheel/bin/modding validate-provider-run --help
