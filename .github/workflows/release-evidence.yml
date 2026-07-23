@@ -5,10 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "evidence/release-candidate/**"
-      - "schemas/**"
-      - "src/model_modding/release_pipeline.py"
-      - "scripts/assemble_release_evidence.py"
+      - "evidence/release-candidate/**/manifest.json"
 
 permissions:
   contents: read
