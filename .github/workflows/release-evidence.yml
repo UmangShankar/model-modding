@@ -5,7 +5,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "evidence/release-candidate/**/manifest.json"
+      - "evidence/release-candidate/**"
+      - "!evidence/release-candidate/README.md"
 
 permissions:
   contents: read
