@@ -182,8 +182,8 @@ def test_tampered_raw_response_fails_verification(tmp_path: Path) -> None:
 
     failures = verify_evidence_bundle(ROOT, destination)
 
-    assert any("responses.jsonl" in failure for failure in failures)
-    assert any("response count mismatch" in failure for failure in failures)
+    assert any("artifact mismatch: responses.jsonl" in failure for failure in failures)
+    assert any("response hash mismatch" in failure for failure in failures)
 
 
 def test_provider_run_can_emit_and_verify_evidence(tmp_path: Path, capsys) -> None:
