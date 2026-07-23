@@ -259,6 +259,68 @@ It verifies without calling a provider:
 
 A valid evidence bundle proves internal integrity. It does not prove that the response is correct, that every material failure was detected or that a provider is universally compatible.
 
+## Evidence comparison contract
+
+The implemented command is:
+
+```text
+modding compare-evidence \
+  evidence/baseline \
+  evidence/candidate \
+  --fail-on critical
+```
+
+Both bundles must pass offline evidence verification first.
+
+Regression comparison requires exact agreement on:
+
+- bundle type;
+- recipe name and version;
+- recipe source and build digests;
+- fixture-set digest;
+- evaluator contract;
+- provider/model target set.
+
+A mismatch must produce `not_comparable`. It must not be converted into a pass, failure delta or aggregate score.
+
+For comparable evidence, the report must distinguish:
+
+- new failures;
+- resolved failures;
+- unchanged failures;
+- severity changes;
+- severity escalations;
+- runtime metadata changes.
+
+A new or escalated modded failure at the configured threshold must return a blocking exit code. A major failure becoming critical is a critical regression even though the stable failure ID already existed.
+
+Comparison output is emitted in deterministic JSON and Markdown under schema `0.1`, with a canonical comparison digest.
+
+## Compatibility matrix contract
+
+The implemented command is:
+
+```text
+modding matrix-evidence \
+  evidence/ollama \
+  evidence/anthropic \
+  evidence/openai
+```
+
+Every input bundle must be verified and must share the same recipe/build identity, fixture-set digest and evaluator contract.
+
+The matrix must aggregate modded invariant checks and structured source comparisons by:
+
+- exact provider;
+- exact model;
+- invariant kind;
+- invariant name;
+- severity.
+
+Each cell records tested, passed and failed observations. A passed cell applies only to that locked build, fixture set, evaluator and recorded execution context. It is not a universal provider ranking, certification or proof that every semantic failure was detected.
+
+The matrix is emitted in deterministic JSON and Markdown under schema `0.1`, with a canonical matrix digest.
+
 ## Evidence requirements
 
 Every release result must identify:
@@ -274,25 +336,25 @@ Every release result must identify:
 - case and source-fact counts;
 - critical, major and minor failures;
 - evidence-bundle location and evidence digest;
+- comparison or matrix digest when those reports are used;
 - source-control commit and dirty-tree status when available;
 - privacy behaviour and known limitations.
 
-## Comparison and regression target
+A narrow compatibility statement may state:
 
-The remaining v0.1.7 scope must add:
-
-- compatibility matrices by invariant;
-- baseline-versus-candidate evidence comparison;
-- automatic failure for new critical regressions;
-- protected, allowlisted and cost-limited cloud workflows;
-- concise pull-request summaries;
-- reviewed Ollama, Anthropic and OpenAI portability evidence.
-
-A comparison may state:
-
-> This provider and model passed this locked recipe build on this fixture set under this configuration.
+> This provider and model passed this locked recipe build on this fixture set under this evaluator and recorded configuration.
 
 It must not state that one provider is universally best.
+
+## Remaining v0.1.7 operations
+
+The remaining programme must add:
+
+- protected, allowlisted and cost-limited cloud workflows;
+- concise automatic pull-request evidence summaries;
+- selection and review of an authoritative checked-in baseline;
+- reviewed Ollama, Anthropic and OpenAI portability evidence;
+- repeated-run aggregation for the release case study.
 
 ## Release acceptance
 
@@ -306,10 +368,10 @@ The v0.2.0 proof is complete only when:
 - one deliberate regression is caught automatically;
 - one independent developer reproduces the hero benchmark.
 
-The case-count, reproducible-build and durable-evidence foundations are complete. They do not count as full release acceptance until the provider, repetition, evidence-comparison and independent-reproduction criteria are satisfied.
+The case-count, reproducible-build, durable-evidence, comparison and matrix foundations are complete. They do not count as full release acceptance until the provider, repetition, reviewed-evidence and independent-reproduction criteria are satisfied.
 
 ## Current limitation
 
-The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, the 40-case classified fixture set, deterministic invariant checks, 23 typed source facts, structured source-output comparison, severity-aware gates, Ollama/Anthropic/OpenAI adapters, provider execution metadata, deterministic recipe locks, build digests, JSON/Markdown ABOMs and durable run evidence bundles.
+The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, the 40-case classified fixture set, deterministic invariant checks, 23 typed source facts, structured source-output comparison, severity-aware gates, Ollama/Anthropic/OpenAI adapters, provider execution metadata, deterministic recipe locks, build digests, JSON/Markdown ABOMs, durable run evidence bundles, strict evidence comparison and compatibility matrices.
 
-It does not provide unrestricted semantic extraction, compatibility matrices, baseline-versus-candidate evidence comparison, automatic PR regression summaries or reviewed three-provider portability evidence. Those capabilities remain the v0.1.7 programme.
+It does not provide unrestricted semantic extraction, protected cloud evidence workflows, automatic PR evidence summaries, reviewed three-provider portability evidence or the repeated and independently reproduced release case study.
