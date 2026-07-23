@@ -18,13 +18,15 @@ The first product wedge is **meaning-preserving, evidence-backed transformation 
 4. **Recipe lock** — the canonical source inventory and digest inputs for one behavioural build.
 5. **ABOM** — an Agent Behaviour Bill of Materials describing what behavioural components were built.
 6. **Evidence bundle** — the durable raw responses, execution context, build identity and interpreted results for one run.
+7. **Evidence comparison** — a strict baseline-versus-candidate delta over verified, comparable evidence.
+8. **Compatibility matrix** — a contextual provider/model-by-invariant summary for one build, fixture set and evaluator.
 
-Mods, recipes, machine-readable invariant declarations, deterministic assurance gates, the provider-neutral runtime, recipe locks, ABOMs and durable run evidence are implemented. Evidence-to-evidence comparison and compatibility matrices remain staged v0.2 deliverables.
+Mods, recipes, machine-readable invariant declarations, deterministic assurance gates, the provider-neutral runtime, recipe locks, ABOMs, durable run evidence, evidence comparison and compatibility matrices are implemented.
 
 ## Current working loop
 
 ```text
-Create → Validate → Inspect → Compose → Build → Verify → Run → Evaluate → Verify evidence
+Create → Validate → Inspect → Compose → Build → Verify → Run → Evaluate → Verify evidence → Compare → Matrix
 ```
 
 ```bash
@@ -45,6 +47,8 @@ modding evaluate trusted-document-explainer \
   --fail-on critical \
   --evidence build/evidence/evaluation-run
 modding verify-evidence build/evidence/evaluation-run
+modding compare-evidence evidence/baseline evidence/candidate --fail-on critical
+modding matrix-evidence evidence/ollama evidence/anthropic evidence/openai
 modding doctor
 ```
 
@@ -105,6 +109,42 @@ modding verify-evidence build/evidence/evaluation-run
 A valid evidence bundle proves that its recorded files and hashes agree. It does not prove semantic correctness or universal provider compatibility.
 
 Read [Durable run evidence bundles](docs/run-evidence.md).
+
+## Evidence comparison and regression gates
+
+Compare a verified baseline and candidate:
+
+```bash
+modding compare-evidence \
+  evidence/baseline \
+  evidence/candidate \
+  --fail-on critical \
+  --output build/comparisons/current
+```
+
+Comparison is strict. Bundle type, recipe identity, source digest, build digest, fixture-set digest, evaluator and provider/model target set must match before behavioural deltas are interpreted.
+
+The report separates new, resolved and unchanged failures, severity changes and severity escalations. A new or escalated failure at the configured threshold returns exit code `1`. Invalid or non-comparable evidence returns `2`. A clean comparison returns `0`.
+
+The command emits deterministic `comparison.json` and `comparison.md` files with a canonical comparison digest.
+
+## Compatibility matrices
+
+Create a provider/model-by-invariant matrix from verified evidence:
+
+```bash
+modding matrix-evidence \
+  evidence/ollama \
+  evidence/anthropic \
+  evidence/openai \
+  --output build/matrices/trusted-document-explainer
+```
+
+Matrix inputs must share the same recipe build, fixture set and evaluator. Each cell reports tested, passed and failed encoded invariant or source-comparison observations for an exact provider/model target.
+
+A passed cell means only that the encoded assertions passed for that locked build and recorded context. It is not a universal model ranking or compatibility certification.
+
+Read [Evidence comparison and compatibility matrices](docs/evidence-comparison.md).
 
 ## Provider-aware execution
 
@@ -176,6 +216,10 @@ Capability differences remain explicit. Anthropic rejects `seed` and applies a r
 - prompt-private raw-response records and separated interpreted evaluation;
 - versioned evidence schema and offline `verify-evidence` command;
 - source-control, fixture-set, artifact and response identities;
+- strict baseline-versus-candidate `compare-evidence` regression gates;
+- new, resolved and severity-escalated failure reporting;
+- provider/model-by-invariant `matrix-evidence` summaries;
+- versioned comparison and matrix schemas with deterministic digests;
 - clean-wheel and pull-request gates for flagship build verification;
 - backward-compatible Ollama commands and imports;
 - optional Anthropic and OpenAI SDKs with authentication diagnostics;
@@ -185,7 +229,7 @@ Capability differences remain explicit. Anthropic rejects `seed` and applies a r
 
 The evaluator is authoritative only for the exact deterministic assertions encoded by each case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
 
-No cloud-provider compatibility claim is implied merely because an adapter or evidence format exists. Claims require actual reviewed evidence tied to an exact provider, model, build digest, configuration, fixture set and evaluator version.
+No cloud-provider compatibility claim is implied merely because an adapter, evidence format, comparison or matrix exists. Claims require actual reviewed evidence tied to an exact provider, model, build digest, configuration, fixture set and evaluator version.
 
 ## Flagship product contract
 
@@ -222,6 +266,7 @@ Model Modding is not:
 - [Provider-neutral runtime](docs/provider-runtime.md)
 - [Reproducible builds, recipe locks and ABOMs](docs/reproducible-builds.md)
 - [Durable run evidence bundles](docs/run-evidence.md)
+- [Evidence comparison and compatibility matrices](docs/evidence-comparison.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
 - [Running locally](docs/running-locally.md)
 - [Evaluations](docs/evaluations.md)
@@ -230,7 +275,7 @@ Model Modding is not:
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, v0.1.3 provider-neutral runtime, v0.1.4 Anthropic adapter, v0.1.5 OpenAI adapter, v0.1.6 reproducible builds and the durable-evidence foundation of v0.1.7. Evidence comparison, compatibility matrices and reviewed three-provider benchmark evidence remain future increments.
+`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, v0.1.3 provider-neutral runtime, v0.1.4 Anthropic adapter, v0.1.5 OpenAI adapter, v0.1.6 reproducible builds and the durable evidence, evidence comparison and compatibility-matrix foundations of v0.1.7. Protected cloud workflows, automatic PR summaries and reviewed three-provider benchmark evidence remain future increments.
 
 ## Licence
 
