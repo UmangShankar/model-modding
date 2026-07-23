@@ -4,11 +4,20 @@
   "title": "Model Modding Build Manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "document_type", "algorithm", "recipe", "recipe_version", "source_digest", "build_digest", "artifacts"],
+  "required": ["schema_version", "document_type", "algorithm", "builder", "recipe", "recipe_version", "source_digest", "build_digest", "artifacts"],
   "properties": {
     "schema_version": {"const": "0.1"},
     "document_type": {"const": "model-modding-build"},
     "algorithm": {"const": "sha256"},
+    "builder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"const": "model-modding"},
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"}
+      }
+    },
     "recipe": {"type": "string", "minLength": 1},
     "recipe_version": {"type": "string", "minLength": 1},
     "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
