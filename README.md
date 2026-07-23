@@ -44,13 +44,14 @@ Ollama remains the local default and requires no cloud API key.
 
 ## Provider-aware execution
 
-Ollama and Anthropic are built-in providers behind the same neutral request and response contract.
+Ollama, Anthropic and OpenAI are built-in providers behind the same neutral request and response contract.
 
-Install Anthropic support:
+Install cloud-provider support:
 
 ```bash
-python -m pip install -e ".[anthropic]"
+python -m pip install -e ".[anthropic,openai]"
 export ANTHROPIC_API_KEY="..."
+export OPENAI_API_KEY="..."
 ```
 
 Run the same recipe through Anthropic:
@@ -60,6 +61,16 @@ modding evaluate trusted-document-explainer \
   --provider anthropic \
   --model claude-sonnet-4-6 \
   --temperature 0 \
+  --max-tokens 1024 \
+  --fail-on critical
+```
+
+Run it through OpenAI's Responses API:
+
+```bash
+modding evaluate trusted-document-explainer \
+  --provider openai \
+  --model gpt-5.2 \
   --max-tokens 1024 \
   --fail-on critical
 ```
@@ -74,7 +85,7 @@ Portable runtime options are shared across `run`, `evaluate` and `benchmark`:
 --stop
 ```
 
-Capability differences remain explicit. Anthropic rejects `seed` before a paid request because its Messages API does not support that option. When `max_tokens` is omitted, the adapter applies and records a deliberate default of 1024 because Anthropic requires the field.
+Capability differences remain explicit. Anthropic rejects `seed` and applies a recorded `max_tokens` default of 1024 when the required field is omitted. The OpenAI Responses adapter maps `max_tokens` to `max_output_tokens` and rejects `seed` and `stop` before a paid request rather than silently ignoring them.
 
 ## What current `main` provides
 
@@ -90,18 +101,18 @@ Capability differences remain explicit. Anthropic rejects `seed` before a paid r
 - deterministic invariant and source-output comparison;
 - configurable evaluation gates with critical failures blocking by default;
 - provider-neutral request, response, usage and generation-option contracts;
-- built-in Ollama and Anthropic adapters;
+- built-in Ollama, Anthropic and OpenAI adapters;
 - provider selection across `run`, `evaluate` and `benchmark`;
 - schema `0.4` execution evidence with per-response provider, model, settings, usage and finish reason;
 - backward-compatible Ollama commands and imports;
-- optional Anthropic SDK and authentication diagnostics;
+- optional Anthropic and OpenAI SDKs with authentication diagnostics;
 - mocked cloud-provider tests and opt-in paid smoke-test scaffolding;
 - deterministic recipe composition and cross-platform references;
 - local benchmarks and evidence-publication validation.
 
 The evaluator is authoritative only for the exact deterministic assertions encoded by each case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
 
-No Anthropic compatibility claim is implied merely because the adapter exists. Cloud claims require an actual reviewed evidence bundle tied to an exact model, configuration, fixture set and evaluator version.
+No cloud-provider compatibility claim is implied merely because an adapter exists. Claims require an actual reviewed evidence bundle tied to an exact provider, model, configuration, fixture set and evaluator version.
 
 ## Flagship product contract
 
@@ -144,7 +155,7 @@ Model Modding is not:
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, the v0.1.3 provider-neutral runtime, and the v0.1.4 Anthropic adapter implementation. OpenAI, reproducible builds, recipe locks, ABOMs and evidence comparison remain future increments.
+`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, v0.1.3 provider-neutral runtime, v0.1.4 Anthropic adapter and v0.1.5 OpenAI adapter. Reproducible builds, recipe locks, ABOMs, evidence comparison and reviewed three-provider benchmark evidence remain future increments.
 
 ## Licence
 

@@ -33,6 +33,7 @@ Issues = "https://github.com/UmangShankar/model-modding/issues"
 
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.104,<1"]
+openai = ["openai>=1.99,<3"]
 dev = ["pytest>=8,<9", "build>=1.2,<2"]
 
 [project.scripts]

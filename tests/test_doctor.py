@@ -18,6 +18,8 @@ def test_doctor_is_ready_when_required_checks_pass(capsys) -> None:
     assert "Release readiness: READY" in output
     assert "Manifest validation" in output
     assert "llama3.2:latest" in output
+    assert "Anthropic" in output
+    assert "OpenAI" in output
 
 
 def test_doctor_requires_invariant_schema(tmp_path: Path, capsys) -> None:

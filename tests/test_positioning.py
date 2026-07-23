@@ -20,9 +20,9 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "four narrow flagship assurance guardians" in readme
     assert "deterministic invariant and source-output comparison" in readme
     assert "provider-neutral request, response, usage and generation-option contracts" in readme
-    assert "built-in Ollama and Anthropic adapters" in readme
+    assert "built-in Ollama, Anthropic and OpenAI adapters" in readme
     assert "does not perform unrestricted semantic extraction" in readme
-    assert "No Anthropic compatibility claim is implied" in readme
+    assert "No cloud-provider compatibility claim is implied" in readme
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
@@ -44,12 +44,14 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "cannot prove that every source fact was captured" in source_comparison
     assert "ProviderRequest" in provider_runtime
     assert "ProviderResponse" in provider_runtime
-    assert "Ollama and Anthropic are built-in providers" in provider_runtime
+    assert "Ollama, Anthropic and OpenAI are built-in providers" in provider_runtime
     assert "ANTHROPIC_API_KEY" in provider_runtime
-    assert "Anthropic rejects `--seed`" in provider_runtime
+    assert "OPENAI_API_KEY" in provider_runtime
+    assert "OpenAI adapter uses the Responses API contract" in provider_runtime
+    assert "rejects `seed` and `stop`" in provider_runtime
     assert "Provider-aware evaluation and benchmark reports use schema `0.4`" in provider_runtime
     assert "Each stock and modded case result contains its own `execution` object" in provider_runtime
-    assert "Normal CI never calls Anthropic" in provider_runtime
+    assert "Normal CI never calls cloud providers" in provider_runtime
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -86,6 +88,8 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
     assert "explicit provider selection on `run`, `evaluate` and `benchmark`" in roadmap
     assert "provider-aware report schema `0.4`" in roadmap
     assert "per-response execution metadata including usage and finish reason" in roadmap
+    assert "instruction and user-input mapping to the Responses API" in roadmap
+    assert "Reviewed three-provider portability evidence remains a separate" in roadmap
 
 
 def test_package_metadata_matches_v011_positioning() -> None:
@@ -97,3 +101,4 @@ def test_package_metadata_matches_v011_positioning() -> None:
     assert "assurance" in project["keywords"]
     assert "reproducibility" in project["keywords"]
     assert "anthropic" in project["optional-dependencies"]
+    assert "openai" in project["optional-dependencies"]
