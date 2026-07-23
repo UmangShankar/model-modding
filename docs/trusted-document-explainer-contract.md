@@ -2,7 +2,7 @@
 
 ## Status
 
-This document defines the target reference product for Model Modding v0.2.0. It is a product and engineering contract, not a claim that the current development line already satisfies every requirement.
+This document defines the target reference product for Model Modding v0.2.0. It is a product and engineering contract, not a claim that the current development line already satisfies every evidence requirement.
 
 ## Purpose
 
@@ -10,7 +10,7 @@ This document defines the target reference product for Model Modding v0.2.0. It 
 
 ## Intended users
 
-The reference package is intended for people who need to understand notices, policies, clauses, letters or other high-stakes text without losing the details that determine what must happen, who must act, when action is required and which qualifications apply.
+The reference package is intended for people who need to understand notices, policies, clauses, letters or other high-stakes text without losing what must happen, who must act, when action is required and which qualifications apply.
 
 ## Required transformation behaviour
 
@@ -27,20 +27,14 @@ The package should:
 
 The implemented machine-readable invariant declarations include:
 
-- deadlines;
-- dates and durations;
+- deadlines, dates and durations;
 - amounts and percentages;
-- named parties;
-- obligations;
-- prohibitions;
-- conditions;
-- exceptions;
-- eligibility rules;
+- named parties, obligations and prohibitions;
+- conditions, exceptions and eligibility rules;
 - sequence;
-- source claims;
-- uncertainty.
+- source claims and uncertainty.
 
-The declarations are schema-validated and inspectable. They can be bound both to deterministic invariant checks and to typed source facts that compare canonical source values, required context and prohibited output forms.
+The declarations are schema-validated and inspectable. They bind to deterministic invariant checks and to 23 typed source facts that compare canonical source values, required context and prohibited output forms.
 
 ## Prohibited transformations
 
@@ -75,21 +69,17 @@ Assurance:
 
 Each guardian has one narrow responsibility, focused instructions, machine-readable invariant declarations, examples, limitations and independent baseline, adversarial and paraphrase evaluation coverage.
 
-The combined flagship evaluation plan contains exactly 40 cases. Eighteen are classified adversarial or paraphrase fixtures: five for Deadline Guardian, five for Obligation Guardian, four for Exception Guardian and four for Source Grounding Guardian.
+The combined flagship evaluation plan contains exactly 40 cases. Eighteen are classified adversarial or paraphrase fixtures. Sixteen representative guardian cases declare 23 typed source facts.
 
-Sixteen representative guardian cases declare 23 typed source facts. These compare source values with accepted output forms, bind facts to actors, triggers or qualifications where required, and detect explicitly prohibited transformations.
-
-This composition makes the behavioural contract inspectable and deterministically testable for its encoded assertions. The current evaluator does not provide unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
+This composition is inspectable and deterministically testable for its encoded assertions. The current evaluator does not provide unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
 
 ## Reproducible build contract
-
-The implemented command is:
 
 ```text
 modding build trusted-document-explainer
 ```
 
-It produces:
+The build produces:
 
 ```text
 build/trusted-document-explainer/
@@ -100,76 +90,29 @@ build/trusted-document-explainer/
 └── manifest.json
 ```
 
-The bundle must be deterministic for identical canonical inputs and must contain no timestamps, absolute checkout paths, usernames or machine identifiers.
+The bundle must be deterministic for identical canonical inputs and contain no timestamps, absolute checkout paths, usernames or machine identifiers.
 
-Canonicalisation defines:
+Canonicalisation defines UTF-8, LF line endings, stable JSON, repository-relative POSIX paths, recipe composition order and SHA-256 file, component, source, prompt, artifact and build digests. The initial build engine identity is `model-modding 0.1.0`.
 
-- UTF-8 source and output encoding;
-- LF line endings for text hashing and generated text;
-- stable JSON key ordering with no insignificant whitespace;
-- repository-relative POSIX paths;
-- recipe composition order;
-- SHA-256 file, component, source, prompt, artifact and build digests;
-- versioned recipe-lock, ABOM and build-manifest schemas;
-- an independently versioned build engine.
+## Recipe lock and ABOM contract
 
-The initial build engine identity is `model-modding 0.1.0`.
+`recipe.lock.json` identifies the build engine and format versions, exact recipe and ordered components, manifests and instruction files, roles, licences, dependencies, conflicts, compatibility declarations, invariants, source digest, compiled-prompt digest, digest inputs and build digest.
 
-## Recipe lock contract
+Provider, model and generation settings are excluded because they belong to execution evidence.
 
-`recipe.lock.json` must identify:
-
-- build engine and format versions;
-- recipe identity, version, licence, configuration and manifest hash;
-- each ordered mod reference, name, version, role, status and licence;
-- each mod manifest and instruction-file path, byte count and SHA-256;
-- capabilities, dependencies, conflicts and compatible-model declarations;
-- preserved invariants and prohibited transformations;
-- component digests;
-- source digest;
-- compiled system-prompt digest;
-- complete canonical inputs used to compute the build digest;
-- build digest.
-
-Provider, model and generation settings are intentionally excluded. They vary between executions of the same locked build and belong in execution evidence.
-
-## ABOM contract
-
-The Agent Behaviour Bill of Materials is emitted as `abom.json` and `abom.md`.
-
-It identifies the build engine, recipe, ordered components, roles, licences, declared safeguards, source digest, compiled-prompt digest and build digest. It also states its limitations.
-
-An ABOM is a deterministic build inventory. It does not prove that a provider or model complied with the instructions and must not list a provider as tested unless reviewed execution evidence supports that claim.
+The Agent Behaviour Bill of Materials is emitted as `abom.json` and `abom.md`. An ABOM is a deterministic build inventory. It does not prove that a provider or model complied with the instructions.
 
 ## Offline build verification
-
-The implemented command is:
 
 ```text
 modding verify-build trusted-document-explainer
 ```
 
-Verification reconstructs the expected bundle from the current source tree without a model API call and compares every managed artifact byte-for-byte.
-
-It must fail when:
-
-- a source manifest or instruction changes;
-- the build engine or schema-version contract changes;
-- a generated artifact is edited or missing;
-- an unmanaged path appears in the build directory;
-- a generated JSON payload violates its versioned schema.
-
-Equivalent LF and CRLF checkouts must produce the same identity. Any other behavioural source-byte change must invalidate the lock and build.
+Verification reconstructs the expected bundle without a provider call and fails when behavioural sources or schemas change, a generated artifact is edited or missing, an unmanaged path appears or generated JSON is invalid.
 
 ## Portability target
 
-The same locked recipe build must run through:
-
-- Ollama;
-- Anthropic;
-- OpenAI.
-
-No mod file may be changed between providers.
+The same locked recipe build must run through Ollama, Anthropic and OpenAI without changing mod files.
 
 Adapter availability alone does not establish compatibility. Every reviewed result must identify the provider, exact returned model, supplied and effective generation settings, build digest, evaluator version and fixture set.
 
@@ -182,31 +125,15 @@ Quality gates are ordered as follows:
 3. optional model-assisted judgement;
 4. recorded human review.
 
-Evaluator `0.3.0` implements the first two layers. Guardian cases target manifest-declared invariants, require matching severities and produce structured critical, major and minor failures. Typed source facts must be present in the case input, preventing fixtures from inventing their own ground truth.
-
-A model judge must never be the sole gate and cannot override an exact deterministic critical failure.
+Evaluator `0.3.0` implements the first two layers. A model judge must never be the sole gate and cannot override an exact deterministic critical failure.
 
 ## Severity model
 
 - **Critical** — material meaning changed, invented or removed in a way that could alter action, entitlement, safety or compliance.
-- **Major** — important clarity, grounding or qualification failure that requires review but does not meet the critical definition.
+- **Major** — important clarity, grounding or qualification failure requiring review.
 - **Minor** — presentation or readability weakness with no material meaning change.
 
 A new critical failure must fail the configured evaluation gate regardless of aggregate score.
-
-## Current evaluation command
-
-```text
-modding evaluate trusted-document-explainer \
-  --provider ollama \
-  --model llama3.2 \
-  --fail-on critical \
-  --evidence build/evidence/trusted-document-explainer
-```
-
-Supported thresholds are `critical`, `major`, `minor` and `none`. The `none` setting records failures without blocking and is intended for exploratory evidence collection only.
-
-Provider-aware reports use schema `0.4` and include runtime and per-response provider, model, requested/effective settings, usage and finish metadata alongside evaluator results.
 
 ## Durable evidence contract
 
@@ -222,123 +149,98 @@ abom.json
 evaluation.json
 ```
 
-The bundle must:
+The bundle must embed the exact build identity, preserve exact raw responses and execution metadata, record prompt hashes without copying prompt text by default, keep interpreted evaluation separate, record provider/model/settings/evaluator/fixtures/source control and include independently verifiable hashes and limitations.
 
-- embed the exact recipe lock and ABOM for the executed behavioural build;
-- preserve exact raw response text and per-call execution metadata in `responses.jsonl`;
-- record prompt and system-prompt SHA-256 values without copying prompt text by default;
-- store interpreted evaluator output separately from raw model responses;
-- remove prompt and response text from the interpreted `evaluation.json` artifact;
-- record provider, requested models, generation settings, evaluator and fixture-set identity;
-- record source-control commit and dirty-tree state when available;
-- record artifact hashes, byte counts and an independently verifiable evidence digest;
-- state privacy behaviour and limitations explicitly.
-
-Raw execution evidence must remain immutable when an evaluator is rerun. A new interpretation must not replace or rewrite the original response artifact.
-
-Sensitive source documents must not be copied into evidence by default. Prompt hashes reduce accidental copying but do not make low-entropy prompts secret and do not replace the original source during human review.
+Raw execution evidence must remain immutable when an evaluator is rerun.
 
 ## Offline evidence verification
-
-The implemented command is:
 
 ```text
 modding verify-evidence build/evidence/trusted-document-explainer
 ```
 
-It verifies without calling a provider:
-
-- manifest schema validity;
-- evidence-digest reconstruction;
-- every artifact SHA-256 and byte count;
-- raw response count and response hashes;
-- absence of prompt text fields in raw response records;
-- recipe-lock build-digest validity;
-- agreement between the manifest, lock and ABOM;
-- missing or unmanaged artifacts.
+It verifies manifest validity, evidence-digest reconstruction, artifact hashes and sizes, response hashes, prompt privacy, recipe-lock validity, manifest/lock/ABOM agreement and missing or unmanaged artifacts.
 
 A valid evidence bundle proves internal integrity. It does not prove that the response is correct, that every material failure was detected or that a provider is universally compatible.
 
 ## Evidence comparison contract
 
-The implemented command is:
-
 ```text
-modding compare-evidence \
-  evidence/baseline \
-  evidence/candidate \
-  --fail-on critical
+modding compare-evidence evidence/baseline evidence/candidate --fail-on critical
 ```
 
-Both bundles must pass offline evidence verification first.
-
-Regression comparison requires exact agreement on:
-
-- bundle type;
-- recipe name and version;
-- recipe source and build digests;
-- fixture-set digest;
-- evaluator contract;
-- provider/model target set.
+Both bundles must pass offline evidence verification first. Regression comparison requires exact agreement on bundle type, recipe name/version, source/build digests, fixture-set digest, evaluator contract and provider/model target set.
 
 A mismatch must produce `not_comparable`. It must not be converted into a pass, failure delta or aggregate score.
 
-For comparable evidence, the report must distinguish:
-
-- new failures;
-- resolved failures;
-- unchanged failures;
-- severity changes;
-- severity escalations;
-- runtime metadata changes.
-
-A new or escalated modded failure at the configured threshold must return a blocking exit code. A major failure becoming critical is a critical regression even though the stable failure ID already existed.
-
-Comparison output is emitted in deterministic JSON and Markdown under schema `0.1`, with a canonical comparison digest.
+Comparable reports distinguish new, resolved and unchanged failures, severity changes, severity escalations and runtime changes. A new or escalated modded failure at the configured threshold must block. Output is deterministic JSON and Markdown with a canonical comparison digest.
 
 ## Compatibility matrix contract
 
-The implemented command is:
-
 ```text
-modding matrix-evidence \
-  evidence/ollama \
-  evidence/anthropic \
-  evidence/openai
+modding matrix-evidence evidence/ollama evidence/anthropic evidence/openai
 ```
 
-Every input bundle must be verified and must share the same recipe/build identity, fixture-set digest and evaluator contract.
+Every input must be verified and share the same recipe/build identity, fixture-set digest and evaluator contract.
 
-The matrix must aggregate modded invariant checks and structured source comparisons by:
+The matrix aggregates modded invariant checks and structured source comparisons by exact provider, exact model, invariant kind, invariant and severity. A passed cell applies only to that locked build, fixture set, evaluator and recorded execution context. It is not a universal provider ranking, certification or proof that every semantic failure was detected.
 
-- exact provider;
-- exact model;
-- invariant kind;
-- invariant name;
-- severity.
+## Repeated evidence contract
 
-Each cell records tested, passed and failed observations. A passed cell applies only to that locked build, fixture set, evaluator and recorded execution context. It is not a universal provider ranking, certification or proof that every semantic failure was detected.
+```text
+modding aggregate-evidence evidence/run-1 evidence/run-2 evidence/run-3 \
+  --minimum-repetitions 3 \
+  --require-zero-critical \
+  --output build/aggregate
+```
 
-The matrix is emitted in deterministic JSON and Markdown under schema `0.1`, with a canonical matrix digest.
+All bundles must share exact recipe, build, fixture and evaluator identities. The aggregate records repetitions, minimum cases, run outcomes, evidence digests, failure totals and per-invariant observations for every exact target.
+
+Repeated passing runs remain contextual evidence and do not prove universal compatibility.
+
+## Reviewed baseline contract
+
+```text
+modding activate-baseline evidence/candidate evidence/baselines/current \
+  --reviewer "Reviewer or group" \
+  --scope "Exact comparison scope"
+```
+
+Activation requires a verified evidence bundle and emits a canonical `baseline.json` plus the embedded evidence. Baseline approval is scoped. It does not establish compatibility outside the exact build, fixtures, evaluator and target.
+
+## Protected execution contract
+
+Real cloud runs use a manual protected workflow with environment approval, provider secrets, exact model allowlists, one to three repetitions, capped output tokens, all 40 cases and durable uploaded evidence.
+
+Ollama release evidence uses an allowlisted self-hosted runner. Untrusted pull requests never receive cloud credentials and do not trigger paid provider execution.
+
+Synthetic pull-request evidence exercises pipeline mechanics only and must be labelled as synthetic. It cannot be copied into reviewed release evidence or used for provider claims.
+
+## Release readiness contract
+
+```text
+modding release-check \
+  --aggregate build/release-candidate/aggregate/aggregate.json \
+  --matrix build/release-candidate/matrix/matrix.json \
+  --minimum-repetitions 3 \
+  --minimum-cases 40 \
+  --output build/release-candidate/readiness
+```
+
+The v0.2 gate requires:
+
+- matching recipe, build, fixture-set and evaluator identities;
+- Ollama, Anthropic and OpenAI coverage;
+- at least three repetitions for every exact release target;
+- all 40 cases in every repetition;
+- zero critical failures;
+- passing compatibility-matrix target status.
+
+A `v0.2*` tag must not publish unless checked-in reviewed evidence satisfies this gate and the package version matches the tag.
 
 ## Evidence requirements
 
-Every release result must identify:
-
-- recipe ID and version;
-- recipe source, lock and build digests;
-- build engine and ABOM;
-- installed mods and versions;
-- declared invariants;
-- provider and exact returned model;
-- requested and effective generation configuration;
-- evaluator version and fixture-set identity;
-- case and source-fact counts;
-- critical, major and minor failures;
-- evidence-bundle location and evidence digest;
-- comparison or matrix digest when those reports are used;
-- source-control commit and dirty-tree status when available;
-- privacy behaviour and known limitations.
+Every release result must identify recipe/build/lock/ABOM identity, installed mods and invariants, provider and exact model, requested and effective settings, evaluator and fixtures, case/source-fact counts, failures, evidence/aggregate/matrix/readiness digests, source-control state, privacy behaviour and limitations.
 
 A narrow compatibility statement may state:
 
@@ -346,32 +248,23 @@ A narrow compatibility statement may state:
 
 It must not state that one provider is universally best.
 
-## Remaining v0.1.7 operations
-
-The remaining programme must add:
-
-- protected, allowlisted and cost-limited cloud workflows;
-- concise automatic pull-request evidence summaries;
-- selection and review of an authoritative checked-in baseline;
-- reviewed Ollama, Anthropic and OpenAI portability evidence;
-- repeated-run aggregation for the release case study.
-
 ## Release acceptance
 
 The v0.2.0 proof is complete only when:
 
 - the same locked flagship build runs across all three providers;
-- at least 40 cases are included;
-- zero critical failures remain in the release candidate evidence;
-- at least three repetitions are recorded;
+- at least 40 cases are included in every release run;
+- zero critical failures remain in reviewed release-candidate evidence;
+- at least three repetitions are recorded per exact target;
 - compatibility claims include exact configuration and limitations;
 - one deliberate regression is caught automatically;
+- a public case study includes failures and limitations;
 - one independent developer reproduces the hero benchmark.
 
-The case-count, reproducible-build, durable-evidence, comparison and matrix foundations are complete. They do not count as full release acceptance until the provider, repetition, reviewed-evidence and independent-reproduction criteria are satisfied.
+The engineering pipeline enforces these conditions but does not pretend that paid runs, human review or independent reproduction have already occurred.
 
 ## Current limitation
 
-The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, the 40-case classified fixture set, deterministic invariant checks, 23 typed source facts, structured source-output comparison, severity-aware gates, Ollama/Anthropic/OpenAI adapters, provider execution metadata, deterministic recipe locks, build digests, JSON/Markdown ABOMs, durable run evidence bundles, strict evidence comparison and compatibility matrices.
+The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the 40-case classified fixture set, deterministic invariant checks, 23 typed source facts, structured source-output comparison, severity-aware gates, Ollama/Anthropic/OpenAI adapters, provider execution metadata, deterministic builds, recipe locks, JSON/Markdown ABOMs, durable evidence, strict comparison, compatibility matrices, repeated-run aggregation, reviewed-baseline activation, automatic synthetic PR summaries, protected provider workflows and v0.2 release gates.
 
-It does not provide unrestricted semantic extraction, protected cloud evidence workflows, automatic PR evidence summaries, reviewed three-provider portability evidence or the repeated and independently reproduced release case study.
+It does not provide unrestricted semantic extraction or reviewed three-provider portability evidence by itself. Real provider credentials, reviewed executions, baseline approval, the public case study and independent reproduction remain evidence operations.
