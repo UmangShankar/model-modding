@@ -78,15 +78,11 @@ modding evidence-summary \
   --github-summary
 ```
 
-`.github/workflows/evidence-pr-summary.yml` runs on every pull request. It:
+`.github/workflows/evidence-pr-summary.yml` runs branch code with read-only repository permission. It generates deterministic synthetic evidence, exercises baseline activation, comparison, matrix, aggregation and readiness contracts, uploads the reports and appends the job summary.
 
-- generates deterministic synthetic evidence;
-- exercises reviewed-baseline activation, comparison, matrix, aggregation and release readiness;
-- uploads all generated reports;
-- appends a job summary;
-- creates or updates one pull-request comment for same-repository branches.
+`.github/workflows/evidence-pr-comment.yml` is a separate trusted `workflow_run` consumer. It downloads the completed artifact with Actions read permission and creates or updates one pull-request comment with pull-request write permission. Branch code therefore never receives a write-capable token.
 
-The summary begins with an explicit synthetic-evidence warning. It is not real provider evidence.
+The summary begins with an explicit synthetic-evidence warning and says only that the readiness contract passed. It never states that v0.2 or a real provider is ready.
 
 ## Protected cloud provider runs
 
@@ -168,7 +164,7 @@ A failed check produces `not_ready` and a non-zero exit code.
 
 ## Release enforcement
 
-`.github/workflows/release-evidence.yml` runs when checked-in release-candidate evidence changes and uploads the assembled reports.
+`.github/workflows/release-evidence.yml` runs when an actual checked-in release-candidate `manifest.json` changes and uploads the assembled reports.
 
 `.github/workflows/release.yml` applies an additional rule to `v0.2*` tags: the tag cannot be released unless the checked-in evidence passes the complete readiness gate. The package version must also exactly match the tag.
 
