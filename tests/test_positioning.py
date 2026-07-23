@@ -24,6 +24,9 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "built-in Ollama, Anthropic and OpenAI adapters" in readme
     assert "deterministic `build` and offline `verify-build` commands" in readme
     assert "Agent Behaviour Bills of Materials" in readme
+    assert "durable run, evaluation and benchmark evidence bundles" in readme
+    assert "versioned evidence schema and offline `verify-evidence` command" in readme
+    assert "Prompt text is omitted by default" in readme
     assert "does not perform unrestricted semantic extraction" in readme
     assert "No cloud-provider compatibility claim is implied" in readme
     assert "An ABOM is a build inventory" in readme
@@ -35,6 +38,7 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     source_comparison = read("docs/source-output-comparison-design.md")
     provider_runtime = read("docs/provider-runtime.md")
     builds = read("docs/reproducible-builds.md")
+    evidence = read("docs/run-evidence.md")
 
     assert "## Invariant" in concepts
     assert "## Reproducible build" in concepts
@@ -43,6 +47,8 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "## Agent Behaviour Bill of Materials" in concepts
     assert "The ABOM is available in machine-readable JSON" in concepts
     assert "An ABOM is a build inventory, not proof" in concepts
+    assert "Prompt text is omitted by default" in concepts
+    assert "Raw responses remain authoritative" in concepts
     assert "Unknown terms fail schema validation" in invariants
     assert "## Assurance guardians" in invariants
     assert "produce structured severity-aware failures" in invariants
@@ -64,13 +70,19 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "No timestamps, absolute checkout paths" in builds
     assert "without a provider call" in builds
     assert "does not prove model compliance" in builds
+    assert "responses.jsonl" in evidence
+    assert "Prompt text is omitted by default" in evidence
+    assert "Raw responses and interpreted evaluation are separate artifacts" in evidence
+    assert "modding verify-evidence" in evidence
+    assert "does not prove semantic correctness" in evidence
 
 
-def test_build_format_schemas_are_versioned() -> None:
+def test_build_and_evidence_format_schemas_are_versioned() -> None:
     expected = {
         "schemas/recipe-lock.schema.json": "Model Modding Recipe Lock",
         "schemas/abom.schema.json": "Agent Behaviour Bill of Materials",
         "schemas/build-manifest.schema.json": "Model Modding Build Manifest",
+        "schemas/evidence-bundle.schema.json": "Model Modding Run Evidence Bundle",
     }
     for path, title in expected.items():
         schema = json.loads(read(path))
@@ -117,6 +129,9 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
     assert "independently recomputable digest inputs including schema versions" in roadmap
     assert "generated-artifact tamper detection" in roadmap
     assert "The ABOM identifies packaged behavioural inputs" in roadmap
+    assert "versioned durable run-evidence bundle schema" in roadmap
+    assert "`modding verify-evidence` for offline schema, hash and consistency checks" in roadmap
+    assert "Remaining in v0.1.7" in roadmap
     assert "Reviewed three-provider portability evidence remains a separate" in roadmap
 
 

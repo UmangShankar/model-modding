@@ -142,9 +142,22 @@ The ABOM identifies packaged behavioural inputs. It does not establish provider 
 
 ## v0.1.7 — Evidence comparison and regression gates
 
-Planned:
+Delivered on the development line:
 
-- durable run evidence bundles linked to recipe locks and build digests;
+- versioned durable run-evidence bundle schema;
+- `--evidence` support for provider-aware `run`, `evaluate` and `benchmark`;
+- exact recipe source, build, lock and ABOM identities in every bundle;
+- raw responses preserved as newline-delimited JSON with per-call execution metadata;
+- prompt text omitted by default and represented by SHA-256;
+- interpreted evaluation stored separately from raw responses;
+- evaluator, fixture-set, provider, model, generation and source-control context;
+- artifact, response and evidence digests;
+- `modding verify-evidence` for offline schema, hash and consistency checks;
+- unmanaged-artifact and tamper detection;
+- deterministic fixed-context and mocked provider tests without cloud calls.
+
+Remaining in v0.1.7:
+
 - compatibility matrices by invariant;
 - baseline-versus-candidate comparison;
 - critical-failure regression gates;
@@ -176,11 +189,12 @@ Every pull request runs:
 
 1. schema and manifest validation;
 2. deterministic flagship recipe build and ABOM verification;
-3. unit and fixture tests;
-4. Python distribution build;
-5. clean-wheel installation and repeat build verification.
+3. evidence privacy, integrity and command tests;
+4. existing unit and fixture regression tests;
+5. Python distribution build;
+6. clean-wheel installation and command verification.
 
-Checked-in evidence regression comparison will be added in v0.1.7.
+Checked-in evidence regression comparison remains a later v0.1.7 increment.
 
 Cloud evaluation will not be mandatory for untrusted fork pull requests. Full provider benchmarks will use trusted branch events, protected environments, explicit model allowlists and cost limits.
 

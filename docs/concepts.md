@@ -97,18 +97,23 @@ An ABOM is a build inventory, not proof that a model complied with the package. 
 
 An **evidence bundle** is the durable record of one execution and its evaluation context.
 
-The v0.2 evidence model will identify:
+The implemented bundle identifies:
 
-- the recipe, lock and build digest;
-- provider and exact model identifier;
+- recipe, source, lock, ABOM and build digests;
+- provider and requested model identifiers;
 - supplied and effective generation settings;
-- source-input and response hashes;
-- evaluator version and fixture set;
-- critical, major and minor failures;
-- source-control commit and dirty-tree status;
-- known limitations.
+- prompt, system-prompt and response hashes;
+- exact raw response text and per-call execution metadata;
+- evaluator version and fixture-set digest where applicable;
+- source-control commit and dirty-tree status when available;
+- artifact byte counts and SHA-256 values;
+- privacy declarations and known limitations.
 
-Raw execution evidence and interpreted evaluation results are related but distinct. Re-running an evaluator must not overwrite the original model response.
+Prompt text is omitted by default to reduce accidental copying of sensitive source documents. Raw responses remain authoritative in `responses.jsonl`. Interpreted evaluation is stored separately without prompt or response text, so re-running an evaluator does not overwrite the original model output.
+
+`modding verify-evidence` checks the manifest schema, evidence digest, artifact hashes, response hashes, build identity and unexpected files without calling a provider.
+
+A valid bundle proves internal integrity, not semantic correctness or universal compatibility. See [Durable run evidence bundles](run-evidence.md).
 
 ## Stock and modded runs
 
@@ -134,7 +139,7 @@ A valid compatibility statement has the form:
 
 It must identify the exact provider, model, build digest, evaluator, fixture set, generation configuration, date and limitations.
 
-Model Modding does not treat adapter availability or a single score as evidence that one provider is universally better.
+Model Modding does not treat adapter availability, a valid evidence bundle or a single score as evidence that one provider is universally better.
 
 ## Maturity
 

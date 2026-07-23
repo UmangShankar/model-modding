@@ -11,6 +11,7 @@ _PROVIDER_FLAGS = {
     "--max-tokens",
     "--seed",
     "--stop",
+    "--evidence",
 }
 
 
@@ -38,7 +39,7 @@ def main(argv: list[str] | None = None) -> int:
     if _provider_runtime_requested(arguments):
         return provider_commands.main(_normalise_command_root(arguments))
     if arguments == ["--help"]:
-        print("Reproducible build commands: build, verify-build\n")
+        print("Reproducible commands: build, verify-build, verify-evidence\n")
     return cli.main(arguments)
 
 

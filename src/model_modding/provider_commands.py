@@ -8,16 +8,18 @@ from typing import Any, Callable
 
 from .benchmark import markdown_report as benchmark_markdown
 from .benchmark import parse_models, resolve_model_selector
+from .evidence import response_record, write_evidence_bundle
 from .evaluation import (
     EVALUATOR_VERSION,
     build_report,
     evaluate_case_response,
+    failure_counts,
     human_name,
     load_evaluation_cases,
     markdown_report as evaluation_markdown,
 )
 from .ollama import compile_recipe_in_memory
-from .provider import ProviderConfigurationError, ProviderError
+from .provider import ProviderConfigurationError, ProviderError, ProviderRequest
 from .runtime import RuntimeConfig, generate_response, generation_options_from_values
 
 RUNTIME_COMMANDS = {"run", "evaluate", "benchmark"}
@@ -49,6 +51,7 @@ def _add_runtime_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--max-tokens", type=int)
     parser.add_argument("--seed", type=int)
     parser.add_argument("--stop", action="append", default=[], help="Repeatable stop sequence")
+    parser.add_argument("--evidence", type=Path, help="Write a durable run evidence bundle to this directory")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -100,6 +103,30 @@ def _execution(response: Any) -> dict[str, Any]:
     return metadata
 
 
+def _score_response(response: Any, case: Any) -> dict[str, Any]:
+    result = evaluate_case_response(response.text, case)
+    result.update({
+        "response": response.text,
+        "latency_seconds": response.latency_seconds,
+        "words": len(response.text.split()),
+        "execution": _execution(response),
+    })
+    return result
+
+
+def _evidence_destination(root: Path, value: Path) -> Path:
+    return value.resolve() if value.is_absolute() else (root / value).resolve()
+
+
+def _runtime_from_response(runtime: RuntimeConfig, response: Any) -> dict[str, Any]:
+    result = runtime.as_dict()
+    result["provider"] = response.provider
+    endpoint = response.metadata.get("endpoint") if isinstance(response.metadata, dict) else None
+    if endpoint:
+        result["endpoint"] = endpoint
+    return result
+
+
 def run_command(root: Path, args: argparse.Namespace, opener: Callable[..., Any] | None = None) -> int:
     try:
         compiled = compile_recipe_in_memory(root, args.name)
@@ -129,18 +156,31 @@ def run_command(root: Path, args: argparse.Namespace, opener: Callable[..., Any]
     print(f"Requested options: {json.dumps(execution['requested_options'], sort_keys=True)}")
     print(f"Effective options: {json.dumps(execution['effective_options'], sort_keys=True)}")
     print(f"Finish reason: {execution['finish_reason'] or 'not reported'}")
+
+    if args.evidence:
+        try:
+            evidence = write_evidence_bundle(
+                root,
+                args.name,
+                _evidence_destination(root, args.evidence),
+                bundle_type="run",
+                runtime=_runtime_from_response(runtime, response),
+                requested_models=[args.model],
+                records=[
+                    response_record(
+                        identifier="run:modded:1",
+                        role="modded",
+                        prompt=args.prompt,
+                        system_prompt=compiled.system_prompt,
+                        response=response,
+                    )
+                ],
+            )
+        except (OSError, ValueError) as exc:
+            print(f"Evidence creation failed: {exc}", file=sys.stderr)
+            return 1
+        print(f"Evidence bundle: {evidence}")
     return 0
-
-
-def _score_response(response: Any, case: Any) -> dict[str, Any]:
-    result = evaluate_case_response(response.text, case)
-    result.update({
-        "response": response.text,
-        "latency_seconds": response.latency_seconds,
-        "words": len(response.text.split()),
-        "execution": _execution(response),
-    })
-    return result
 
 
 def evaluate_command(root: Path, args: argparse.Namespace, opener: Callable[..., Any] | None = None) -> int:
@@ -161,16 +201,15 @@ def evaluate_command(root: Path, args: argparse.Namespace, opener: Callable[...,
         return 0
 
     rows: list[dict[str, Any]] = []
+    evidence_records: list[dict[str, Any]] = []
     try:
         for index, case in enumerate(cases, 1):
             print(f"[{index}/{len(cases)}] {case.mod}:{case.name}")
             stock = adapter.generate(
-                __import__("model_modding.provider", fromlist=["ProviderRequest"]).ProviderRequest(
-                    model=args.model, prompt=case.prompt, options=runtime.options, timeout=args.timeout
-                )
+                ProviderRequest(model=args.model, prompt=case.prompt, options=runtime.options, timeout=args.timeout)
             )
             modded = adapter.generate(
-                __import__("model_modding.provider", fromlist=["ProviderRequest"]).ProviderRequest(
+                ProviderRequest(
                     model=args.model,
                     prompt=case.prompt,
                     system_prompt=compiled.system_prompt,
@@ -187,6 +226,26 @@ def evaluate_command(root: Path, args: argparse.Namespace, opener: Callable[...,
                 "stock": _score_response(stock, case),
                 "modded": _score_response(modded, case),
             })
+            evidence_records.extend([
+                response_record(
+                    identifier=f"evaluation:{index}:stock",
+                    role="stock",
+                    prompt=case.prompt,
+                    system_prompt="",
+                    response=stock,
+                    case=case.name,
+                    mod=case.mod,
+                ),
+                response_record(
+                    identifier=f"evaluation:{index}:modded",
+                    role="modded",
+                    prompt=case.prompt,
+                    system_prompt=compiled.system_prompt,
+                    response=modded,
+                    case=case.name,
+                    mod=case.mod,
+                ),
+            ])
     except ProviderError as exc:
         print(f"Evaluation run failed: {exc}", file=sys.stderr)
         return 1
@@ -200,6 +259,24 @@ def evaluate_command(root: Path, args: argparse.Namespace, opener: Callable[...,
     destination.mkdir(parents=True, exist_ok=True)
     (destination / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     (destination / "report.md").write_text(evaluation_markdown(report), encoding="utf-8", newline="\n")
+
+    if args.evidence:
+        try:
+            evidence = write_evidence_bundle(
+                root,
+                args.name,
+                _evidence_destination(root, args.evidence),
+                bundle_type="evaluation",
+                runtime=runtime.as_dict(adapter),
+                requested_models=[args.model],
+                records=evidence_records,
+                evaluation=report,
+            )
+        except (OSError, ValueError) as exc:
+            print(f"Evidence creation failed: {exc}", file=sys.stderr)
+            return 1
+        print(f"Evidence bundle: {evidence}")
+
     print(f"Pipeline status: {report['pipeline']['status'].upper()}")
     print(f"JSON report: {destination / 'report.json'}")
     return 1 if report["pipeline"]["status"] == "failed" else 0
@@ -227,19 +304,53 @@ def benchmark_command(root: Path, args: argparse.Namespace, opener: Callable[...
         return 1
 
     model_reports: list[dict[str, Any]] = []
-    from .provider import ProviderRequest
-    from .evaluation import failure_counts
-    for requested_model in models:
+    evidence_records: list[dict[str, Any]] = []
+    for model_index, requested_model in enumerate(models, 1):
         resolved = resolve_model_selector(requested_model, installed) if runtime.provider.casefold() == "ollama" else requested_model
         if resolved is None:
             model_reports.append({"model": requested_model, "status": "unavailable", "reason": "not installed"})
             continue
         rows: list[dict[str, Any]] = []
         try:
-            for case in cases:
-                stock = adapter.generate(ProviderRequest(model=resolved, prompt=case.prompt, options=runtime.options, timeout=args.timeout))
-                modded = adapter.generate(ProviderRequest(model=resolved, prompt=case.prompt, system_prompt=compiled.system_prompt, options=runtime.options, timeout=args.timeout))
-                rows.append({"mod": case.mod, "case": case.name, "stock": _score_response(stock, case), "modded": _score_response(modded, case)})
+            for case_index, case in enumerate(cases, 1):
+                stock = adapter.generate(
+                    ProviderRequest(model=resolved, prompt=case.prompt, options=runtime.options, timeout=args.timeout)
+                )
+                modded = adapter.generate(
+                    ProviderRequest(
+                        model=resolved,
+                        prompt=case.prompt,
+                        system_prompt=compiled.system_prompt,
+                        options=runtime.options,
+                        timeout=args.timeout,
+                    )
+                )
+                rows.append({
+                    "mod": case.mod,
+                    "case": case.name,
+                    "stock": _score_response(stock, case),
+                    "modded": _score_response(modded, case),
+                })
+                evidence_records.extend([
+                    response_record(
+                        identifier=f"benchmark:{model_index}:{case_index}:stock",
+                        role="stock",
+                        prompt=case.prompt,
+                        system_prompt="",
+                        response=stock,
+                        case=case.name,
+                        mod=case.mod,
+                    ),
+                    response_record(
+                        identifier=f"benchmark:{model_index}:{case_index}:modded",
+                        role="modded",
+                        prompt=case.prompt,
+                        system_prompt=compiled.system_prompt,
+                        response=modded,
+                        case=case.name,
+                        mod=case.mod,
+                    ),
+                ])
         except ProviderError as exc:
             model_reports.append({"model": requested_model, "resolved_model": resolved, "status": "failed", "reason": str(exc)})
             continue
@@ -287,6 +398,24 @@ def benchmark_command(root: Path, args: argparse.Namespace, opener: Callable[...
     destination.mkdir(parents=True, exist_ok=True)
     (destination / "benchmark.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     (destination / "benchmark.md").write_text(benchmark_markdown(report), encoding="utf-8", newline="\n")
+
+    if args.evidence and evidence_records:
+        try:
+            evidence = write_evidence_bundle(
+                root,
+                args.name,
+                _evidence_destination(root, args.evidence),
+                bundle_type="benchmark",
+                runtime=runtime.as_dict(adapter),
+                requested_models=models,
+                records=evidence_records,
+                evaluation=report,
+            )
+        except (OSError, ValueError) as exc:
+            print(f"Evidence creation failed: {exc}", file=sys.stderr)
+            return 1
+        print(f"Evidence bundle: {evidence}")
+
     print(f"Completed models: {report['completed_models']}/{len(models)}")
     return 0 if report["completed_models"] else 1
 
