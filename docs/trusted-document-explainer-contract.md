@@ -141,7 +141,7 @@ It identifies the build engine, recipe, ordered components, roles, licences, dec
 
 An ABOM is a deterministic build inventory. It does not prove that a provider or model complied with the instructions and must not list a provider as tested unless reviewed execution evidence supports that claim.
 
-## Offline verification
+## Offline build verification
 
 The implemented command is:
 
@@ -198,44 +198,95 @@ A new critical failure must fail the configured evaluation gate regardless of ag
 
 ```text
 modding evaluate trusted-document-explainer \
+  --provider ollama \
   --model llama3.2 \
-  --fail-on critical
+  --fail-on critical \
+  --evidence build/evidence/trusted-document-explainer
 ```
 
 Supported thresholds are `critical`, `major`, `minor` and `none`. The `none` setting records failures without blocking and is intended for exploratory evidence collection only.
 
 Provider-aware reports use schema `0.4` and include runtime and per-response provider, model, requested/effective settings, usage and finish metadata alongside evaluator results.
 
+## Durable evidence contract
+
+Provider-aware `run`, `evaluate` and `benchmark` may emit a versioned evidence bundle through `--evidence`.
+
+An evaluation bundle contains:
+
+```text
+manifest.json
+responses.jsonl
+recipe.lock.json
+abom.json
+evaluation.json
+```
+
+The bundle must:
+
+- embed the exact recipe lock and ABOM for the executed behavioural build;
+- preserve exact raw response text and per-call execution metadata in `responses.jsonl`;
+- record prompt and system-prompt SHA-256 values without copying prompt text by default;
+- store interpreted evaluator output separately from raw model responses;
+- remove prompt and response text from the interpreted `evaluation.json` artifact;
+- record provider, requested models, generation settings, evaluator and fixture-set identity;
+- record source-control commit and dirty-tree state when available;
+- record artifact hashes, byte counts and an independently verifiable evidence digest;
+- state privacy behaviour and limitations explicitly.
+
+Raw execution evidence must remain immutable when an evaluator is rerun. A new interpretation must not replace or rewrite the original response artifact.
+
+Sensitive source documents must not be copied into evidence by default. Prompt hashes reduce accidental copying but do not make low-entropy prompts secret and do not replace the original source during human review.
+
+## Offline evidence verification
+
+The implemented command is:
+
+```text
+modding verify-evidence build/evidence/trusted-document-explainer
+```
+
+It verifies without calling a provider:
+
+- manifest schema validity;
+- evidence-digest reconstruction;
+- every artifact SHA-256 and byte count;
+- raw response count and response hashes;
+- absence of prompt text fields in raw response records;
+- recipe-lock build-digest validity;
+- agreement between the manifest, lock and ABOM;
+- missing or unmanaged artifacts.
+
+A valid evidence bundle proves internal integrity. It does not prove that the response is correct, that every material failure was detected or that a provider is universally compatible.
+
 ## Evidence requirements
 
 Every release result must identify:
 
 - recipe ID and version;
-- recipe lock and build digest;
+- recipe source, lock and build digests;
 - build engine and ABOM;
 - installed mods and versions;
 - declared invariants;
-- provider and exact model;
-- generation configuration;
-- evaluator version;
+- provider and exact returned model;
+- requested and effective generation configuration;
+- evaluator version and fixture-set identity;
 - case and source-fact counts;
 - critical, major and minor failures;
-- evidence-bundle location;
-- source-control commit and dirty-tree status;
-- known limitations.
-
-Sensitive source documents must not be copied into evidence by default.
+- evidence-bundle location and evidence digest;
+- source-control commit and dirty-tree status when available;
+- privacy behaviour and known limitations.
 
 ## Comparison and regression target
 
 The remaining v0.1.7 scope must add:
 
-- durable run evidence bundles linked to a build digest;
 - compatibility matrices by invariant;
-- baseline-versus-candidate comparison;
+- baseline-versus-candidate evidence comparison;
 - automatic failure for new critical regressions;
 - protected, allowlisted and cost-limited cloud workflows;
-- concise pull-request summaries.
+- concise pull-request summaries;
+- reviewed Ollama, Anthropic and OpenAI portability evidence.
 
 A comparison may state:
 
@@ -255,10 +306,10 @@ The v0.2.0 proof is complete only when:
 - one deliberate regression is caught automatically;
 - one independent developer reproduces the hero benchmark.
 
-The case-count criterion and reproducible-build foundation are complete. They do not count as full release acceptance until the provider, repetition, evidence-comparison and independent-reproduction criteria are satisfied.
+The case-count, reproducible-build and durable-evidence foundations are complete. They do not count as full release acceptance until the provider, repetition, evidence-comparison and independent-reproduction criteria are satisfied.
 
 ## Current limitation
 
-The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, the 40-case classified fixture set, deterministic invariant checks, 23 typed source facts, structured source-output comparison, severity-aware gates, Ollama/Anthropic/OpenAI adapters, provider execution metadata, deterministic recipe locks, build digests and JSON/Markdown ABOMs.
+The current development line provides machine-readable invariant declarations, four narrow assurance guardians, the composed flagship recipe, the 40-case classified fixture set, deterministic invariant checks, 23 typed source facts, structured source-output comparison, severity-aware gates, Ollama/Anthropic/OpenAI adapters, provider execution metadata, deterministic recipe locks, build digests, JSON/Markdown ABOMs and durable run evidence bundles.
 
-It does not provide unrestricted semantic extraction, durable run evidence bundles, compatibility matrices, evidence-to-evidence regression commands or reviewed three-provider portability evidence. Those capabilities remain the v0.1.7 programme.
+It does not provide unrestricted semantic extraction, compatibility matrices, baseline-versus-candidate evidence comparison, automatic PR regression summaries or reviewed three-provider portability evidence. Those capabilities remain the v0.1.7 programme.
