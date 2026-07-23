@@ -45,8 +45,11 @@ jobs:
       - name: Test evidence command integration
         run: pytest tests/test_evidence_bundles.py::test_provider_run_can_emit_and_verify_evidence
 
-      - name: Run existing regression tests
-        run: pytest --ignore=tests/test_evidence_bundles.py
+      - name: Test positioning contracts
+        run: pytest tests/test_positioning.py
+
+      - name: Run behavioural regression tests
+        run: pytest --ignore=tests/test_evidence_bundles.py --ignore=tests/test_positioning.py
 
       - name: Build distributions
         run: python -m build
