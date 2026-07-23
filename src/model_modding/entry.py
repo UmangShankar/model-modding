@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from . import cli, provider_commands
+from . import build_commands, cli, provider_commands
 
 _PROVIDER_FLAGS = {
     "--provider",
@@ -14,7 +14,7 @@ _PROVIDER_FLAGS = {
 }
 
 
-def _normalise_runtime_root(arguments: list[str]) -> list[str]:
+def _normalise_command_root(arguments: list[str]) -> list[str]:
     if "--root" not in arguments:
         return arguments
     index = arguments.index("--root")
@@ -33,8 +33,12 @@ def _provider_runtime_requested(arguments: list[str]) -> bool:
 def main(argv: list[str] | None = None) -> int:
     """Run the unified Model Modding command-line interface."""
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if build_commands.handles(arguments):
+        return build_commands.main(_normalise_command_root(arguments))
     if _provider_runtime_requested(arguments):
-        return provider_commands.main(_normalise_runtime_root(arguments))
+        return provider_commands.main(_normalise_command_root(arguments))
+    if arguments == ["--help"]:
+        print("Reproducible build commands: build, verify-build\n")
     return cli.main(arguments)
 
 
