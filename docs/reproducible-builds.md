@@ -43,10 +43,17 @@ The source digest covers:
 
 Evaluation fixtures are not runtime behavioural inputs and are not part of this build digest. They belong to execution and evaluation evidence.
 
+## Build engine identity
+
+Every lock, ABOM and build manifest records the build engine as `model-modding` with an independent semantic version. The initial engine contract is `0.1.0`.
+
+The engine version is separate from the Python package release version. It changes when compilation or canonicalisation semantics change in a way that could affect build identity.
+
 ## Build digest
 
 `recipe.lock.json` records a `digest_inputs` object containing:
 
+- build-engine version;
 - build-manifest schema version;
 - recipe-lock schema version;
 - ABOM schema version;
@@ -67,7 +74,7 @@ No timestamps, absolute checkout paths, usernames or machine identifiers are inc
 
 ## Recipe lock
 
-The recipe lock identifies exactly which behavioural inputs produced the compiled prompt. Components remain in recipe order and include:
+The recipe lock identifies exactly which behavioural inputs produced the compiled prompt. It also records the build engine and the complete digest-input object. Components remain in recipe order and include:
 
 - canonical reference;
 - name and version;
@@ -84,7 +91,7 @@ The lock does not include provider, model or generation settings. Those vary per
 
 ## Agent Behaviour Bill of Materials
 
-The ABOM describes what behavioural material is packaged in the build. It includes the recipe, ordered components, declared safeguards, source digest, build digest and compiled-prompt digest.
+The ABOM describes what behavioural material is packaged in the build. It includes the build-engine identity, recipe, ordered components, declared safeguards, source digest, build digest and compiled-prompt digest.
 
 An ABOM is not proof that a model obeyed the instructions. It is a build inventory. Compatibility claims still require reviewed execution evidence tied to an exact provider, model, configuration, fixture set and evaluator version.
 
@@ -106,6 +113,7 @@ modding verify-build trusted-document-explainer \
 Verification reconstructs the expected bundle without a provider call and compares every managed artifact byte-for-byte. It fails when:
 
 - a source manifest or instruction changed;
+- the build-engine or schema-version contract changed;
 - a generated artifact was edited;
 - an artifact is missing;
 - an unmanaged artifact is present;
@@ -119,7 +127,7 @@ The formats are defined by:
 - `schemas/abom.schema.json`;
 - `schemas/build-manifest.schema.json`.
 
-Generated JSON is validated before it is written. Schema versions participate in the build digest, so a future incompatible format change cannot silently retain the same build identity.
+Generated JSON is validated before it is written. The build-engine and schema versions participate in the build digest, so a future compiler or incompatible format change cannot silently retain the same build identity.
 
 ## CI use
 
