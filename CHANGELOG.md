@@ -54,6 +54,16 @@ All notable changes to Model Modding are documented here.
 - OpenAI Responses API mapping for instructions, user input and portable settings.
 - Normalised OpenAI model, response status, token usage, incomplete reason and endpoint metadata.
 - Mocked OpenAI contract tests and an opt-in paid live smoke test.
+- `modding build` for deterministic behavioural bundles.
+- `modding verify-build` for offline byte-level build verification.
+- Versioned recipe-lock, ABOM and build-manifest schemas.
+- Canonical SHA-256 records for recipe manifests, mod manifests and ordered instruction files.
+- Transparent source and build digests with independently recomputable digest inputs.
+- Recipe locks containing ordered components, versions, roles, licences, dependencies, conflicts, compatibility declarations and invariants.
+- Agent Behaviour Bills of Materials in canonical JSON and human-readable Markdown.
+- Cross-platform line-ending normalisation without absolute paths, timestamps or machine identifiers.
+- Behavioural source mutation, generated-artifact tamper and line-ending stability tests.
+- Pull-request and clean-wheel gates for flagship build and ABOM verification.
 
 ### Changed
 
@@ -72,16 +82,20 @@ All notable changes to Model Modding are documented here.
 - Anthropic applies and records a deliberate `max_tokens` default of 1024 when the required setting is omitted.
 - OpenAI maps neutral `max_tokens` to `max_output_tokens` on the Responses API.
 - OpenAI rejects unsupported seed and stop requests before execution instead of silently ignoring them.
+- `modding doctor` now requires the reproducible-build format schemas as part of repository readiness.
+- CI now reconstructs and verifies the flagship behavioural build before tests and again from the clean wheel.
 
 ### Notes
 
 - Deterministic invariant and structured source comparisons block configured severity thresholds and cannot be overridden by aggregate scores.
 - The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
-- Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers or cloud providers.
+- Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers, cloud providers or new build identities.
 - Ollama, Anthropic and OpenAI are built-in providers.
 - Ollama defaults that are not reported by the API are not invented as effective settings.
 - Normal CI does not call Anthropic or OpenAI. Cloud compatibility claims require reviewed evidence from explicit paid runs.
 - Adapter availability alone does not establish cross-provider compatibility.
+- A recipe lock and ABOM identify packaged behavioural inputs; they do not prove provider or model compliance.
+- Evaluation fixtures and runtime provider settings are intentionally excluded from the behavioural build digest and belong to execution evidence.
 
 ## [0.1.1] - 2026-07-22
 
