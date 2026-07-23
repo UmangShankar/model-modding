@@ -106,6 +106,8 @@ The matrix aggregates the modded result of every encoded invariant check and str
 
 A cell reports how many observations were tested, passed and failed. `passed` means no encoded observation for that invariant failed for that target.
 
+A passed cell is not a universal model or provider compatibility claim.
+
 It does not mean:
 
 - the provider or model is universally compatible;
