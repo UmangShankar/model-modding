@@ -12,6 +12,7 @@ _PROVIDER_FLAGS = {
     "--seed",
     "--stop",
     "--evidence",
+    "--case-limit",
 }
 
 
@@ -41,7 +42,8 @@ def main(argv: list[str] | None = None) -> int:
     if arguments == ["--help"]:
         print(
             "Reproducible commands: build, verify-build, verify-evidence, "
-            "compare-evidence, matrix-evidence\n"
+            "compare-evidence, matrix-evidence, aggregate-evidence, activate-baseline, "
+            "release-check, evidence-summary, validate-provider-run\n"
         )
     return cli.main(arguments)
 
