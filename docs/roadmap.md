@@ -98,12 +98,22 @@ Delivered on the development line:
 
 ## v0.1.5 — OpenAI provider
 
-Planned:
+Delivered on the development line:
 
-- the same provider contract and test suite as Anthropic;
-- provider-specific error normalisation;
-- exact model identifiers and generation settings;
-- three-provider portability evidence only after evaluator v2 is credible.
+- an optional `openai` dependency group;
+- `OPENAI_API_KEY` and SDK readiness diagnostics;
+- instruction and user-input mapping to the Responses API;
+- neutral `max_tokens` mapping to `max_output_tokens`;
+- explicit rejection of unsupported seed and stop requests before API execution;
+- exact returned model, response ID, status, service-tier and incomplete-reason metadata;
+- normalised input, output and total token usage;
+- response status or incomplete reason mapped to the provider-neutral finish field;
+- model discovery through the provider contract;
+- normalised authentication, connection, HTTP and malformed-response errors;
+- mocked contract tests and an opt-in paid live smoke test;
+- no mandatory cloud call in pull-request CI.
+
+Reviewed three-provider portability evidence remains a separate evidence publication step. Adapter delivery alone does not establish compatibility.
 
 ## v0.1.6 — Reproducible builds, locks and ABOM
 
@@ -125,7 +135,8 @@ Planned:
 - baseline-versus-candidate comparison;
 - critical-failure regression gates;
 - PR summaries;
-- protected and cost-limited cloud workflows.
+- protected and cost-limited cloud workflows;
+- reviewed Ollama, Anthropic and OpenAI portability evidence.
 
 ## v0.2.0 — Portable Assured Behaviour
 
