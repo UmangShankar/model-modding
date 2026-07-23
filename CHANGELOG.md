@@ -13,57 +13,22 @@ All notable changes to Model Modding are documented here.
 - Offline cross-schema validation through a local schema registry.
 - Role and invariant output in `modding inspect`, including JSON mode.
 - Initial machine-readable declarations for Plain Language Explainer.
-- Invariant vocabulary, migration and authoring documentation.
-- Deadline Guardian for dates, durations, units, triggers and invented time limits.
-- Obligation Guardian for named parties, duties, permissions and prohibitions.
-- Exception Guardian for conditions, exceptions, eligibility rules and sequence.
-- Source Grounding Guardian for source claims, uncertainty, missing evidence and fabricated citations.
-- Sixteen independent guardian evaluation cases.
-- Source-grounding prohibitions for invented claims, fabricated citations and presented missing evidence.
-- Deterministic invariant evaluator v2 with structured failure records.
-- Severity totals for stock and modded responses in evaluation and benchmark reports.
-- Configurable `--fail-on critical|major|minor|none` pipeline gates.
-- Deliberate regression tests proving that critical invariant failures return a non-zero exit code.
-- Eighteen classified adversarial and paraphrase fixtures across the four assurance guardians.
-- A controlled attack taxonomy covering deadline, actor, modality, exception, sequence and grounding failures.
-- Repository gates enforcing exactly 40 flagship cases, balanced distribution, unique identities and invariant-aware fixture definitions.
-- Authoring documentation for adversarial and paraphrase fixtures.
+- Deadline, Obligation, Exception and Source Grounding Guardians.
+- Deterministic invariant evaluator v2 with structured severity-aware failures.
+- Exactly 40 flagship cases, including eighteen adversarial or paraphrase fixtures.
 - Twenty-three typed source facts across sixteen representative guardian cases.
-- Structured source-output comparison for accepted values, required context and prohibited output forms.
-- Loader validation proving canonical source facts and context occur in the fixture input.
-- Report schema `0.3` with explicit evaluator layers and source-comparison failures.
-- Tests proving critical source-comparison failures enter the existing severity gate.
+- Structured source-output comparison for values, required context and prohibited output forms.
+- Configurable `--fail-on critical|major|minor|none` pipeline gates.
 - Provider-neutral request, response, usage and generation-option contracts.
 - An extensible provider registry with normalised configuration and error boundaries.
-- Portable generation settings for temperature, top-p, token limits, seeds and stop sequences.
-- A first-class Ollama provider adapter with normalised token usage, finish reason and timing metadata.
-- Provider-registry diagnostics in `modding doctor`.
-- Explicit `--provider` selection for `run`, `evaluate` and `benchmark`.
-- Shared runtime configuration for provider endpoints and portable generation settings.
-- Provider-aware report schema `0.4` with exact runtime and per-response execution metadata.
-- Regression tests covering unknown providers, model resolution, token usage and provider evidence.
-- A built-in Anthropic provider adapter behind the same neutral runtime contract.
-- Optional `anthropic` SDK dependency installation.
-- `ANTHROPIC_API_KEY` and SDK diagnostics in `modding doctor`.
-- Anthropic Messages API mapping for system instructions, user content and portable settings.
-- Normalised Anthropic model, token usage, stop reason, message and endpoint metadata.
-- Mocked Anthropic contract tests and an opt-in paid live smoke test.
-- A built-in OpenAI provider adapter using the Responses API.
-- Optional `openai` SDK dependency installation.
-- `OPENAI_API_KEY` and SDK diagnostics in `modding doctor`.
-- OpenAI Responses API mapping for instructions, user input and portable settings.
-- Normalised OpenAI model, response status, token usage, incomplete reason and endpoint metadata.
-- Mocked OpenAI contract tests and an opt-in paid live smoke test.
-- `modding build` for deterministic behavioural bundles.
-- `modding verify-build` for offline byte-level build verification.
+- A first-class Ollama provider adapter with normalised usage and execution metadata.
+- Built-in Anthropic and OpenAI adapters behind the same neutral runtime contract.
+- Optional `anthropic` and `openai` dependency groups and authentication diagnostics.
+- Mocked provider contract tests and opt-in paid live smoke tests.
+- `modding build` and `modding verify-build` for deterministic behavioural bundles.
 - Versioned recipe-lock, ABOM and build-manifest schemas.
-- Canonical SHA-256 records for recipe manifests, mod manifests and ordered instruction files.
-- Transparent source and build digests with independently recomputable digest inputs.
-- Recipe locks containing ordered components, versions, roles, licences, dependencies, conflicts, compatibility declarations and invariants.
+- Canonical SHA-256 source, component, prompt, artifact and build identities.
 - Agent Behaviour Bills of Materials in canonical JSON and human-readable Markdown.
-- Cross-platform line-ending normalisation without absolute paths, timestamps or machine identifiers.
-- Behavioural source mutation, generated-artifact tamper and line-ending stability tests.
-- Pull-request and clean-wheel gates for flagship build and ABOM verification.
 - A versioned durable run-evidence bundle schema.
 - `--evidence` support on provider-aware `run`, `evaluate` and `benchmark` commands.
 - `modding verify-evidence` for offline evidence schema, digest and artifact verification.
@@ -71,38 +36,41 @@ All notable changes to Model Modding are documented here.
 - Prompt-private evidence records using prompt hashes instead of source text by default.
 - Separate interpreted evaluation artifacts without embedded prompt or response text.
 - Evidence manifests containing build, lock, ABOM, provider, model, generation, evaluator, fixture-set and source-control context.
-- Evidence, artifact and response digests with unmanaged-file and tamper detection.
-- Deterministic fixed-context evidence tests and mocked provider command coverage.
 - `modding compare-evidence` for strict verified baseline-versus-candidate comparison.
-- Distinct clean, regression and not-comparable exit codes.
+- Distinct clean, regression and `not_comparable` exit codes.
 - New, resolved, unchanged, severity-changed and severity-escalated failure reporting.
-- Configurable blocking of new or escalated critical, major and minor failures.
-- Deterministic JSON and Markdown comparison reports with canonical comparison digests.
 - `modding matrix-evidence` for provider/model-by-invariant compatibility summaries.
-- Tested, passed and failed invariant/source observation counts per exact target.
 - Versioned evidence-comparison and compatibility-matrix schemas.
-- Synthetic verified-evidence regression and matrix tests without provider calls.
+- `modding aggregate-evidence` for repeated compatible executions with repetition and zero-critical gates.
+- `modding activate-baseline` for scoped reviewed evidence baselines.
+- `modding evidence-summary` for concise CI and pull-request reporting.
+- `modding release-check` for provider, repetition, case and critical-failure release gates.
+- `modding validate-provider-run` for exact model allowlists and cost-bound cloud plans.
+- Versioned repeated-evidence, reviewed-baseline and release-readiness schemas.
+- Automatic pull-request evidence summaries using clearly labelled synthetic contract evidence.
+- Protected Anthropic/OpenAI workflow with environment approval, exact model allowlists, capped repetitions and capped output tokens.
+- Protected self-hosted Ollama workflow with exact model allowlists.
+- Release-candidate evidence assembly and deterministic release summaries.
+- Independent v0.2 reproduction documentation.
+- Tests covering aggregation, baseline activation, release readiness, summaries and provider-run validation.
 
 ### Changed
 
 - New mod scaffolds declare `role: transformation` by default.
 - Legacy v0.1 manifests without role or invariant declarations remain valid during migration.
-- Trusted Document Explainer `0.2.0` now composes one transformation mod and four non-overlapping assurance guardians.
+- Trusted Document Explainer `0.2.0` composes one transformation mod and four non-overlapping assurance guardians.
 - Guardian fixtures bind deterministic assertions to manifest-declared invariants and matching severities.
 - Multi-model benchmarks use the same combined invariant and source-comparison result as `modding evaluate`.
-- Benchmark tests derive mocked response counts from the live evaluation plan.
-- The flagship evaluation plan now contains exactly 40 cases rather than 22.
-- Ollama model discovery, streaming and recipe execution now delegate to the provider adapter while preserving existing imports and commands.
-- `modding run` now reports provider identity, endpoint, requested generation settings, finish reason and token usage when available.
-- Provider-aware evaluation and benchmark runs now record provider, endpoint, exact model, requested and effective settings, usage and finish reason.
-- Provider dispatch remains opt-in so existing default Ollama scripts and direct Python APIs continue to behave as before.
-- Anthropic rejects unsupported seed requests before execution instead of silently ignoring them.
-- Anthropic applies and records a deliberate `max_tokens` default of 1024 when the required setting is omitted.
-- OpenAI maps neutral `max_tokens` to `max_output_tokens` on the Responses API.
-- OpenAI rejects unsupported seed and stop requests before execution instead of silently ignoring them.
-- `modding doctor` now requires reproducible-build, evidence, comparison and matrix schemas as part of repository readiness.
-- CI now gates evidence integrity, strict comparison, matrix generation, the behavioural suite and clean-wheel command availability.
-- Raw execution evidence and interpreted evaluation are durable, separate artifacts.
+- The flagship evaluation plan contains exactly 40 cases rather than 22.
+- Ollama execution delegates to the provider adapter while preserving existing imports and commands.
+- Provider-aware run, evaluation and benchmark reports record provider, endpoint, exact model, requested/effective settings, usage and finish reason.
+- Anthropic rejects unsupported seed requests and records a deliberate `max_tokens` default of 1024 when omitted.
+- OpenAI maps neutral `max_tokens` to `max_output_tokens` and rejects unsupported seed and stop requests.
+- `modding doctor` requires reproducible-build, evidence, comparison, matrix, repeated-evidence, baseline and release-readiness schemas.
+- CI gates evidence integrity, strict comparison, matrix generation, repeated aggregation, release readiness, the behavioural suite and clean-wheel command availability.
+- Pull requests receive one updateable synthetic evidence summary and downloadable contract artifact.
+- The package release workflow verifies tag/package-version agreement.
+- `v0.2*` tags are blocked unless checked-in reviewed evidence covers Ollama, Anthropic and OpenAI, includes at least three 40-case repetitions per target, has zero critical failures and passes the matrix gate.
 
 ### Notes
 
@@ -110,12 +78,12 @@ All notable changes to Model Modding are documented here.
 - The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
 - Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers, cloud providers, build identities, durable evidence or comparison formats.
 - Ollama, Anthropic and OpenAI are built-in providers.
-- Ollama defaults that are not reported by the API are not invented as effective settings.
-- Normal CI does not call Anthropic or OpenAI. Cloud compatibility claims require reviewed evidence from explicit paid runs.
-- Adapter availability, a valid evidence bundle, a passing comparison, a matrix cell or a single score does not establish universal cross-provider compatibility.
+- Normal pull-request CI does not call Anthropic or OpenAI. Cloud compatibility claims require reviewed evidence from explicit protected runs.
+- Adapter availability, a valid bundle, a passing comparison, repeated synthetic runs, a matrix cell or a single score does not establish universal cross-provider compatibility.
 - A recipe lock and ABOM identify packaged behavioural inputs; they do not prove provider or model compliance.
 - Prompt hashes reduce accidental source copying but are not a substitute for access controls or the original source during human review.
-- Protected cloud workflows, automatic PR summaries and reviewed three-provider evidence remain separate v0.1.7 work.
+- Synthetic CI evidence validates pipeline mechanics only and must never be committed as reviewed provider evidence.
+- The engineering pipeline is complete, but v0.2 remains intentionally unreleased until real reviewed three-provider evidence, baseline approval, a public case study and independent reproduction are supplied.
 
 ## [0.1.1] - 2026-07-22
 
@@ -130,10 +98,10 @@ All notable changes to Model Modding are documented here.
 
 ### Changed
 
-- Mod references now accept both `/` and `\` input separators and emit canonical POSIX references.
-- `doctor` and `benchmark` now use the primary CLI parser and appear in top-level help.
+- Mod references accept both `/` and `\` input separators and emit canonical POSIX references.
+- `doctor` and `benchmark` use the primary CLI parser and appear in top-level help.
 - Evaluation and benchmark reports are written as UTF-8 with LF line endings.
-- The README and quick start now lead with the flagship meaning-preservation use case and distinguish current features from v0.2 targets.
+- The README and quick start lead with the flagship meaning-preservation use case and distinguish current features from v0.2 targets.
 
 ### Removed
 
