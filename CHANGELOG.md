@@ -48,6 +48,12 @@ All notable changes to Model Modding are documented here.
 - Anthropic Messages API mapping for system instructions, user content and portable settings.
 - Normalised Anthropic model, token usage, stop reason, message and endpoint metadata.
 - Mocked Anthropic contract tests and an opt-in paid live smoke test.
+- A built-in OpenAI provider adapter using the Responses API.
+- Optional `openai` SDK dependency installation.
+- `OPENAI_API_KEY` and SDK diagnostics in `modding doctor`.
+- OpenAI Responses API mapping for instructions, user input and portable settings.
+- Normalised OpenAI model, response status, token usage, incomplete reason and endpoint metadata.
+- Mocked OpenAI contract tests and an opt-in paid live smoke test.
 
 ### Changed
 
@@ -64,15 +70,18 @@ All notable changes to Model Modding are documented here.
 - Provider dispatch remains opt-in so existing default Ollama scripts and direct Python APIs continue to behave as before.
 - Anthropic rejects unsupported seed requests before execution instead of silently ignoring them.
 - Anthropic applies and records a deliberate `max_tokens` default of 1024 when the required setting is omitted.
+- OpenAI maps neutral `max_tokens` to `max_output_tokens` on the Responses API.
+- OpenAI rejects unsupported seed and stop requests before execution instead of silently ignoring them.
 
 ### Notes
 
 - Deterministic invariant and structured source comparisons block configured severity thresholds and cannot be overridden by aggregate scores.
 - The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
 - Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers or cloud providers.
-- Ollama and Anthropic are built-in providers. OpenAI remains a separate adapter.
+- Ollama, Anthropic and OpenAI are built-in providers.
 - Ollama defaults that are not reported by the API are not invented as effective settings.
-- Normal CI does not call Anthropic. Cloud compatibility claims require reviewed evidence from an explicit paid run.
+- Normal CI does not call Anthropic or OpenAI. Cloud compatibility claims require reviewed evidence from explicit paid runs.
+- Adapter availability alone does not establish cross-provider compatibility.
 
 ## [0.1.1] - 2026-07-22
 
