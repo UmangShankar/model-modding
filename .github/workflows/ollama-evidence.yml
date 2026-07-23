@@ -1,0 +1,120 @@
+name: Protected Ollama evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Exact installed and allowlisted Ollama model ID
+        required: true
+        type: string
+      repetitions:
+        description: Number of complete 40-case repetitions
+        required: true
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+      max_tokens:
+        description: Maximum output tokens per response
+        required: true
+        default: "512"
+        type: choice
+        options:
+          - "256"
+          - "512"
+          - "1024"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ollama-evidence-${{ inputs.model }}
+  cancel-in-progress: false
+
+jobs:
+  evidence:
+    runs-on: [self-hosted, model-modding, ollama]
+    environment: provider-evidence
+    timeout-minutes: 180
+    env:
+      MODEL_MODDING_ALLOWED_OLLAMA_MODELS: ${{ vars.MODEL_MODDING_ALLOWED_OLLAMA_MODELS }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: python -m pip install -e .
+
+      - name: Validate local model allowlist and readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          model = "${{ inputs.model }}"
+          allowed = {item.strip() for item in os.environ.get("MODEL_MODDING_ALLOWED_OLLAMA_MODELS", "").split(",") if item.strip()}
+          if not allowed:
+              raise SystemExit("MODEL_MODDING_ALLOWED_OLLAMA_MODELS must contain an explicit model allowlist")
+          if model not in allowed:
+              raise SystemExit(f"Model {model!r} is not allowlisted")
+          repetitions = int("${{ inputs.repetitions }}")
+          max_tokens = int("${{ inputs.max_tokens }}")
+          if not 1 <= repetitions <= 3:
+              raise SystemExit("repetitions must be between 1 and 3")
+          if not 1 <= max_tokens <= 1024:
+              raise SystemExit("max_tokens must be between 1 and 1024")
+          PY
+          modding doctor
+
+      - name: Create safe artifact identity
+        shell: bash
+        run: |
+          SAFE_MODEL=$(printf '%s' "${{ inputs.model }}" | tr '/: ' '___')
+          echo "SAFE_MODEL=$SAFE_MODEL" >> "$GITHUB_ENV"
+
+      - name: Execute complete evidence repetitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/provider-evidence
+          for repetition in $(seq 1 "${{ inputs.repetitions }}"); do
+            modding evaluate trusted-document-explainer \
+              --provider ollama \
+              --model "${{ inputs.model }}" \
+              --temperature 0 \
+              --max-tokens "${{ inputs.max_tokens }}" \
+              --fail-on none \
+              --timeout 180 \
+              --output "build/provider-evidence/reports/run-$repetition" \
+              --evidence "build/provider-evidence/runs/run-$repetition"
+            modding verify-evidence "build/provider-evidence/runs/run-$repetition"
+          done
+
+      - name: Aggregate repeated evidence
+        shell: bash
+        run: |
+          modding aggregate-evidence build/provider-evidence/runs/run-* \
+            --minimum-repetitions "${{ inputs.repetitions }}" \
+            --output build/provider-evidence/aggregate
+          modding matrix-evidence build/provider-evidence/runs/run-1 \
+            --output build/provider-evidence/matrix
+          modding evidence-summary \
+            --matrix build/provider-evidence/matrix/matrix.json \
+            --aggregate build/provider-evidence/aggregate/aggregate.json \
+            --output build/provider-evidence/provider-summary.md \
+            --github-summary
+
+      - name: Upload provider evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-evidence-ollama-${{ env.SAFE_MODEL }}-${{ github.run_id }}
+          path: build/provider-evidence
+          if-no-files-found: error
+          retention-days: 30
