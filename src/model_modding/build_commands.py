@@ -4,8 +4,9 @@ import argparse
 from pathlib import Path
 
 from .builds import build_command, verify_command
+from .evidence import verify_evidence_command
 
-BUILD_COMMANDS = {"build", "verify-build"}
+BUILD_COMMANDS = {"build", "verify-build", "verify-evidence"}
 
 
 def handles(arguments: list[str]) -> bool:
@@ -26,7 +27,7 @@ def handles(arguments: list[str]) -> bool:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="modding",
-        description="Reproducible Model Modding build commands",
+        description="Reproducible Model Modding build and evidence commands",
     )
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
     subcommands = parser.add_subparsers(dest="command", required=True)
@@ -38,6 +39,9 @@ def build_parser() -> argparse.ArgumentParser:
     verify = subcommands.add_parser("verify-build", help="Verify a build against current behavioural sources")
     verify.add_argument("name", help="Recipe name")
     verify.add_argument("--build-directory", type=Path, help="Build directory")
+
+    evidence = subcommands.add_parser("verify-evidence", help="Verify a durable run evidence bundle")
+    evidence.add_argument("directory", type=Path, help="Evidence bundle directory")
     return parser
 
 
@@ -48,4 +52,6 @@ def main(arguments: list[str] | None = None) -> int:
         return build_command(root, args.name, args.output)
     if args.command == "verify-build":
         return verify_command(root, args.name, args.build_directory)
+    if args.command == "verify-evidence":
+        return verify_evidence_command(root, args.directory)
     return 2
