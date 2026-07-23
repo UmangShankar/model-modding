@@ -23,6 +23,26 @@ class Check:
     required: bool = True
 
 
+def _optional_provider_check(
+    name: str,
+    package: str,
+    extra: str,
+    key_name: str,
+    environment: Mapping[str, str],
+) -> Check:
+    sdk = importlib.util.find_spec(package) is not None
+    key = bool(environment.get(key_name))
+    if sdk and key:
+        status, detail = "PASS", f"SDK installed; {key_name} configured"
+    elif not sdk and not key:
+        status, detail = "WARN", f'install "model-modding[{extra}]" and set {key_name}'
+    elif not sdk:
+        status, detail = "WARN", f'{key_name} configured; install "model-modding[{extra}]"'
+    else:
+        status, detail = "WARN", f"SDK installed; {key_name} not configured"
+    return Check(name, status, detail, required=False)
+
+
 def run_doctor(
     root: Path,
     host: str = DEFAULT_OLLAMA_HOST,
@@ -50,7 +70,7 @@ def run_doctor(
     checks.append(Check("Python dependencies", "PASS" if not absent_dependencies else "FAIL", "installed" if not absent_dependencies else f"missing: {', '.join(absent_dependencies)}"))
 
     providers = provider_names()
-    provider_ok = {"ollama", "anthropic"}.issubset(providers)
+    provider_ok = {"ollama", "anthropic", "openai"}.issubset(providers)
     checks.append(
         Check(
             "Provider registry",
@@ -59,17 +79,16 @@ def run_doctor(
         )
     )
 
-    anthropic_sdk = importlib.util.find_spec("anthropic") is not None
-    anthropic_key = bool(environment.get("ANTHROPIC_API_KEY"))
-    if anthropic_sdk and anthropic_key:
-        anthropic_status, anthropic_detail = "PASS", "SDK installed; ANTHROPIC_API_KEY configured"
-    elif not anthropic_sdk and not anthropic_key:
-        anthropic_status, anthropic_detail = "WARN", 'install "model-modding[anthropic]" and set ANTHROPIC_API_KEY'
-    elif not anthropic_sdk:
-        anthropic_status, anthropic_detail = "WARN", 'ANTHROPIC_API_KEY configured; install "model-modding[anthropic]"'
-    else:
-        anthropic_status, anthropic_detail = "WARN", "SDK installed; ANTHROPIC_API_KEY not configured"
-    checks.append(Check("Anthropic", anthropic_status, anthropic_detail, required=False))
+    checks.append(
+        _optional_provider_check(
+            "Anthropic", "anthropic", "anthropic", "ANTHROPIC_API_KEY", environment
+        )
+    )
+    checks.append(
+        _optional_provider_check(
+            "OpenAI", "openai", "openai", "OPENAI_API_KEY", environment
+        )
+    )
 
     manifests_ok = validate_repository(root) == 0 if not missing else False
     checks.append(Check("Manifest validation", "PASS" if manifests_ok else "FAIL", "valid" if manifests_ok else "validation failed"))
