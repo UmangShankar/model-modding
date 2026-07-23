@@ -23,7 +23,7 @@ from model_modding.release_pipeline import (
 
 RECIPE = "trusted-document-explainer"
 MOD = "safety/deadline-guardian"
-CASE = "deadline-case"
+CASE_COUNT = 40
 
 
 def response(provider: str, model: str) -> ProviderResponse:
@@ -40,24 +40,40 @@ def response(provider: str, model: str) -> ProviderResponse:
     )
 
 
-def evaluation(model: str) -> dict:
-    invariant = {
-        "kind": "preserve",
-        "invariant": "deadline",
-        "severity": "critical",
-        "description": "Preserve the exact deadline.",
+def result() -> dict:
+    return {
         "passed": True,
         "checks": [],
-    }
-    result = {
-        "passed": True,
-        "checks": [],
-        "invariant_checks": [invariant],
+        "invariant_checks": [
+            {
+                "kind": "preserve",
+                "invariant": "deadline",
+                "severity": "critical",
+                "description": "Preserve the exact deadline.",
+                "passed": True,
+                "checks": [],
+            }
+        ],
         "invariant_failures": [],
         "source_comparisons": [],
         "source_comparison_failures": [],
         "failures": [],
     }
+
+
+def evaluation(model: str) -> dict:
+    rows = []
+    for index in range(1, CASE_COUNT + 1):
+        case = f"deadline-case-{index:02d}"
+        rows.append(
+            {
+                "mod": MOD,
+                "case": case,
+                "prompt": "The response is due within 14 calendar days.",
+                "stock": result(),
+                "modded": result(),
+            }
+        )
     return {
         "schema_version": "0.4",
         "evaluator": {
@@ -68,9 +84,9 @@ def evaluation(model: str) -> dict:
         "recipe": RECIPE,
         "model": model,
         "summary": {
-            "cases": 40,
-            "stock_passed": 40,
-            "modded_passed": 40,
+            "cases": CASE_COUNT,
+            "stock_passed": CASE_COUNT,
+            "modded_passed": CASE_COUNT,
             "stock_failures": {"critical": 0, "major": 0, "minor": 0},
             "modded_failures": {"critical": 0, "major": 0, "minor": 0},
         },
@@ -81,41 +97,38 @@ def evaluation(model: str) -> dict:
             "blocking_failures": [],
         },
         "failures": {"stock": [], "modded": []},
-        "cases": [
-            {
-                "mod": MOD,
-                "case": CASE,
-                "prompt": "The response is due within 14 calendar days.",
-                "stock": result,
-                "modded": result,
-            }
-        ],
+        "cases": rows,
     }
 
 
 def bundle(root: Path, output: Path, provider: str, model: str, repetition: int) -> Path:
     model_response = response(provider, model)
     prompt = "The response is due within 14 calendar days."
-    records = [
-        response_record(
-            identifier="evaluation:1:stock",
-            role="stock",
-            prompt=prompt,
-            system_prompt="",
-            response=model_response,
-            case=CASE,
-            mod=MOD,
-        ),
-        response_record(
-            identifier="evaluation:1:modded",
-            role="modded",
-            prompt=prompt,
-            system_prompt="synthetic behavioural instructions",
-            response=model_response,
-            case=CASE,
-            mod=MOD,
-        ),
-    ]
+    records = []
+    for index in range(1, CASE_COUNT + 1):
+        case = f"deadline-case-{index:02d}"
+        records.extend(
+            [
+                response_record(
+                    identifier=f"evaluation:{index}:stock",
+                    role="stock",
+                    prompt=prompt,
+                    system_prompt="",
+                    response=model_response,
+                    case=case,
+                    mod=MOD,
+                ),
+                response_record(
+                    identifier=f"evaluation:{index}:modded",
+                    role="modded",
+                    prompt=prompt,
+                    system_prompt="synthetic behavioural instructions",
+                    response=model_response,
+                    case=case,
+                    mod=MOD,
+                ),
+            ]
+        )
     return write_evidence_bundle(
         root,
         RECIPE,
