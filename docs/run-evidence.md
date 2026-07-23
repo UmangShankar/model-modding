@@ -69,7 +69,7 @@ This prevents an execution result from being detached from the mod versions, ins
 
 ## Prompt privacy
 
-Source prompt text is omitted by default. The bundle records a prompt hash instead.
+Prompt text is omitted by default. The bundle records a prompt hash instead.
 
 This reduces accidental copying of notices, policies, clauses or other potentially sensitive source documents into evidence. The exact response text is retained because it is the primary execution artifact.
 
@@ -117,9 +117,11 @@ Verification does not call a model provider. It checks:
 
 ## What a bundle does not prove
 
-A valid bundle proves that its recorded files and internal hashes agree. It does not prove:
+A valid bundle proves that its recorded files and internal hashes agree. It does not prove semantic correctness.
 
-- that the model response is correct or safe;
+It also does not prove:
+
+- that the model response is safe;
 - that every material meaning change was detected;
 - that a provider or model is universally compatible;
 - that source-control state was available in every environment;
