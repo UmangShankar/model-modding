@@ -15,15 +15,16 @@ The first product wedge is **meaning-preserving, evidence-backed transformation 
 1. **Mod** — one versioned behavioural capability or safeguard.
 2. **Recipe** — an ordered composition of mods.
 3. **Invariant** — a declared property that must be preserved or a transformation that must be prohibited.
-4. **Evidence bundle** — the inputs, outputs, configuration and evaluation results for a run.
-5. **ABOM** — an Agent Behaviour Bill of Materials describing exactly what behavioural components were built and tested.
+4. **Recipe lock** — the canonical source inventory and digest inputs for one behavioural build.
+5. **ABOM** — an Agent Behaviour Bill of Materials describing what behavioural components were built.
+6. **Evidence bundle** — the inputs, outputs, configuration and evaluation results for a run.
 
-Mods, recipes, machine-readable invariant declarations, deterministic assurance gates and the provider-neutral runtime are implemented. Evidence bundles, ABOMs and evidence-to-evidence comparison remain staged v0.2 deliverables.
+Mods, recipes, machine-readable invariant declarations, deterministic assurance gates, the provider-neutral runtime, recipe locks and ABOMs are implemented. Durable execution bundles and evidence-to-evidence comparison remain staged v0.2 deliverables.
 
 ## Current working loop
 
 ```text
-Create → Validate → Inspect → Compose → Run → Evaluate → Publish evidence
+Create → Validate → Inspect → Compose → Build → Verify → Run → Evaluate → Publish evidence
 ```
 
 ```bash
@@ -31,6 +32,8 @@ python -m pip install -e ".[dev]"
 modding validate
 modding inspect plain-language-explainer
 modding compose trusted-document-explainer
+modding build trusted-document-explainer
+modding verify-build trusted-document-explainer
 modding run trusted-document-explainer \
   --model llama3.2 \
   --prompt "Explain this notice in plain English: The applicant shall submit the requested evidence within 14 calendar days of this notice."
@@ -41,6 +44,33 @@ modding doctor
 ```
 
 Ollama remains the local default and requires no cloud API key.
+
+## Reproducible behavioural builds
+
+`modding build` produces a deterministic bundle without calling a provider:
+
+```text
+build/trusted-document-explainer/
+├── system.md
+├── recipe.lock.json
+├── abom.json
+├── abom.md
+└── manifest.json
+```
+
+The build records canonical repository-relative paths, ordered components, versions, roles, licences, declared invariants, source-file SHA-256 values, a source digest, the compiled-prompt digest and an independently recomputable build digest.
+
+Text line endings are normalised to LF so equivalent Windows and POSIX checkouts produce the same identity. Any other behavioural source change invalidates the lock and build. Generated JSON is checked against versioned schemas before writing.
+
+Verify a build offline:
+
+```bash
+modding verify-build trusted-document-explainer
+```
+
+Verification reconstructs the expected bundle and compares every managed artifact byte-for-byte. An ABOM is a build inventory; it is not proof that a provider or model followed the instructions.
+
+Read [Reproducible builds, recipe locks and ABOMs](docs/reproducible-builds.md).
 
 ## Provider-aware execution
 
@@ -104,6 +134,11 @@ Capability differences remain explicit. Anthropic rejects `seed` and applies a r
 - built-in Ollama, Anthropic and OpenAI adapters;
 - provider selection across `run`, `evaluate` and `benchmark`;
 - schema `0.4` execution evidence with per-response provider, model, settings, usage and finish reason;
+- deterministic `build` and offline `verify-build` commands;
+- versioned recipe-lock, ABOM and build-manifest schemas;
+- canonical cross-platform SHA-256 source and build identities;
+- JSON and Markdown Agent Behaviour Bills of Materials;
+- clean-wheel and pull-request gates for flagship build verification;
 - backward-compatible Ollama commands and imports;
 - optional Anthropic and OpenAI SDKs with authentication diagnostics;
 - mocked cloud-provider tests and opt-in paid smoke-test scaffolding;
@@ -112,7 +147,7 @@ Capability differences remain explicit. Anthropic rejects `seed` and applies a r
 
 The evaluator is authoritative only for the exact deterministic assertions encoded by each case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
 
-No cloud-provider compatibility claim is implied merely because an adapter exists. Claims require an actual reviewed evidence bundle tied to an exact provider, model, configuration, fixture set and evaluator version.
+No cloud-provider compatibility claim is implied merely because an adapter exists. Claims require an actual reviewed evidence bundle tied to an exact provider, model, build digest, configuration, fixture set and evaluator version.
 
 ## Flagship product contract
 
@@ -124,7 +159,7 @@ No cloud-provider compatibility claim is implied merely because an adapter exist
 4. `exception-guardian` — protects conditions, exceptions, eligibility and sequence;
 5. `source-grounding-guardian` — protects source claims, uncertainty and missing evidence.
 
-The v0.2 proof must demonstrate the same recipe through Ollama, Anthropic and OpenAI without changing mod files, while recording exact models, settings, build digests, declared invariants, failures and limitations.
+The v0.2 proof must demonstrate the same locked recipe build through Ollama, Anthropic and OpenAI without changing mod files, while recording exact models, settings, build digests, declared invariants, failures and limitations.
 
 Read the [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md).
 
@@ -147,6 +182,7 @@ Model Modding is not:
 - [Adversarial fixtures](docs/adversarial-fixtures.md)
 - [Structured source-output comparison](docs/source-output-comparison-design.md)
 - [Provider-neutral runtime](docs/provider-runtime.md)
+- [Reproducible builds, recipe locks and ABOMs](docs/reproducible-builds.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
 - [Running locally](docs/running-locally.md)
 - [Evaluations](docs/evaluations.md)
@@ -155,7 +191,7 @@ Model Modding is not:
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, v0.1.3 provider-neutral runtime, v0.1.4 Anthropic adapter and v0.1.5 OpenAI adapter. Reproducible builds, recipe locks, ABOMs, evidence comparison and reviewed three-provider benchmark evidence remain future increments.
+`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, v0.1.3 provider-neutral runtime, v0.1.4 Anthropic adapter, v0.1.5 OpenAI adapter and v0.1.6 reproducible builds, recipe locks and ABOMs. Evidence comparison, compatibility matrices and reviewed three-provider benchmark evidence remain future increments.
 
 ## Licence
 

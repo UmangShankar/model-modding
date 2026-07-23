@@ -28,6 +28,11 @@ jobs:
           modding validate
           modding doctor
 
+      - name: Verify reproducible flagship build
+        run: |
+          modding build trusted-document-explainer --output /tmp/model-modding-build
+          modding verify-build trusted-document-explainer --build-directory /tmp/model-modding-build
+
       - name: Run automated tests
         run: pytest
 
@@ -40,3 +45,5 @@ jobs:
           /tmp/model-modding-wheel/bin/python -m pip install dist/*.whl
           /tmp/model-modding-wheel/bin/modding --help
           /tmp/model-modding-wheel/bin/modding doctor --root .
+          /tmp/model-modding-wheel/bin/modding build trusted-document-explainer --root . --output /tmp/model-modding-wheel-build
+          /tmp/model-modding-wheel/bin/modding verify-build trusted-document-explainer --root . --build-directory /tmp/model-modding-wheel-build

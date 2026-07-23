@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tomllib
 from pathlib import Path
 
@@ -21,8 +22,11 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "deterministic invariant and source-output comparison" in readme
     assert "provider-neutral request, response, usage and generation-option contracts" in readme
     assert "built-in Ollama, Anthropic and OpenAI adapters" in readme
+    assert "deterministic `build` and offline `verify-build` commands" in readme
+    assert "Agent Behaviour Bills of Materials" in readme
     assert "does not perform unrestricted semantic extraction" in readme
     assert "No cloud-provider compatibility claim is implied" in readme
+    assert "An ABOM is a build inventory" in readme
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
@@ -30,12 +34,15 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     invariants = read("docs/invariants.md")
     source_comparison = read("docs/source-output-comparison-design.md")
     provider_runtime = read("docs/provider-runtime.md")
+    builds = read("docs/reproducible-builds.md")
 
     assert "## Invariant" in concepts
+    assert "## Reproducible build" in concepts
+    assert "## Recipe lock" in concepts
     assert "## Evidence bundle" in concepts
     assert "## Agent Behaviour Bill of Materials" in concepts
-    assert "implemented in the v0.1.2 development line" in concepts
-    assert "planned for v0.1.6" in concepts
+    assert "The ABOM is available in machine-readable JSON" in concepts
+    assert "An ABOM is a build inventory, not proof" in concepts
     assert "Unknown terms fail schema validation" in invariants
     assert "## Assurance guardians" in invariants
     assert "produce structured severity-aware failures" in invariants
@@ -52,6 +59,23 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "Provider-aware evaluation and benchmark reports use schema `0.4`" in provider_runtime
     assert "Each stock and modded case result contains its own `execution` object" in provider_runtime
     assert "Normal CI never calls cloud providers" in provider_runtime
+    assert "## Canonical source hashing" in builds
+    assert "independently recomputed" in builds
+    assert "No timestamps, absolute checkout paths" in builds
+    assert "without a provider call" in builds
+    assert "does not prove model compliance" in builds
+
+
+def test_build_format_schemas_are_versioned() -> None:
+    expected = {
+        "schemas/recipe-lock.schema.json": "Model Modding Recipe Lock",
+        "schemas/abom.schema.json": "Agent Behaviour Bill of Materials",
+        "schemas/build-manifest.schema.json": "Model Modding Build Manifest",
+    }
+    for path, title in expected.items():
+        schema = json.loads(read(path))
+        assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
+        assert schema["title"] == title
 
 
 def test_non_goals_and_flagship_contract_are_explicit() -> None:
@@ -89,6 +113,10 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
     assert "provider-aware report schema `0.4`" in roadmap
     assert "per-response execution metadata including usage and finish reason" in roadmap
     assert "instruction and user-input mapping to the Responses API" in roadmap
+    assert "`modding build` for deterministic behavioural bundles" in roadmap
+    assert "independently recomputable digest inputs including schema versions" in roadmap
+    assert "generated-artifact tamper detection" in roadmap
+    assert "The ABOM identifies packaged behavioural inputs" in roadmap
     assert "Reviewed three-provider portability evidence remains a separate" in roadmap
 
 

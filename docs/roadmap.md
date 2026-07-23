@@ -10,7 +10,7 @@ The first market wedge is:
 
 The flagship proof is one exceptional `trusted-document-explainer` recipe that can run across Ollama, Anthropic and OpenAI while preserving declared invariants, producing reproducible evidence and failing CI when material meaning changes.
 
-The objective is not to create a universal model leaderboard. The objective is to prove that the same versioned behavioural package can be executed, inspected, evaluated and governed across different models.
+The objective is not to create a universal model leaderboard. The objective is to prove that the same versioned behavioural package can be built, locked, executed, inspected, evaluated and governed across different models.
 
 ## v0.1.0 — Foundation
 
@@ -117,20 +117,34 @@ Reviewed three-provider portability evidence remains a separate evidence publica
 
 ## v0.1.6 — Reproducible builds, locks and ABOM
 
-Planned:
+Delivered on the development line:
 
-- `modding build`;
-- canonical cross-platform digests;
-- recipe lock files;
-- ABOM JSON and Markdown output;
-- build verification without a model API call;
-- byte-level invalidation tests.
+- `modding build` for deterministic behavioural bundles;
+- `modding verify-build` for offline byte-level verification;
+- runtime-equivalent compiled system prompts;
+- UTF-8 and LF canonicalisation for cross-platform source hashing;
+- canonical POSIX repository-relative paths;
+- SHA-256 records for recipe manifests, mod manifests and ordered instruction files;
+- transparent source and build digests;
+- independently recomputable digest inputs including schema versions;
+- versioned recipe-lock, ABOM and build-manifest schemas;
+- ordered recipe lock files with component digests;
+- Agent Behaviour Bills of Materials in JSON and Markdown;
+- roles, licences, dependencies, conflicts, compatibility declarations and invariants in the ABOM;
+- deterministic output without timestamps, absolute paths or machine identifiers;
+- refusal to mix unmanaged paths into a build directory;
+- line-ending stability tests;
+- behavioural byte-change invalidation tests;
+- generated-artifact tamper detection;
+- flagship build and verification gates in editable and clean-wheel CI.
+
+The ABOM identifies packaged behavioural inputs. It does not establish provider or model compliance.
 
 ## v0.1.7 — Evidence comparison and regression gates
 
 Planned:
 
-- run evidence bundles;
+- durable run evidence bundles linked to recipe locks and build digests;
 - compatibility matrices by invariant;
 - baseline-versus-candidate comparison;
 - critical-failure regression gates;
@@ -158,13 +172,15 @@ Definition of done:
 
 ## CI model
 
-Every pull request should run:
+Every pull request runs:
 
-1. schema validation;
-2. unit tests;
-3. deterministic fixture tests;
-4. recipe build and ABOM verification when available;
-5. checked-in regression comparison when available.
+1. schema and manifest validation;
+2. deterministic flagship recipe build and ABOM verification;
+3. unit and fixture tests;
+4. Python distribution build;
+5. clean-wheel installation and repeat build verification.
+
+Checked-in evidence regression comparison will be added in v0.1.7.
 
 Cloud evaluation will not be mandatory for untrusted fork pull requests. Full provider benchmarks will use trusted branch events, protected environments, explicit model allowlists and cost limits.
 
