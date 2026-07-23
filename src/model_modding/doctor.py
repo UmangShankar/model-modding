@@ -59,6 +59,9 @@ def run_doctor(
         "schemas/mod.schema.json",
         "schemas/invariant.schema.json",
         "schemas/recipe.schema.json",
+        "schemas/recipe-lock.schema.json",
+        "schemas/abom.schema.json",
+        "schemas/build-manifest.schema.json",
         "mods",
         "recipes",
     ]
