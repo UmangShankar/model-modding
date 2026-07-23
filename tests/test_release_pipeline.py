@@ -15,11 +15,12 @@ from model_modding.release_pipeline import (
     check_release_readiness,
     validate_provider_run_plan,
 )
+from scripts.assemble_release_evidence import validate_release_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 RECIPE = "trusted-document-explainer"
 MOD = "safety/deadline-guardian"
-CASE = "deadline-case"
+CASE_PREFIX = "deadline-case"
 
 
 def _response(provider: str, model: str) -> ProviderResponse:
@@ -36,12 +37,12 @@ def _response(provider: str, model: str) -> ProviderResponse:
     )
 
 
-def _failure() -> dict:
+def _failure(case: str) -> dict:
     return {
-        "id": f"{MOD}:{CASE}:invariant:preserve:deadline:1",
+        "id": f"{MOD}:{case}:invariant:preserve:deadline:1",
         "layer": "invariant_check",
         "mod": MOD,
-        "case": CASE,
+        "case": case,
         "kind": "preserve",
         "invariant": "deadline",
         "severity": "critical",
@@ -50,9 +51,9 @@ def _failure() -> dict:
     }
 
 
-def _report(model: str, *, passed: bool, cases: int = 40) -> dict:
-    failures = [] if passed else [_failure()]
-    result = {
+def _result(*, passed: bool, case: str) -> dict:
+    failures = [] if passed else [_failure(case)]
+    return {
         "passed": passed,
         "checks": [],
         "invariant_checks": [
@@ -70,6 +71,26 @@ def _report(model: str, *, passed: bool, cases: int = 40) -> dict:
         "source_comparison_failures": [],
         "failures": failures,
     }
+
+
+def _report(model: str, *, passed: bool, cases: int = 40, reported_cases: int | None = None) -> dict:
+    rows = []
+    failures = []
+    for index in range(1, cases + 1):
+        case = f"{CASE_PREFIX}-{index:02d}"
+        case_passed = passed or index != 1
+        modded = _result(passed=case_passed, case=case)
+        stock = _result(passed=True, case=case)
+        rows.append(
+            {
+                "mod": MOD,
+                "case": case,
+                "prompt": "The response is due within 14 calendar days.",
+                "stock": stock,
+                "modded": modded,
+            }
+        )
+        failures.extend(modded["failures"])
     return {
         "schema_version": "0.4",
         "evaluator": {
@@ -80,7 +101,7 @@ def _report(model: str, *, passed: bool, cases: int = 40) -> dict:
         "recipe": RECIPE,
         "model": model,
         "summary": {
-            "cases": cases,
+            "cases": cases if reported_cases is None else reported_cases,
             "stock_passed": cases,
             "modded_passed": cases if passed else cases - 1,
             "stock_failures": {"critical": 0, "major": 0, "minor": 0},
@@ -93,34 +114,58 @@ def _report(model: str, *, passed: bool, cases: int = 40) -> dict:
             "blocking_failures": failures,
         },
         "failures": {"stock": [], "modded": failures},
-        "cases": [
-            {
-                "mod": MOD,
-                "case": CASE,
-                "prompt": "The response is due within 14 calendar days.",
-                "stock": {**result, "passed": True, "invariant_failures": [], "failures": [], "invariant_checks": [{**result["invariant_checks"][0], "passed": True}]},
-                "modded": result,
-            }
-        ],
+        "cases": rows,
     }
 
 
-def _write_bundle(tmp_path: Path, name: str, provider: str, model: str, repetition: int, *, passed: bool = True) -> Path:
+def _write_bundle(
+    tmp_path: Path,
+    name: str,
+    provider: str,
+    model: str,
+    repetition: int,
+    *,
+    passed: bool = True,
+    requested_model: str | None = None,
+    cases: int = 40,
+    reported_cases: int | None = None,
+) -> Path:
     response = _response(provider, model)
     prompt = "The response is due within 14 calendar days."
-    records = [
-        response_record(identifier="evaluation:1:stock", role="stock", prompt=prompt, system_prompt="", response=response, case=CASE, mod=MOD),
-        response_record(identifier="evaluation:1:modded", role="modded", prompt=prompt, system_prompt="instructions", response=response, case=CASE, mod=MOD),
-    ]
+    records = []
+    for index in range(1, cases + 1):
+        case = f"{CASE_PREFIX}-{index:02d}"
+        records.extend(
+            [
+                response_record(
+                    identifier=f"evaluation:{index}:stock",
+                    role="stock",
+                    prompt=prompt,
+                    system_prompt="",
+                    response=response,
+                    case=case,
+                    mod=MOD,
+                ),
+                response_record(
+                    identifier=f"evaluation:{index}:modded",
+                    role="modded",
+                    prompt=prompt,
+                    system_prompt="instructions",
+                    response=response,
+                    case=case,
+                    mod=MOD,
+                ),
+            ]
+        )
     return write_evidence_bundle(
         ROOT,
         RECIPE,
         tmp_path / name,
         bundle_type="evaluation",
         runtime={"provider": provider, "endpoint": f"https://{provider}.invalid", "requested_options": {"temperature": 0}},
-        requested_models=[model],
+        requested_models=[requested_model or model],
         records=records,
-        evaluation=_report(model, passed=passed),
+        evaluation=_report(model, passed=passed, cases=cases, reported_cases=reported_cases),
         created_at=f"2026-07-23T12:00:0{repetition}Z",
     )
 
@@ -144,6 +189,35 @@ def test_baseline_activation_preserves_verified_bundle(tmp_path: Path) -> None:
     baseline = json.loads((destination / "baseline.json").read_text(encoding="utf-8"))
     assert baseline["scope"] == "CI regression"
     assert verify_evidence_bundle(ROOT, destination / "evidence") == []
+
+
+def test_release_bundle_requires_actual_cases_and_exact_returned_model(tmp_path: Path) -> None:
+    valid = _write_bundle(tmp_path, "valid", "openai", "exact-model", 1)
+    descriptor = validate_release_bundle(ROOT, valid, minimum_cases=40)
+    assert descriptor["cases"] == 40
+    assert descriptor["target_key"] == "openai/exact-model"
+
+    mismatched_count = _write_bundle(
+        tmp_path,
+        "mismatched-count",
+        "openai",
+        "exact-model",
+        2,
+        reported_cases=41,
+    )
+    with pytest.raises(ValueError, match="case count mismatch"):
+        validate_release_bundle(ROOT, mismatched_count, minimum_cases=40)
+
+    aliased = _write_bundle(
+        tmp_path,
+        "aliased",
+        "openai",
+        "returned-model",
+        3,
+        requested_model="model-alias",
+    )
+    with pytest.raises(ValueError, match="exact returned model ID"):
+        validate_release_bundle(ROOT, aliased, minimum_cases=40)
 
 
 def test_release_readiness_requires_three_providers_three_runs_and_full_cases(tmp_path: Path) -> None:
