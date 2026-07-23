@@ -26,6 +26,8 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "Agent Behaviour Bills of Materials" in readme
     assert "durable run, evaluation and benchmark evidence bundles" in readme
     assert "versioned evidence schema and offline `verify-evidence` command" in readme
+    assert "strict baseline-versus-candidate `compare-evidence` regression gates" in readme
+    assert "provider/model-by-invariant `matrix-evidence` summaries" in readme
     assert "Prompt text is omitted by default" in readme
     assert "does not perform unrestricted semantic extraction" in readme
     assert "No cloud-provider compatibility claim is implied" in readme
@@ -39,6 +41,7 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     provider_runtime = read("docs/provider-runtime.md")
     builds = read("docs/reproducible-builds.md")
     evidence = read("docs/run-evidence.md")
+    comparison = read("docs/evidence-comparison.md")
 
     assert "## Invariant" in concepts
     assert "## Reproducible build" in concepts
@@ -75,14 +78,22 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "Raw responses and interpreted evaluation are separate artifacts" in evidence
     assert "modding verify-evidence" in evidence
     assert "does not prove semantic correctness" in evidence
+    assert "## Strict comparability contract" in comparison
+    assert "new failures" in comparison
+    assert "severity escalations" in comparison
+    assert "modding compare-evidence" in comparison
+    assert "modding matrix-evidence" in comparison
+    assert "not a universal model or provider compatibility claim" in comparison
 
 
-def test_build_and_evidence_format_schemas_are_versioned() -> None:
+def test_build_evidence_and_comparison_schemas_are_versioned() -> None:
     expected = {
         "schemas/recipe-lock.schema.json": "Model Modding Recipe Lock",
         "schemas/abom.schema.json": "Agent Behaviour Bill of Materials",
         "schemas/build-manifest.schema.json": "Model Modding Build Manifest",
         "schemas/evidence-bundle.schema.json": "Model Modding Run Evidence Bundle",
+        "schemas/evidence-comparison.schema.json": "Model Modding Evidence Comparison",
+        "schemas/compatibility-matrix.schema.json": "Model Modding Compatibility Matrix",
     }
     for path, title in expected.items():
         schema = json.loads(read(path))
@@ -102,6 +113,9 @@ def test_non_goals_and_flagship_contract_are_explicit() -> None:
     assert "23 typed source facts" in contract
     assert "does not provide unrestricted semantic extraction" in contract
     assert "zero critical failures" in contract
+    assert "## Evidence comparison contract" in contract
+    assert "A mismatch must produce `not_comparable`" in contract
+    assert "## Compatibility matrix contract" in contract
 
 
 def test_roadmap_preserves_incremental_release_sequence() -> None:
@@ -131,6 +145,8 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
     assert "The ABOM identifies packaged behavioural inputs" in roadmap
     assert "versioned durable run-evidence bundle schema" in roadmap
     assert "`modding verify-evidence` for offline schema, hash and consistency checks" in roadmap
+    assert "`modding compare-evidence` for strict baseline-versus-candidate comparison" in roadmap
+    assert "`modding matrix-evidence` for provider/model-by-invariant summaries" in roadmap
     assert "Remaining in v0.1.7" in roadmap
     assert "Reviewed three-provider portability evidence remains a separate" in roadmap
 
