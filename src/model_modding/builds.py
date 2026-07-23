@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from jsonschema import Draft202012Validator
+
 from .cli import load_yaml, resolve_mod
 from .ollama import compile_recipe_in_memory
 
@@ -49,6 +51,22 @@ def canonical_json_bytes(value: Any) -> bytes:
 
 def sha256_bytes(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
+
+
+def _validate_payload(root: Path, schema_name: str, payload: dict[str, Any]) -> None:
+    schema_path = root / "schemas" / schema_name
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    errors = sorted(
+        Draft202012Validator(schema).iter_errors(payload),
+        key=lambda item: list(item.path),
+    )
+    if errors:
+        details = "; ".join(
+            f"{'.'.join(str(part) for part in error.path) or '<root>'}: {error.message}"
+            for error in errors
+        )
+        raise ValueError(f"Generated {schema_name} payload is invalid: {details}")
 
 
 def _file_record(root: Path, path: Path) -> dict[str, Any]:
@@ -116,18 +134,19 @@ def _source_descriptor(root: Path, name: str) -> tuple[dict[str, Any], str]:
 
 def _lock_payload(descriptor: dict[str, Any], system_prompt_sha256: str) -> dict[str, Any]:
     source_digest = sha256_bytes(canonical_json_bytes(descriptor))
-    build_digest = sha256_bytes(
-        canonical_json_bytes(
-            {
-                "source_digest": source_digest,
-                "system_prompt_sha256": system_prompt_sha256,
-            }
-        )
-    )
+    digest_inputs = {
+        "build_schema_version": BUILD_SCHEMA_VERSION,
+        "lock_schema_version": LOCK_SCHEMA_VERSION,
+        "abom_schema_version": ABOM_SCHEMA_VERSION,
+        "source_digest": source_digest,
+        "system_prompt_sha256": system_prompt_sha256,
+    }
+    build_digest = sha256_bytes(canonical_json_bytes(digest_inputs))
     return {
         "schema_version": LOCK_SCHEMA_VERSION,
         "algorithm": DIGEST_ALGORITHM,
         "source_digest": source_digest,
+        "digest_inputs": digest_inputs,
         "build_digest": build_digest,
         "recipe": descriptor["recipe"],
         "components": descriptor["components"],
@@ -208,7 +227,9 @@ def render_build(root: Path, name: str) -> tuple[dict[str, bytes], BuildResult]:
     system_bytes = system_prompt.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
     system_sha = sha256_bytes(system_bytes)
     lock = _lock_payload(descriptor, system_sha)
+    _validate_payload(root, "recipe-lock.schema.json", lock)
     abom = _abom_payload(lock)
+    _validate_payload(root, "abom.schema.json", abom)
     files: dict[str, bytes] = {
         "system.md": system_bytes,
         "recipe.lock.json": canonical_json_bytes(lock),
@@ -229,6 +250,7 @@ def render_build(root: Path, name: str) -> tuple[dict[str, bytes], BuildResult]:
             for path in sorted(files)
         ],
     }
+    _validate_payload(root, "build-manifest.schema.json", manifest)
     files["manifest.json"] = canonical_json_bytes(manifest)
     artifacts = {path: sha256_bytes(content) for path, content in files.items()}
     return files, BuildResult(
@@ -244,6 +266,12 @@ def build_recipe(root: Path, name: str, output: Path | None = None) -> BuildResu
     files, result = render_build(root, name)
     destination = (output or root / "build" / name).resolve()
     destination.mkdir(parents=True, exist_ok=True)
+    unmanaged = sorted(path.name for path in destination.iterdir() if path.name not in BUILD_FILENAMES)
+    if unmanaged:
+        raise ValueError(
+            "Build directory contains unmanaged paths; use an empty directory or remove: "
+            + ", ".join(unmanaged)
+        )
     for stale in BUILD_FILENAMES:
         path = destination / stale
         if path.exists() and path.is_dir():
@@ -275,7 +303,7 @@ def verify_build(root: Path, name: str, build_directory: Path | None = None) -> 
                 f"(expected {sha256_bytes(expected_content)}, got {sha256_bytes(actual_content)})"
             )
     unexpected = (
-        sorted(path.name for path in destination.iterdir() if path.is_file() and path.name not in expected)
+        sorted(path.name for path in destination.iterdir() if path.name not in expected)
         if destination.exists()
         else []
     )
