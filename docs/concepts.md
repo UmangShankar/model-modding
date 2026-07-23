@@ -14,16 +14,16 @@ A mod can include:
 - dependencies and conflicts;
 - evaluation cases;
 - documented limitations;
-- an optional semantic role;
-- optional machine-readable invariant declarations.
+- a semantic role;
+- machine-readable invariant declarations.
 
-A mod can declare `role: transformation` when it primarily changes content or behaviour, or `role: assurance` when it primarily protects a safeguard or detects a prohibited transformation. The role is optional during migration so existing v0.1 manifests remain valid.
+A mod can declare `role: transformation` when it primarily changes content or behaviour, or `role: assurance` when it primarily protects a safeguard or detects a prohibited transformation. The role remains optional for legacy v0.1 manifests.
 
 ## Recipe
 
-A **recipe** selects mods and declares their composition order. Composition produces an inspectable behavioural contract rather than hiding the system instructions inside application code.
+A **recipe** selects mods and declares their composition order. Composition produces an inspectable behavioural contract rather than hiding system instructions inside application code.
 
-A recipe is not only a convenient prompt bundle. Its target role is to provide a stable build unit that can be locked, hashed, executed across providers and linked to evaluation evidence.
+A recipe is the stable build unit that can be locked, hashed, executed across providers and linked to evaluation evidence.
 
 ## Invariant
 
@@ -38,11 +38,60 @@ Examples include:
 - prohibit unsupported advice;
 - prohibit removal of a material exception.
 
-An invariant is not proof that the model will comply. It is a declared requirement that evaluation and regression tooling can test and report against.
+An invariant is not proof that the model will comply. It is a declared requirement that deterministic source comparison, evaluation and regression tooling can test and report against.
 
-Invariant declarations are implemented in the v0.1.2 development line through a standalone versioned schema referenced by mod manifests. The repository can validate and inspect the declarations today. Semantic extraction, severity-aware scoring and automatic critical-failure enforcement remain later evaluator increments.
+The controlled invariant vocabulary, severity levels, guardian declarations and deterministic enforcement are implemented on the development line. The evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
 
 See [Invariant declarations](invariants.md) for the vocabulary and migration contract.
+
+## Reproducible build
+
+A **reproducible build** is a deterministic compilation of a recipe and its ordered behavioural inputs.
+
+`modding build` produces the same managed artifact bytes when the same canonical sources are supplied. Text line endings are normalised to LF for cross-platform stability; every other behavioural source change alters the relevant source hash and build identity.
+
+A build contains:
+
+- the compiled system prompt;
+- a recipe lock;
+- a JSON and Markdown ABOM;
+- an artifact manifest.
+
+No provider or model call is required. See [Reproducible builds, recipe locks and ABOMs](reproducible-builds.md).
+
+## Recipe lock
+
+A **recipe lock** records the exact ordered inputs that created a behavioural build:
+
+- recipe identity, version, licence and manifest hash;
+- selected mod references and versions;
+- semantic roles and declared invariants;
+- manifest and instruction-file hashes;
+- dependencies, conflicts and compatibility declarations;
+- source, compiled-prompt and build digests;
+- the exact schema-version inputs used to calculate the build digest.
+
+The lock does not contain provider, model or generation settings. Those belong to execution evidence because they can change between runs of the same build.
+
+## Agent Behaviour Bill of Materials
+
+An **Agent Behaviour Bill of Materials**, or **ABOM**, describes the behavioural components contained in a build.
+
+The implemented ABOM records:
+
+- recipe identity and version;
+- ordered mods and versions;
+- roles, capabilities and licences;
+- dependencies and conflicts;
+- declared invariants and prohibited transformations;
+- compatibility declarations;
+- source and build digests;
+- compiled-prompt digest;
+- explicit limitations.
+
+The ABOM is available in machine-readable JSON and human-readable Markdown. It deliberately contains no timestamps, absolute checkout paths or machine identifiers, because those would make an otherwise identical build differ.
+
+An ABOM is a build inventory, not proof that a model complied with the package. Tested-provider claims belong only in reviewed execution evidence.
 
 ## Evidence bundle
 
@@ -50,9 +99,7 @@ An **evidence bundle** is the durable record of one execution and its evaluation
 
 The v0.2 evidence model will identify:
 
-- the recipe and exact version;
-- installed mods and versions;
-- recipe and build digests;
+- the recipe, lock and build digest;
 - provider and exact model identifier;
 - supplied and effective generation settings;
 - source-input and response hashes;
@@ -62,24 +109,6 @@ The v0.2 evidence model will identify:
 - known limitations.
 
 Raw execution evidence and interpreted evaluation results are related but distinct. Re-running an evaluator must not overwrite the original model response.
-
-## Agent Behaviour Bill of Materials
-
-An **Agent Behaviour Bill of Materials**, or **ABOM**, describes the behavioural components contained in a build.
-
-The target ABOM records:
-
-- recipe identity and version;
-- installed mods and versions;
-- capabilities;
-- declared invariants;
-- prohibited transformations;
-- compatibility declarations;
-- known limitations;
-- build digest;
-- tested providers only when backed by evidence.
-
-ABOM generation is planned for v0.1.6. The term is documented now because it is central to the product contract and evidence model.
 
 ## Stock and modded runs
 
@@ -91,16 +120,9 @@ Comparing both can help isolate the effect of selected mods, but it does not by 
 
 An **evaluation case** contains source material or a prompt, expected behaviours, failure indicators and transparent checks.
 
-The current evaluator supports deterministic assertions such as required terms, prohibited terms, question counts and response length. These are useful regression signals, not semantic proof.
+The current evaluator supports deterministic legacy checks, manifest-bound invariant checks and structured source-output comparisons. These are useful regression signals, not semantic proof.
 
-The v0.2 evaluation model will add:
-
-1. deterministic invariant checks;
-2. structured source-output comparison;
-3. optional model-assisted judgement;
-4. recorded human review.
-
-A model judge must never be the sole quality gate and must never override an exact critical failure such as a changed deadline, amount, party, obligation or exception.
+A future model-assisted judge must never be the sole quality gate and must never override an exact critical failure such as a changed deadline, amount, party, obligation or exception.
 
 ## Compatibility evidence
 
@@ -108,11 +130,11 @@ Compatibility is always contextual.
 
 A valid compatibility statement has the form:
 
-> This provider and model passed this recipe on this fixture set under this configuration.
+> This provider and model passed this locked recipe build on this fixture set under this configuration.
 
-It must identify the exact provider, model, recipe digest, evaluator, fixture set, generation configuration, date and limitations.
+It must identify the exact provider, model, build digest, evaluator, fixture set, generation configuration, date and limitations.
 
-Model Modding does not treat a single score as evidence that one provider is universally better.
+Model Modding does not treat adapter availability or a single score as evidence that one provider is universally better.
 
 ## Maturity
 
