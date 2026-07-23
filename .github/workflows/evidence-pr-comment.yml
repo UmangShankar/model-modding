@@ -1,0 +1,64 @@
+name: Evidence PR comment
+
+on:
+  workflow_run:
+    workflows: ["Evidence PR summary"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download evidence summary artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: evidence-contract-*
+          path: artifact
+          merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Create or update pull request summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const pullRequests = context.payload.workflow_run.pull_requests || [];
+            if (pullRequests.length !== 1) {
+              core.notice(`Expected one pull request, found ${pullRequests.length}; skipping comment.`);
+              return;
+            }
+            const issueNumber = pullRequests[0].number;
+            const marker = '<!-- model-modding-evidence-summary -->';
+            const body = fs.readFileSync('artifact/pr-summary.md', 'utf8');
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+            const existing = comments.find(comment =>
+              comment.user?.type === 'Bot' && comment.body?.includes(marker)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body,
+              });
+            }
