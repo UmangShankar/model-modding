@@ -173,11 +173,16 @@ def _load_builtin(name: str) -> None:
         from .anthropic_provider import AnthropicProvider
 
         register_provider("anthropic", AnthropicProvider)
+    if name == "openai" and name not in _PROVIDER_FACTORIES:
+        from .openai_provider import OpenAIProvider
+
+        register_provider("openai", OpenAIProvider)
 
 
 def provider_names() -> tuple[str, ...]:
     _load_builtin("ollama")
     _load_builtin("anthropic")
+    _load_builtin("openai")
     return tuple(sorted(_PROVIDER_FACTORIES))
 
 
