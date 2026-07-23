@@ -33,8 +33,17 @@ jobs:
           modding build trusted-document-explainer --output /tmp/model-modding-build
           modding verify-build trusted-document-explainer --build-directory /tmp/model-modding-build
 
-      - name: Run evidence bundle tests
-        run: pytest tests/test_evidence_bundles.py
+      - name: Test evidence privacy and separation
+        run: pytest tests/test_evidence_bundles.py::test_bundle_preserves_raw_response_but_omits_prompt_text
+
+      - name: Test evidence determinism
+        run: pytest tests/test_evidence_bundles.py::test_fixed_context_bundles_are_byte_identical
+
+      - name: Test evidence tamper detection
+        run: pytest tests/test_evidence_bundles.py::test_tampered_raw_response_fails_verification
+
+      - name: Test evidence command integration
+        run: pytest tests/test_evidence_bundles.py::test_provider_run_can_emit_and_verify_evidence
 
       - name: Run existing regression tests
         run: pytest --ignore=tests/test_evidence_bundles.py
