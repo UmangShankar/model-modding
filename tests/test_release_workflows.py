@@ -56,8 +56,9 @@ def test_release_evidence_and_tag_publication_are_strictly_gated() -> None:
     evidence = read(".github/workflows/release-evidence.yml")
     release = read(".github/workflows/release.yml")
 
-    assert '"evidence/release-candidate/**/manifest.json"' in evidence
-    assert '"evidence/release-candidate/**"' not in evidence
+    assert '"evidence/release-candidate/**"' in evidence
+    assert '"!evidence/release-candidate/README.md"' in evidence
+    assert '"evidence/release-candidate/**/manifest.json"' not in evidence
     assert "scripts/assemble_release_evidence.py" in evidence
     assert "--minimum-repetitions 3" in evidence
     assert "--minimum-cases 40" in evidence
