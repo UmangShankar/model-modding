@@ -65,6 +65,9 @@ def run_doctor(
         "schemas/evidence-bundle.schema.json",
         "schemas/evidence-comparison.schema.json",
         "schemas/compatibility-matrix.schema.json",
+        "schemas/repeated-evidence.schema.json",
+        "schemas/reviewed-baseline.schema.json",
+        "schemas/release-readiness.schema.json",
         "mods",
         "recipes",
     ]
