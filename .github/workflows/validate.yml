@@ -57,8 +57,20 @@ jobs:
           pytest tests/test_evidence_comparison.py::test_matrix_reports_each_provider_model_by_invariant
           pytest tests/test_evidence_comparison.py::test_matrix_command_writes_json_and_markdown
 
-      - name: Test repeated evidence and release readiness
-        run: pytest tests/test_release_pipeline.py
+      - name: Test repeated evidence aggregation
+        run: pytest tests/test_release_pipeline.py::test_repeated_evidence_aggregate_requires_repetitions_and_zero_critical
+
+      - name: Test reviewed baseline activation
+        run: pytest tests/test_release_pipeline.py::test_baseline_activation_preserves_verified_bundle
+
+      - name: Test release bundle integrity
+        run: pytest tests/test_release_pipeline.py::test_release_bundle_requires_actual_cases_and_exact_returned_model
+
+      - name: Test three-provider release readiness
+        run: pytest tests/test_release_pipeline.py::test_release_readiness_requires_three_providers_three_runs_and_full_cases
+
+      - name: Test summaries and protected run plans
+        run: pytest tests/test_release_pipeline.py::test_summary_and_protected_run_plan_are_explicit
 
       - name: Exercise complete synthetic CI evidence pipeline
         run: python scripts/generate_ci_evidence.py --output /tmp/model-modding-ci-evidence
