@@ -96,7 +96,7 @@ jobs:
             python - "$evidence_directory" <<'PY'
           from pathlib import Path
           import sys
-          from scripts.assemble_release_evidence import validate_release_bundle
+          from model_modding.release_validation import validate_release_bundle
           validate_release_bundle(Path.cwd(), Path(sys.argv[1]), minimum_cases=40)
           PY
           done
