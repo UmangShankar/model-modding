@@ -154,16 +154,25 @@ Delivered on the development line:
 - artifact, response and evidence digests;
 - `modding verify-evidence` for offline schema, hash and consistency checks;
 - unmanaged-artifact and tamper detection;
-- deterministic fixed-context and mocked provider tests without cloud calls.
+- deterministic fixed-context and mocked provider tests without cloud calls;
+- `modding compare-evidence` for strict baseline-versus-candidate comparison;
+- verified-input and not-comparable gates before behavioural interpretation;
+- exact recipe, build, fixture, evaluator and target-set comparability checks;
+- new, resolved, unchanged and severity-changed failure reporting;
+- configurable blocking of new and escalated critical, major or minor failures;
+- deterministic JSON and Markdown comparison reports with canonical digests;
+- `modding matrix-evidence` for provider/model-by-invariant summaries;
+- tested, passed and failed invariant/source observations per exact target;
+- versioned evidence-comparison and compatibility-matrix schemas;
+- dedicated comparison, matrix and clean-wheel command gates in CI.
 
 Remaining in v0.1.7:
 
-- compatibility matrices by invariant;
-- baseline-versus-candidate comparison;
-- critical-failure regression gates;
-- PR summaries;
+- concise automatic PR evidence summaries;
 - protected and cost-limited cloud workflows;
-- reviewed Ollama, Anthropic and OpenAI portability evidence.
+- checked-in reviewed baseline activation for selected regression jobs;
+- reviewed Ollama, Anthropic and OpenAI portability evidence;
+- repeated-run aggregation for the release case study.
 
 ## v0.2.0 — Portable Assured Behaviour
 
@@ -190,11 +199,12 @@ Every pull request runs:
 1. schema and manifest validation;
 2. deterministic flagship recipe build and ABOM verification;
 3. evidence privacy, integrity and command tests;
-4. existing unit and fixture regression tests;
-5. Python distribution build;
-6. clean-wheel installation and command verification.
+4. strict comparison and compatibility-matrix contract tests;
+5. existing unit and fixture regression tests;
+6. Python distribution build;
+7. clean-wheel installation and command verification.
 
-Checked-in evidence regression comparison remains a later v0.1.7 increment.
+The comparison engine is available for checked-in or retrieved reviewed baselines. Selecting and publishing the first authoritative baseline remains an explicit evidence-review step rather than an unreviewed automatic claim.
 
 Cloud evaluation will not be mandatory for untrusted fork pull requests. Full provider benchmarks will use trusted branch events, protected environments, explicit model allowlists and cost limits.
 
