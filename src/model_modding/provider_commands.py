@@ -20,7 +20,7 @@ from .evaluation import (
 )
 from .ollama import compile_recipe_in_memory
 from .provider import ProviderConfigurationError, ProviderError, ProviderRequest
-from .runtime import RuntimeConfig, generation_options_from_values
+from .runtime import RuntimeConfig, generate_response, generation_options_from_values
 
 RUNTIME_COMMANDS = {"run", "evaluate", "benchmark"}
 REPORT_SCHEMA_VERSION = "0.4"
@@ -118,19 +118,26 @@ def _evidence_destination(root: Path, value: Path) -> Path:
     return value.resolve() if value.is_absolute() else (root / value).resolve()
 
 
+def _runtime_from_response(runtime: RuntimeConfig, response: Any) -> dict[str, Any]:
+    result = runtime.as_dict()
+    result["provider"] = response.provider
+    endpoint = response.metadata.get("endpoint") if isinstance(response.metadata, dict) else None
+    if endpoint:
+        result["endpoint"] = endpoint
+    return result
+
+
 def run_command(root: Path, args: argparse.Namespace, opener: Callable[..., Any] | None = None) -> int:
     try:
         compiled = compile_recipe_in_memory(root, args.name)
         runtime = _runtime(args)
-        adapter = runtime.create_adapter(opener)
-        response = adapter.generate(
-            ProviderRequest(
-                model=args.model,
-                prompt=args.prompt,
-                system_prompt=compiled.system_prompt,
-                options=runtime.options,
-                timeout=args.timeout,
-            ),
+        response = generate_response(
+            runtime,
+            model=args.model,
+            prompt=args.prompt,
+            system_prompt=compiled.system_prompt,
+            timeout=args.timeout,
+            opener=opener,
             on_chunk=lambda chunk: print(chunk, end="", flush=True),
         )
     except (OSError, ValueError, ProviderError) as exc:
@@ -157,7 +164,7 @@ def run_command(root: Path, args: argparse.Namespace, opener: Callable[..., Any]
                 args.name,
                 _evidence_destination(root, args.evidence),
                 bundle_type="run",
-                runtime=runtime.as_dict(adapter),
+                runtime=_runtime_from_response(runtime, response),
                 requested_models=[args.model],
                 records=[
                     response_record(
