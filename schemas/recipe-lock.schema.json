@@ -4,16 +4,26 @@
   "title": "Model Modding Recipe Lock",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "algorithm", "source_digest", "digest_inputs", "build_digest", "recipe", "components", "outputs"],
+  "required": ["schema_version", "algorithm", "builder", "source_digest", "digest_inputs", "build_digest", "recipe", "components", "outputs"],
   "properties": {
     "schema_version": {"const": "0.1"},
     "algorithm": {"const": "sha256"},
+    "builder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"const": "model-modding"},
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"}
+      }
+    },
     "source_digest": {"$ref": "#/$defs/digest"},
     "digest_inputs": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["build_schema_version", "lock_schema_version", "abom_schema_version", "source_digest", "system_prompt_sha256"],
+      "required": ["builder_version", "build_schema_version", "lock_schema_version", "abom_schema_version", "source_digest", "system_prompt_sha256"],
       "properties": {
+        "builder_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
         "build_schema_version": {"const": "0.1"},
         "lock_schema_version": {"const": "0.1"},
         "abom_schema_version": {"const": "0.1"},
