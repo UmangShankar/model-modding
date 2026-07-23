@@ -39,7 +39,10 @@ def main(argv: list[str] | None = None) -> int:
     if _provider_runtime_requested(arguments):
         return provider_commands.main(_normalise_command_root(arguments))
     if arguments == ["--help"]:
-        print("Reproducible commands: build, verify-build, verify-evidence\n")
+        print(
+            "Reproducible commands: build, verify-build, verify-evidence, "
+            "compare-evidence, matrix-evidence\n"
+        )
     return cli.main(arguments)
 
 
