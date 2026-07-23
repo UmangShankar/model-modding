@@ -164,7 +164,7 @@ A failed check produces `not_ready` and a non-zero exit code.
 
 ## Release enforcement
 
-`.github/workflows/release-evidence.yml` runs when an actual checked-in release-candidate `manifest.json` changes and uploads the assembled reports.
+`.github/workflows/release-evidence.yml` runs whenever any checked-in release-candidate evidence artifact changes. Only the directory-level `README.md` is excluded. This means a later edit to raw responses, interpreted evaluation, locks, ABOMs or manifests reruns the complete assembly and readiness gate.
 
 `.github/workflows/release.yml` applies an additional rule to `v0.2*` tags: the tag cannot be released unless the checked-in evidence passes the complete readiness gate. The package version must also exactly match the tag.
 
