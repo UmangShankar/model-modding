@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://modelmodding.org/schemas/build-manifest.schema.json",
+  "title": "Model Modding Build Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "document_type", "algorithm", "recipe", "recipe_version", "source_digest", "build_digest", "artifacts"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "document_type": {"const": "model-modding-build"},
+    "algorithm": {"const": "sha256"},
+    "recipe": {"type": "string", "minLength": 1},
+    "recipe_version": {"type": "string", "minLength": 1},
+    "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "build_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifacts": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "bytes"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "bytes": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  }
+}
