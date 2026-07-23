@@ -62,6 +62,7 @@ def run_doctor(
         "schemas/recipe-lock.schema.json",
         "schemas/abom.schema.json",
         "schemas/build-manifest.schema.json",
+        "schemas/evidence-bundle.schema.json",
         "mods",
         "recipes",
     ]
