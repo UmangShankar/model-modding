@@ -73,6 +73,15 @@ All notable changes to Model Modding are documented here.
 - Evidence manifests containing build, lock, ABOM, provider, model, generation, evaluator, fixture-set and source-control context.
 - Evidence, artifact and response digests with unmanaged-file and tamper detection.
 - Deterministic fixed-context evidence tests and mocked provider command coverage.
+- `modding compare-evidence` for strict verified baseline-versus-candidate comparison.
+- Distinct clean, regression and not-comparable exit codes.
+- New, resolved, unchanged, severity-changed and severity-escalated failure reporting.
+- Configurable blocking of new or escalated critical, major and minor failures.
+- Deterministic JSON and Markdown comparison reports with canonical comparison digests.
+- `modding matrix-evidence` for provider/model-by-invariant compatibility summaries.
+- Tested, passed and failed invariant/source observation counts per exact target.
+- Versioned evidence-comparison and compatibility-matrix schemas.
+- Synthetic verified-evidence regression and matrix tests without provider calls.
 
 ### Changed
 
@@ -91,22 +100,22 @@ All notable changes to Model Modding are documented here.
 - Anthropic applies and records a deliberate `max_tokens` default of 1024 when the required setting is omitted.
 - OpenAI maps neutral `max_tokens` to `max_output_tokens` on the Responses API.
 - OpenAI rejects unsupported seed and stop requests before execution instead of silently ignoring them.
-- `modding doctor` now requires reproducible-build and evidence format schemas as part of repository readiness.
-- CI now reconstructs and verifies the flagship behavioural build before evidence and regression tests and again from the clean wheel.
-- Raw execution evidence and interpreted evaluation are now durable, separate artifacts.
+- `modding doctor` now requires reproducible-build, evidence, comparison and matrix schemas as part of repository readiness.
+- CI now gates evidence integrity, strict comparison, matrix generation, the behavioural suite and clean-wheel command availability.
+- Raw execution evidence and interpreted evaluation are durable, separate artifacts.
 
 ### Notes
 
 - Deterministic invariant and structured source comparisons block configured severity thresholds and cannot be overridden by aggregate scores.
 - The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
-- Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers, cloud providers, build identities or the new evidence format.
+- Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers, cloud providers, build identities, durable evidence or comparison formats.
 - Ollama, Anthropic and OpenAI are built-in providers.
 - Ollama defaults that are not reported by the API are not invented as effective settings.
 - Normal CI does not call Anthropic or OpenAI. Cloud compatibility claims require reviewed evidence from explicit paid runs.
-- Adapter availability, a valid evidence bundle or a single score does not establish cross-provider compatibility.
+- Adapter availability, a valid evidence bundle, a passing comparison, a matrix cell or a single score does not establish universal cross-provider compatibility.
 - A recipe lock and ABOM identify packaged behavioural inputs; they do not prove provider or model compliance.
 - Prompt hashes reduce accidental source copying but are not a substitute for access controls or the original source during human review.
-- Evidence comparison, compatibility matrices and automatic critical regression summaries remain separate v0.1.7 increments.
+- Protected cloud workflows, automatic PR summaries and reviewed three-provider evidence remain separate v0.1.7 work.
 
 ## [0.1.1] - 2026-07-22
 
