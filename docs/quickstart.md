@@ -1,6 +1,6 @@
 # Five-minute quick start
 
-This quick start exercises the current v0.1.1 foundation using the flagship `trusted-document-explainer` recipe.
+This quick start exercises the current development line using the flagship `trusted-document-explainer` recipe.
 
 ## 1. Clone and install
 
@@ -31,17 +31,18 @@ A healthy repository ends validation with:
 All manifests are valid.
 ```
 
-Ollama is optional for repository validation, so `doctor` can report the release foundation as ready while warning that no local runtime is available.
+Ollama and cloud SDKs are optional for repository validation. `doctor` can report release readiness while warning that local or cloud runtimes are not configured.
 
-## 3. Inspect the transformation mod
+## 3. Inspect the transformation and assurance contract
 
 ```bash
 modding inspect plain-language-explainer
+modding inspect deadline-guardian
 ```
 
-You will see its version, status, capabilities, compatibility declarations, instruction files and evaluation-case count.
+Inspection includes roles, capabilities, compatible-model declarations, preserved invariants, prohibited transformations, instruction files and evaluation-case counts.
 
-Windows-style references are also accepted:
+Windows-style references are accepted:
 
 ```powershell
 modding inspect domain\plain-language-explainer
@@ -55,17 +56,39 @@ Generated references remain canonical POSIX paths such as `domain/plain-language
 modding compose trusted-document-explainer
 ```
 
-The current compiler writes:
+Composition writes the compiled prompt and legacy composition metadata under `build/trusted-document-explainer/`.
+
+## 5. Build and lock the flagship recipe
+
+Use an empty output directory for the reproducible bundle:
+
+```bash
+modding build trusted-document-explainer --output /tmp/tde-build
+```
+
+The build contains:
 
 ```text
-build/trusted-document-explainer/
+/tmp/tde-build/
 ├── system.md
+├── recipe.lock.json
+├── abom.json
+├── abom.md
 └── manifest.json
 ```
 
-The v0.2 roadmap expands this build into a locked, checksummed package with an ABOM. Those outputs do not exist in v0.1.1 yet.
+It records the build engine, schema versions, ordered behavioural sources, component hashes, declared invariants, source digest, compiled-prompt digest and build digest. No model is called.
 
-## 5. Run it locally with Ollama
+Verify it byte-for-byte against the current repository:
+
+```bash
+modding verify-build trusted-document-explainer \
+  --build-directory /tmp/tde-build
+```
+
+A successful verification ends with `Build verified`. Editing an instruction, manifest or generated artifact makes verification fail.
+
+## 6. Run it locally with Ollama
 
 Install Ollama separately and pull a local model, for example:
 
@@ -83,9 +106,9 @@ modding run trusted-document-explainer \
 
 The default endpoint is `http://127.0.0.1:11434`. Use `--host` for another endpoint. Non-loopback hosts require the explicit `--allow-remote-host` safety flag.
 
-Review the response carefully. The current recipe and evaluator are experimental and the first published benchmark found material meaning and grounding failures.
+Review the response carefully. A valid lock and ABOM prove which behavioural inputs were built; they do not prove that the model followed them.
 
-## 6. Inspect the evaluation plan
+## 7. Inspect the evaluation plan
 
 ```bash
 modding evaluate trusted-document-explainer \
@@ -93,13 +116,14 @@ modding evaluate trusted-document-explainer \
   --dry-run
 ```
 
-This lists the cases without calling the model.
+This lists the 40 cases without calling the model.
 
-## 7. Run the evaluation
+## 8. Run the evaluation
 
 ```bash
 modding evaluate trusted-document-explainer \
-  --model llama3.2
+  --model llama3.2 \
+  --fail-on critical
 ```
 
 The command writes:
@@ -110,18 +134,30 @@ build/evaluations/trusted-document-explainer/
 └── report.md
 ```
 
-The report includes:
+The current evaluator includes:
 
 - stock and modded responses;
-- deterministic check results;
-- latency;
-- response word counts;
-- improvements and regressions;
-- expected behaviours and failure indicators for human review.
+- legacy deterministic checks;
+- manifest-bound invariant checks;
+- structured source-output comparisons;
+- critical, major and minor failures;
+- pipeline status and blocking failures;
+- latency and response word counts;
+- per-response provider execution metadata on the provider-aware path.
 
-Deterministic checks are transparent regression signals. They do not prove that material meaning was preserved.
+These checks are transparent regression signals. They do not provide unrestricted semantic proof.
 
-## 8. Compare installed local models
+## 9. Use another provider
+
+Install cloud extras only when needed:
+
+```bash
+python -m pip install -e ".[anthropic,openai]"
+```
+
+Then configure the relevant environment variable and supply `--provider` with an exact model identifier. Cloud calls may incur cost. Adapter availability alone is not a compatibility claim.
+
+## 10. Compare installed local models
 
 ```bash
 modding benchmark trusted-document-explainer \
@@ -134,27 +170,14 @@ This writes a local fitment benchmark under:
 build/benchmarks/trusted-document-explainer/
 ```
 
-A result means only that the specified models were evaluated against the same current recipe and cases. It is not a universal model ranking.
+A result means only that the specified models were evaluated against the identified recipe and cases. It is not a universal model ranking.
 
-## 9. View the local tools
-
-Serve the repository:
-
-```bash
-python -m http.server 8000
-```
-
-Then open:
-
-- `http://localhost:8000/workshop/`
-- `http://localhost:8000/workshop/local.html`
-- `http://localhost:8000/workshop/scorecard.html`
-- `http://localhost:8000/workshop/fitment.html`
-
-## 10. Run the test suite
+## 11. Run the test suite
 
 ```bash
 pytest
 ```
 
-You are now ready to inspect the [v0.2 roadmap](roadmap.md), read the [flagship product contract](trusted-document-explainer-contract.md), or contribute through the [community hub](../community/README.md).
+Pull-request CI also builds and verifies the flagship bundle from both the editable installation and a clean wheel installation.
+
+You are now ready to read [Reproducible builds, recipe locks and ABOMs](reproducible-builds.md), inspect the [v0.2 roadmap](roadmap.md), review the [flagship product contract](trusted-document-explainer-contract.md), or contribute through the [community hub](../community/README.md).
