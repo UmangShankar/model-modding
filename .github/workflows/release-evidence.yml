@@ -1,0 +1,55 @@
+name: v0.2 release evidence gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "evidence/release-candidate/**"
+      - "!evidence/release-candidate/README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  release-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package and development dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Assemble reviewed release evidence
+        run: |
+          python scripts/assemble_release_evidence.py \
+            --evidence-root evidence/release-candidate \
+            --output build/release-candidate \
+            --minimum-repetitions 3 \
+            --minimum-cases 40
+
+      - name: Publish release summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f build/release-candidate/release-summary.md ]; then
+            cat build/release-candidate/release-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No complete release-candidate evidence was assembled." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload release evidence reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v0.2-release-evidence-${{ github.run_id }}
+          path: build/release-candidate
+          if-no-files-found: warn
+          retention-days: 90

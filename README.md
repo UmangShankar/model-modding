@@ -17,16 +17,17 @@ The first product wedge is **meaning-preserving, evidence-backed transformation 
 3. **Invariant** — a declared property that must be preserved or a transformation that must be prohibited.
 4. **Recipe lock** — the canonical source inventory and digest inputs for one behavioural build.
 5. **ABOM** — an Agent Behaviour Bill of Materials describing what behavioural components were built.
-6. **Evidence bundle** — the durable raw responses, execution context, build identity and interpreted results for one run.
-7. **Evidence comparison** — a strict baseline-versus-candidate delta over verified, comparable evidence.
-8. **Compatibility matrix** — a contextual provider/model-by-invariant summary for one build, fixture set and evaluator.
+6. **Evidence bundle** — durable raw responses, execution context, build identity and interpreted results for one run.
+7. **Evidence comparison** — a strict baseline-versus-candidate delta over verified comparable evidence.
+8. **Compatibility matrix** — a contextual provider/model-by-invariant summary.
+9. **Repeated evidence aggregate** — multiple executions of the same locked build grouped by exact target.
+10. **Release readiness** — an explicit gate over provider coverage, repetitions, cases and critical failures.
 
-Mods, recipes, machine-readable invariant declarations, deterministic assurance gates, the provider-neutral runtime, recipe locks, ABOMs, durable run evidence, evidence comparison and compatibility matrices are implemented.
-
-## Current working loop
+## Working loop
 
 ```text
-Create → Validate → Inspect → Compose → Build → Verify → Run → Evaluate → Verify evidence → Compare → Matrix
+Create → Validate → Inspect → Compose → Build → Verify → Execute → Evaluate
+→ Verify evidence → Compare → Aggregate → Matrix → Review baseline → Release check
 ```
 
 ```bash
@@ -36,11 +37,6 @@ modding inspect plain-language-explainer
 modding compose trusted-document-explainer
 modding build trusted-document-explainer
 modding verify-build trusted-document-explainer
-modding run trusted-document-explainer \
-  --provider ollama \
-  --model llama3.2 \
-  --prompt "Explain this notice in plain English: The applicant shall submit the requested evidence within 14 calendar days of this notice." \
-  --evidence build/evidence/single-run
 modding evaluate trusted-document-explainer \
   --provider ollama \
   --model llama3.2 \
@@ -49,14 +45,17 @@ modding evaluate trusted-document-explainer \
 modding verify-evidence build/evidence/evaluation-run
 modding compare-evidence evidence/baseline evidence/candidate --fail-on critical
 modding matrix-evidence evidence/ollama evidence/anthropic evidence/openai
-modding doctor
+modding aggregate-evidence evidence/run-1 evidence/run-2 evidence/run-3 \
+  --minimum-repetitions 3 \
+  --require-zero-critical \
+  --output build/aggregate
 ```
 
 Ollama remains the local default and requires no cloud API key.
 
-## Reproducible behavioural builds
+## Behavioural build identity
 
-`modding build` produces a deterministic bundle without calling a provider:
+`modding build` creates a deterministic bundle:
 
 ```text
 build/trusted-document-explainer/
@@ -67,90 +66,19 @@ build/trusted-document-explainer/
 └── manifest.json
 ```
 
-The build records canonical repository-relative paths, ordered components, versions, roles, licences, declared invariants, source-file SHA-256 values, a source digest, the compiled-prompt digest and an independently recomputable build digest.
+The deterministic `build` and offline `verify-build` commands record ordered components, versions, roles, licences, machine-readable invariant declarations, source hashes, the compiled-prompt digest and an independently recomputable build digest.
 
-Text line endings are normalised to LF so equivalent Windows and POSIX checkouts produce the same identity. Any other behavioural source change invalidates the lock and build. Generated JSON is checked against versioned schemas before writing.
+Line endings are normalised for equivalent Windows and POSIX checkouts. Every other behavioural source change invalidates the identity. An ABOM is a build inventory; it is not evidence that a model complied. Agent Behaviour Bills of Materials are available in JSON and Markdown.
 
-Verify a build offline:
+## Assurance evaluator
 
-```bash
-modding verify-build trusted-document-explainer
-```
+The flagship contains four narrow flagship assurance guardians for deadlines, obligations, exceptions and source grounding. It has exactly 40 cases, including adversarial and paraphrase fixtures, and 23 typed source facts.
 
-Verification reconstructs the expected bundle and compares every managed artifact byte-for-byte. An ABOM is a build inventory; it is not proof that a provider or model followed the instructions.
+The deterministic invariant and source-output comparison creates structured critical, major and minor failures. The evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
 
-Read [Reproducible builds, recipe locks and ABOMs](docs/reproducible-builds.md).
+## Provider-neutral execution
 
-## Durable run evidence
-
-Provider-aware `run`, `evaluate` and `benchmark` accept `--evidence <directory>`.
-
-A run bundle contains:
-
-```text
-manifest.json
-responses.jsonl
-recipe.lock.json
-abom.json
-```
-
-Evaluation and benchmark bundles also include `evaluation.json`.
-
-The evidence manifest binds the run to the exact source and build digests, provider, requested models and generation settings, evaluator, fixture-set digest, source-control state and artifact hashes. Raw responses retain exact response text and per-call execution metadata.
-
-Prompt text is omitted by default and represented by a SHA-256 value. Interpreted evaluation is stored separately with prompt and response text removed, so future evaluation does not overwrite the original model outputs.
-
-Verify the package without a model call:
-
-```bash
-modding verify-evidence build/evidence/evaluation-run
-```
-
-A valid evidence bundle proves that its recorded files and hashes agree. It does not prove semantic correctness or universal provider compatibility.
-
-Read [Durable run evidence bundles](docs/run-evidence.md).
-
-## Evidence comparison and regression gates
-
-Compare a verified baseline and candidate:
-
-```bash
-modding compare-evidence \
-  evidence/baseline \
-  evidence/candidate \
-  --fail-on critical \
-  --output build/comparisons/current
-```
-
-Comparison is strict. Bundle type, recipe identity, source digest, build digest, fixture-set digest, evaluator and provider/model target set must match before behavioural deltas are interpreted.
-
-The report separates new, resolved and unchanged failures, severity changes and severity escalations. A new or escalated failure at the configured threshold returns exit code `1`. Invalid or non-comparable evidence returns `2`. A clean comparison returns `0`.
-
-The command emits deterministic `comparison.json` and `comparison.md` files with a canonical comparison digest.
-
-## Compatibility matrices
-
-Create a provider/model-by-invariant matrix from verified evidence:
-
-```bash
-modding matrix-evidence \
-  evidence/ollama \
-  evidence/anthropic \
-  evidence/openai \
-  --output build/matrices/trusted-document-explainer
-```
-
-Matrix inputs must share the same recipe build, fixture set and evaluator. Each cell reports tested, passed and failed encoded invariant or source-comparison observations for an exact provider/model target.
-
-A passed cell means only that the encoded assertions passed for that locked build and recorded context. It is not a universal model ranking or compatibility certification.
-
-Read [Evidence comparison and compatibility matrices](docs/evidence-comparison.md).
-
-## Provider-aware execution
-
-Ollama, Anthropic and OpenAI are built-in providers behind the same neutral request and response contract.
-
-Install cloud-provider support:
+The runtime exposes provider-neutral request, response, usage and generation-option contracts. It includes built-in Ollama, Anthropic and OpenAI adapters.
 
 ```bash
 python -m pip install -e ".[anthropic,openai]"
@@ -158,92 +86,118 @@ export ANTHROPIC_API_KEY="..."
 export OPENAI_API_KEY="..."
 ```
 
-Run the same recipe through Anthropic:
+Capability differences remain explicit. Anthropic rejects unsupported `seed`; OpenAI's Responses adapter rejects unsupported `seed` and `stop`; unsupported options fail before a paid request.
 
-```bash
-modding evaluate trusted-document-explainer \
-  --provider anthropic \
-  --model claude-sonnet-4-6 \
-  --temperature 0 \
-  --max-tokens 1024 \
-  --fail-on critical
-```
+## Durable evidence
 
-Run it through OpenAI's Responses API:
-
-```bash
-modding evaluate trusted-document-explainer \
-  --provider openai \
-  --model gpt-5.2 \
-  --max-tokens 1024 \
-  --fail-on critical
-```
-
-Portable runtime options are shared across `run`, `evaluate` and `benchmark`:
+Provider-aware `run`, `evaluate` and `benchmark` can emit durable run, evaluation and benchmark evidence bundles.
 
 ```text
---temperature
---top-p
---max-tokens
---seed
---stop
+manifest.json
+responses.jsonl
+recipe.lock.json
+abom.json
+evaluation.json    # evaluation and benchmark bundles
 ```
 
-Capability differences remain explicit. Anthropic rejects `seed` and applies a recorded `max_tokens` default of 1024 when the required field is omitted. The OpenAI Responses adapter maps `max_tokens` to `max_output_tokens` and rejects `seed` and `stop` before a paid request rather than silently ignoring them.
+Prompt text is omitted by default and represented by a SHA-256 value. Exact raw responses remain separate from interpreted evaluation. The versioned evidence schema and offline `verify-evidence` command detect tampering, missing artifacts, broken build identities and unexpected files.
+
+A valid evidence bundle proves internal file and hash agreement. It does not prove semantic correctness.
+
+## Regression comparison and matrices
+
+`modding compare-evidence` provides strict baseline-versus-candidate `compare-evidence` regression gates. Bundle type, recipe identity, build digest, fixture-set digest, evaluator and target set must match before behavioural deltas are calculated.
+
+The report separates new, resolved and unchanged failures, severity changes and escalations. New or escalated failures at the configured threshold return exit code `1`; invalid or non-comparable evidence returns `2`.
+
+`modding matrix-evidence` creates provider/model-by-invariant `matrix-evidence` summaries. Cells record tested, passed and failed encoded observations for one exact build, fixture set, evaluator and configuration. They are not universal provider rankings.
+
+## Repeated evidence, baselines and release readiness
+
+Aggregate repeated compatible runs:
+
+```bash
+modding aggregate-evidence evidence/run-1 evidence/run-2 evidence/run-3 \
+  --minimum-repetitions 3 \
+  --require-zero-critical \
+  --output build/aggregate
+```
+
+Activate a scoped reviewed baseline:
+
+```bash
+modding activate-baseline evidence/candidate evidence/baselines/current \
+  --reviewer "Review group" \
+  --scope "Exact comparison scope"
+```
+
+Create a concise CI or pull-request summary:
+
+```bash
+modding evidence-summary \
+  --comparison build/comparison/comparison.json \
+  --matrix build/matrix/matrix.json \
+  --aggregate build/aggregate/aggregate.json \
+  --output build/evidence-summary.md
+```
+
+The v0.2 release gate requires:
+
+- the same locked recipe, fixture set and evaluator;
+- Ollama, Anthropic and OpenAI evidence;
+- at least three repetitions per exact target;
+- all 40 cases in every repetition;
+- zero critical failures;
+- passing compatibility-matrix target status.
+
+```bash
+modding release-check \
+  --aggregate build/release-candidate/aggregate/aggregate.json \
+  --matrix build/release-candidate/matrix/matrix.json \
+  --minimum-repetitions 3 \
+  --minimum-cases 40 \
+  --output build/release-candidate/readiness
+```
+
+## Protected workflows
+
+The repository includes:
+
+- `evidence-pr-summary.yml` — automatic pull-request summaries from clearly labelled synthetic contract evidence;
+- `provider-evidence.yml` — manual, environment-protected Anthropic or OpenAI runs with exact model allowlists, capped repetitions and capped output tokens;
+- `ollama-evidence.yml` — manual execution on an allowlisted self-hosted Ollama runner;
+- `release-evidence.yml` — assembly and validation of checked-in reviewed release evidence;
+- `release.yml` — package publication, with v0.2 tags blocked unless reviewed evidence passes the release gate.
+
+Synthetic CI evidence validates pipeline mechanics only. It is never a cloud-provider compatibility claim.
+
+Read [the complete v0.2 release pipeline](docs/release-pipeline.md) and [the independent reproduction guide](docs/reproduce-v020.md).
 
 ## What current `main` provides
 
 - versioned mod and recipe manifests;
-- JSON Schema validation with offline references;
-- transformation and assurance mod roles;
-- machine-readable preserved invariants and prohibited transformations;
-- critical, major and minor severities;
-- four narrow flagship assurance guardians;
-- exactly 40 Trusted Document Explainer cases;
-- 18 classified adversarial and paraphrase fixtures;
-- 23 typed source facts across 16 representative cases;
+- machine-readable invariant declarations;
+- four narrow assurance guardians;
+- exactly 40 flagship cases and 23 typed source facts;
 - deterministic invariant and source-output comparison;
-- configurable evaluation gates with critical failures blocking by default;
 - provider-neutral request, response, usage and generation-option contracts;
 - built-in Ollama, Anthropic and OpenAI adapters;
-- provider selection across `run`, `evaluate` and `benchmark`;
-- schema `0.4` execution metadata with per-response provider, model, settings, usage and finish reason;
 - deterministic `build` and offline `verify-build` commands;
-- versioned recipe-lock, ABOM and build-manifest schemas;
-- canonical cross-platform SHA-256 source and build identities;
-- JSON and Markdown Agent Behaviour Bills of Materials;
+- recipe locks and Agent Behaviour Bills of Materials;
 - durable run, evaluation and benchmark evidence bundles;
-- prompt-private raw-response records and separated interpreted evaluation;
 - versioned evidence schema and offline `verify-evidence` command;
-- source-control, fixture-set, artifact and response identities;
 - strict baseline-versus-candidate `compare-evidence` regression gates;
-- new, resolved and severity-escalated failure reporting;
 - provider/model-by-invariant `matrix-evidence` summaries;
-- versioned comparison and matrix schemas with deterministic digests;
-- clean-wheel and pull-request gates for flagship build verification;
-- backward-compatible Ollama commands and imports;
-- optional Anthropic and OpenAI SDKs with authentication diagnostics;
-- mocked cloud-provider tests and opt-in paid smoke-test scaffolding;
-- deterministic recipe composition and cross-platform references;
-- local benchmarks and evidence-publication validation.
+- repeated-run aggregation and scoped baseline activation;
+- automatic pull-request evidence summaries;
+- protected and cost-limited provider workflows;
+- v0.2 release-readiness and tag-publication gates.
 
-The evaluator is authoritative only for the exact deterministic assertions encoded by each case. It does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change. Passing checks is evidence for the tested assertions, not proof of factual correctness, safety, legal meaning or overall model quality.
-
-No cloud-provider compatibility claim is implied merely because an adapter, evidence format, comparison or matrix exists. Claims require actual reviewed evidence tied to an exact provider, model, build digest, configuration, fixture set and evaluator version.
+No cloud-provider compatibility claim is implied merely because an adapter, workflow, evidence format, comparison, aggregate or matrix exists. Claims require actual reviewed evidence tied to an exact provider, model, build digest, configuration, fixture set and evaluator version.
 
 ## Flagship product contract
 
-`trusted-document-explainer` combines:
-
-1. `plain-language-explainer` — performs the transformation;
-2. `deadline-guardian` — protects dates, durations, units and triggers;
-3. `obligation-guardian` — protects actors, duties, permissions and prohibitions;
-4. `exception-guardian` — protects conditions, exceptions, eligibility and sequence;
-5. `source-grounding-guardian` — protects source claims, uncertainty and missing evidence.
-
-The v0.2 proof must demonstrate the same locked recipe build through Ollama, Anthropic and OpenAI without changing mod files, while recording exact models, settings, build digests, declared invariants, failures and limitations.
-
-Read the [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md).
+`trusted-document-explainer` combines one transformation mod with deadline, obligation, exception and source-grounding guardians. The [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md) defines its acceptance criteria and interpretation boundaries.
 
 ## What Model Modding is not
 
@@ -261,21 +215,20 @@ Model Modding is not:
 
 - [Core concepts](docs/concepts.md)
 - [Invariant declarations](docs/invariants.md)
-- [Adversarial fixtures](docs/adversarial-fixtures.md)
 - [Structured source-output comparison](docs/source-output-comparison-design.md)
 - [Provider-neutral runtime](docs/provider-runtime.md)
 - [Reproducible builds, recipe locks and ABOMs](docs/reproducible-builds.md)
 - [Durable run evidence bundles](docs/run-evidence.md)
 - [Evidence comparison and compatibility matrices](docs/evidence-comparison.md)
+- [v0.2 release evidence pipeline](docs/release-pipeline.md)
+- [Independent v0.2 reproduction](docs/reproduce-v020.md)
 - [Trusted Document Explainer contract](docs/trusted-document-explainer-contract.md)
-- [Running locally](docs/running-locally.md)
-- [Evaluations](docs/evaluations.md)
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Project status
 
-`v0.1.1` is the stabilised foundation release. The development line has completed the v0.1.2 flagship evaluator scope, v0.1.3 provider-neutral runtime, v0.1.4 Anthropic adapter, v0.1.5 OpenAI adapter, v0.1.6 reproducible builds and the durable evidence, evidence comparison and compatibility-matrix foundations of v0.1.7. Protected cloud workflows, automatic PR summaries and reviewed three-provider benchmark evidence remain future increments.
+The complete v0.1.7 engineering pipeline is implemented. v0.2.0 is **not yet an evidence-backed release claim**: reviewed three-provider runs, baseline approval and independent reproduction must still be supplied through the enforced pipeline.
 
 ## Licence
 

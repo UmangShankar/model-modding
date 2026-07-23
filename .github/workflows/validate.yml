@@ -57,11 +57,37 @@ jobs:
           pytest tests/test_evidence_comparison.py::test_matrix_reports_each_provider_model_by_invariant
           pytest tests/test_evidence_comparison.py::test_matrix_command_writes_json_and_markdown
 
+      - name: Test repeated evidence aggregation
+        run: pytest tests/test_release_pipeline.py::test_repeated_evidence_aggregate_requires_repetitions_and_zero_critical
+
+      - name: Test reviewed baseline activation
+        run: pytest tests/test_release_pipeline.py::test_baseline_activation_preserves_verified_bundle
+
+      - name: Test release bundle integrity
+        run: pytest tests/test_release_pipeline.py::test_release_bundle_requires_actual_cases_and_exact_returned_model
+
+      - name: Test three-provider release readiness
+        run: pytest tests/test_release_pipeline.py::test_release_readiness_requires_three_providers_three_runs_and_full_cases
+
+      - name: Test summaries and protected run plans
+        run: pytest tests/test_release_pipeline.py::test_summary_and_protected_run_plan_are_explicit
+
+      - name: Exercise complete synthetic CI evidence pipeline
+        run: python scripts/generate_ci_evidence.py --output /tmp/model-modding-ci-evidence
+
+      - name: Exercise strict release-candidate assembly
+        run: |
+          python scripts/assemble_release_evidence.py \
+            --evidence-root /tmp/model-modding-ci-evidence/runs \
+            --output /tmp/model-modding-ci-release \
+            --minimum-repetitions 3 \
+            --minimum-cases 40
+
       - name: Test positioning contracts
         run: pytest tests/test_positioning.py
 
       - name: Run behavioural regression tests
-        run: pytest --ignore=tests/test_evidence_bundles.py --ignore=tests/test_evidence_comparison.py --ignore=tests/test_positioning.py
+        run: pytest --ignore=tests/test_evidence_bundles.py --ignore=tests/test_evidence_comparison.py --ignore=tests/test_release_pipeline.py --ignore=tests/test_positioning.py
 
       - name: Build distributions
         run: python -m build
@@ -77,3 +103,8 @@ jobs:
           /tmp/model-modding-wheel/bin/modding verify-evidence --help
           /tmp/model-modding-wheel/bin/modding compare-evidence --help
           /tmp/model-modding-wheel/bin/modding matrix-evidence --help
+          /tmp/model-modding-wheel/bin/modding aggregate-evidence --help
+          /tmp/model-modding-wheel/bin/modding activate-baseline --help
+          /tmp/model-modding-wheel/bin/modding release-check --help
+          /tmp/model-modding-wheel/bin/modding evidence-summary --help
+          /tmp/model-modding-wheel/bin/modding validate-provider-run --help

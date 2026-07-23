@@ -142,7 +142,7 @@ The ABOM identifies packaged behavioural inputs. It does not establish provider 
 
 ## v0.1.7 — Evidence comparison and regression gates
 
-Delivered on the development line:
+Engineering delivered on the development line:
 
 - versioned durable run-evidence bundle schema;
 - `--evidence` support for provider-aware `run`, `evaluate` and `benchmark`;
@@ -156,23 +156,31 @@ Delivered on the development line:
 - unmanaged-artifact and tamper detection;
 - deterministic fixed-context and mocked provider tests without cloud calls;
 - `modding compare-evidence` for strict baseline-versus-candidate comparison;
-- verified-input and not-comparable gates before behavioural interpretation;
+- verified-input and `not_comparable` gates before behavioural interpretation;
 - exact recipe, build, fixture, evaluator and target-set comparability checks;
 - new, resolved, unchanged and severity-changed failure reporting;
 - configurable blocking of new and escalated critical, major or minor failures;
 - deterministic JSON and Markdown comparison reports with canonical digests;
 - `modding matrix-evidence` for provider/model-by-invariant summaries;
 - tested, passed and failed invariant/source observations per exact target;
-- versioned evidence-comparison and compatibility-matrix schemas;
-- dedicated comparison, matrix and clean-wheel command gates in CI.
+- repeated-run aggregation through `modding aggregate-evidence`;
+- scoped reviewed-baseline activation through `modding activate-baseline`;
+- concise automatic pull-request evidence summaries;
+- protected and cost-limited Anthropic and OpenAI workflows;
+- an allowlisted self-hosted Ollama workflow;
+- release-candidate evidence assembly and v0.2 readiness checks;
+- v0.2 tag publication blocked unless reviewed evidence passes the gate;
+- versioned evidence-comparison, compatibility-matrix, repeated-evidence, reviewed-baseline and release-readiness schemas;
+- dedicated build, evidence, comparison, aggregation, matrix, release and clean-wheel gates in CI.
 
-Remaining in v0.1.7:
+Engineering complete; evidence operations remaining for a v0.2 release:
 
-- concise automatic PR evidence summaries;
-- protected and cost-limited cloud workflows;
-- checked-in reviewed baseline activation for selected regression jobs;
-- reviewed Ollama, Anthropic and OpenAI portability evidence;
-- repeated-run aggregation for the release case study.
+- configure protected GitHub environments, secrets, exact model allowlists and the self-hosted Ollama runner;
+- execute and review three complete runs for selected Ollama, Anthropic and OpenAI targets;
+- approve the first authoritative checked-in baseline;
+- commit reviewed release-candidate evidence;
+- publish the case study with failures and limitations;
+- complete one independent reproduction using the documented guide.
 
 ## v0.2.0 — Portable Assured Behaviour
 
@@ -189,10 +197,12 @@ Definition of done:
 - compatibility matrices;
 - automated regression detection;
 - CI failure when material meaning changes;
+- at least three repetitions for every release target;
+- zero critical failures in reviewed release evidence;
 - a public case study that includes failures and limitations;
 - one independent developer reproducing the hero benchmark.
 
-## CI model
+## CI and evidence model
 
 Every pull request runs:
 
@@ -200,13 +210,17 @@ Every pull request runs:
 2. deterministic flagship recipe build and ABOM verification;
 3. evidence privacy, integrity and command tests;
 4. strict comparison and compatibility-matrix contract tests;
-5. existing unit and fixture regression tests;
-6. Python distribution build;
-7. clean-wheel installation and command verification.
+5. repeated-evidence and release-readiness contract tests;
+6. a clearly labelled synthetic end-to-end evidence-pipeline exercise;
+7. existing unit and fixture regression tests;
+8. Python distribution build;
+9. clean-wheel installation and command verification.
 
-The comparison engine is available for checked-in or retrieved reviewed baselines. Selecting and publishing the first authoritative baseline remains an explicit evidence-review step rather than an unreviewed automatic claim.
+Synthetic CI evidence validates machinery only. It must never be published as provider compatibility evidence.
 
-Cloud evaluation will not be mandatory for untrusted fork pull requests. Full provider benchmarks will use trusted branch events, protected environments, explicit model allowlists and cost limits.
+Real provider runs use manual protected workflows, explicit exact-model allowlists, capped repetitions, capped output tokens, complete 40-case evaluations and durable uploaded artifacts. Cloud evaluation is not mandatory for untrusted pull requests.
+
+A `v0.2*` tag cannot be released unless checked-in reviewed evidence covers all three providers, contains at least three repetitions and 40 cases per exact target, has zero critical failures and passes the compatibility-matrix gate.
 
 ## Explicitly deferred
 

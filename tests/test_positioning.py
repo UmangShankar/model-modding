@@ -28,10 +28,15 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "versioned evidence schema and offline `verify-evidence` command" in readme
     assert "strict baseline-versus-candidate `compare-evidence` regression gates" in readme
     assert "provider/model-by-invariant `matrix-evidence` summaries" in readme
+    assert "repeated-run aggregation and scoped baseline activation" in readme
+    assert "automatic pull-request evidence summaries" in readme
+    assert "protected and cost-limited provider workflows" in readme
+    assert "v0.2 release-readiness and tag-publication gates" in readme
     assert "Prompt text is omitted by default" in readme
     assert "does not perform unrestricted semantic extraction" in readme
     assert "No cloud-provider compatibility claim is implied" in readme
     assert "An ABOM is a build inventory" in readme
+    assert "not yet an evidence-backed release claim" in readme
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
@@ -42,6 +47,8 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     builds = read("docs/reproducible-builds.md")
     evidence = read("docs/run-evidence.md")
     comparison = read("docs/evidence-comparison.md")
+    release = read("docs/release-pipeline.md")
+    reproduction = read("docs/reproduce-v020.md")
 
     assert "## Invariant" in concepts
     assert "## Reproducible build" in concepts
@@ -84,9 +91,19 @@ def test_core_vocabulary_is_documented_without_overclaiming() -> None:
     assert "modding compare-evidence" in comparison
     assert "modding matrix-evidence" in comparison
     assert "not a universal model or provider compatibility claim" in comparison
+    assert "## Repeated-run aggregation" in release
+    assert "## Scoped reviewed baselines" in release
+    assert "## Pull-request evidence summaries" in release
+    assert "## Protected cloud provider runs" in release
+    assert "## Protected Ollama runs" in release
+    assert "## v0.2 readiness gate" in release
+    assert "Synthetic CI fixtures prove that the machinery works" in release
+    assert "Automation cannot truthfully replace" in release
+    assert "Independently reproduce the v0.2 flagship evidence" in reproduction
+    assert "Do not edit raw responses" in reproduction
 
 
-def test_build_evidence_and_comparison_schemas_are_versioned() -> None:
+def test_build_evidence_comparison_and_release_schemas_are_versioned() -> None:
     expected = {
         "schemas/recipe-lock.schema.json": "Model Modding Recipe Lock",
         "schemas/abom.schema.json": "Agent Behaviour Bill of Materials",
@@ -94,6 +111,9 @@ def test_build_evidence_and_comparison_schemas_are_versioned() -> None:
         "schemas/evidence-bundle.schema.json": "Model Modding Run Evidence Bundle",
         "schemas/evidence-comparison.schema.json": "Model Modding Evidence Comparison",
         "schemas/compatibility-matrix.schema.json": "Model Modding Compatibility Matrix",
+        "schemas/repeated-evidence.schema.json": "Model Modding Repeated Evidence Aggregate",
+        "schemas/reviewed-baseline.schema.json": "Model Modding Reviewed Baseline",
+        "schemas/release-readiness.schema.json": "Model Modding v0.2 Release Readiness",
     }
     for path, title in expected.items():
         schema = json.loads(read(path))
@@ -116,6 +136,11 @@ def test_non_goals_and_flagship_contract_are_explicit() -> None:
     assert "## Evidence comparison contract" in contract
     assert "A mismatch must produce `not_comparable`" in contract
     assert "## Compatibility matrix contract" in contract
+    assert "## Repeated evidence contract" in contract
+    assert "## Reviewed baseline contract" in contract
+    assert "## Protected execution contract" in contract
+    assert "## Release readiness contract" in contract
+    assert "The engineering pipeline enforces these conditions" in contract
 
 
 def test_roadmap_preserves_incremental_release_sequence() -> None:
@@ -147,7 +172,10 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
     assert "`modding verify-evidence` for offline schema, hash and consistency checks" in roadmap
     assert "`modding compare-evidence` for strict baseline-versus-candidate comparison" in roadmap
     assert "`modding matrix-evidence` for provider/model-by-invariant summaries" in roadmap
-    assert "Remaining in v0.1.7" in roadmap
+    assert "concise automatic pull-request evidence summaries" in roadmap
+    assert "protected and cost-limited Anthropic and OpenAI workflows" in roadmap
+    assert "v0.2 tag publication blocked unless reviewed evidence passes the gate" in roadmap
+    assert "Engineering complete; evidence operations remaining for a v0.2 release" in roadmap
     assert "Reviewed three-provider portability evidence remains a separate" in roadmap
 
 
