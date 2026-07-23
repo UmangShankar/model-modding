@@ -13,6 +13,8 @@ from jsonschema import Draft202012Validator
 from .cli import load_yaml, resolve_mod
 from .ollama import compile_recipe_in_memory
 
+BUILD_ENGINE_NAME = "model-modding"
+BUILD_ENGINE_VERSION = "0.1.0"
 BUILD_SCHEMA_VERSION = "0.1"
 LOCK_SCHEMA_VERSION = "0.1"
 ABOM_SCHEMA_VERSION = "0.1"
@@ -51,6 +53,10 @@ def canonical_json_bytes(value: Any) -> bytes:
 
 def sha256_bytes(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
+
+
+def _builder() -> dict[str, str]:
+    return {"name": BUILD_ENGINE_NAME, "version": BUILD_ENGINE_VERSION}
 
 
 def _validate_payload(root: Path, schema_name: str, payload: dict[str, Any]) -> None:
@@ -135,6 +141,7 @@ def _source_descriptor(root: Path, name: str) -> tuple[dict[str, Any], str]:
 def _lock_payload(descriptor: dict[str, Any], system_prompt_sha256: str) -> dict[str, Any]:
     source_digest = sha256_bytes(canonical_json_bytes(descriptor))
     digest_inputs = {
+        "builder_version": BUILD_ENGINE_VERSION,
         "build_schema_version": BUILD_SCHEMA_VERSION,
         "lock_schema_version": LOCK_SCHEMA_VERSION,
         "abom_schema_version": ABOM_SCHEMA_VERSION,
@@ -145,6 +152,7 @@ def _lock_payload(descriptor: dict[str, Any], system_prompt_sha256: str) -> dict
     return {
         "schema_version": LOCK_SCHEMA_VERSION,
         "algorithm": DIGEST_ALGORITHM,
+        "builder": _builder(),
         "source_digest": source_digest,
         "digest_inputs": digest_inputs,
         "build_digest": build_digest,
@@ -164,6 +172,7 @@ def _abom_payload(lock: dict[str, Any]) -> dict[str, Any]:
         "schema_version": ABOM_SCHEMA_VERSION,
         "document_type": "agent-behaviour-bill-of-materials",
         "algorithm": DIGEST_ALGORITHM,
+        "builder": lock["builder"],
         "source_digest": lock["source_digest"],
         "build_digest": lock["build_digest"],
         "recipe": lock["recipe"],
@@ -183,6 +192,7 @@ def _abom_markdown(abom: dict[str, Any]) -> str:
         "",
         f"- Recipe version: `{recipe['version']}`",
         f"- Recipe licence: `{recipe['license']}`",
+        f"- Builder: `{abom['builder']['name']} {abom['builder']['version']}`",
         f"- Digest algorithm: `{abom['algorithm']}`",
         f"- Source digest: `{abom['source_digest']}`",
         f"- Build digest: `{abom['build_digest']}`",
@@ -241,6 +251,7 @@ def render_build(root: Path, name: str) -> tuple[dict[str, bytes], BuildResult]:
         "schema_version": BUILD_SCHEMA_VERSION,
         "document_type": "model-modding-build",
         "algorithm": DIGEST_ALGORITHM,
+        "builder": _builder(),
         "recipe": lock["recipe"]["name"],
         "recipe_version": lock["recipe"]["version"],
         "source_digest": lock["source_digest"],
@@ -319,6 +330,7 @@ def build_command(root: Path, name: str, output: Path | None = None) -> int:
         print(str(exc), file=sys.stderr)
         return 1
     print(f"Built {name}")
+    print(f"Builder: {BUILD_ENGINE_NAME} {BUILD_ENGINE_VERSION}")
     print(f"Destination: {result.destination}")
     print(f"Source digest: {result.source_digest}")
     print(f"Build digest: {result.build_digest}")
