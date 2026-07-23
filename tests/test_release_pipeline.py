@@ -15,7 +15,7 @@ from model_modding.release_pipeline import (
     check_release_readiness,
     validate_provider_run_plan,
 )
-from scripts.assemble_release_evidence import validate_release_bundle
+from model_modding.release_validation import validate_release_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 RECIPE = "trusted-document-explainer"
