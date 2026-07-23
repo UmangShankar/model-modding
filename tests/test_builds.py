@@ -7,6 +7,8 @@ from pathlib import Path
 import pytest
 
 from model_modding.builds import (
+    BUILD_ENGINE_NAME,
+    BUILD_ENGINE_VERSION,
     BUILD_FILENAMES,
     build_recipe,
     canonical_json_bytes,
@@ -56,6 +58,8 @@ def test_build_emits_lock_abom_prompt_and_manifest(tmp_path: Path) -> None:
 
     assert lock["schema_version"] == "0.1"
     assert lock["algorithm"] == "sha256"
+    assert lock["builder"] == {"name": BUILD_ENGINE_NAME, "version": BUILD_ENGINE_VERSION}
+    assert lock["digest_inputs"]["builder_version"] == BUILD_ENGINE_VERSION
     assert lock["build_digest"] == sha256_bytes(canonical_json_bytes(lock["digest_inputs"]))
     assert lock["source_digest"] == lock["digest_inputs"]["source_digest"]
     assert lock["outputs"]["system_prompt"]["sha256"] == sha256_bytes(
@@ -71,6 +75,7 @@ def test_build_emits_lock_abom_prompt_and_manifest(tmp_path: Path) -> None:
     assert all("\\" not in component["manifest"]["path"] for component in lock["components"])
 
     assert abom["document_type"] == "agent-behaviour-bill-of-materials"
+    assert abom["builder"] == lock["builder"]
     assert abom["build_digest"] == lock["build_digest"]
     assert {component["role"] for component in abom["components"]} == {
         "transformation",
@@ -81,6 +86,7 @@ def test_build_emits_lock_abom_prompt_and_manifest(tmp_path: Path) -> None:
     assert str(ROOT) not in (output / "abom.json").read_text(encoding="utf-8")
 
     assert manifest["document_type"] == "model-modding-build"
+    assert manifest["builder"] == lock["builder"]
     assert manifest["build_digest"] == result.build_digest
     assert {item["path"] for item in manifest["artifacts"]} == {
         "abom.json",
@@ -160,6 +166,7 @@ def test_cli_build_and_verify_support_command_root_placement(tmp_path: Path, cap
     assert main(["verify-build", RECIPE, "--build-directory", str(output), "--root", str(ROOT)]) == 0
 
     stdout = capsys.readouterr().out
+    assert f"Builder: {BUILD_ENGINE_NAME} {BUILD_ENGINE_VERSION}" in stdout
     assert "Build digest:" in stdout
     assert "Build verified:" in stdout
 
