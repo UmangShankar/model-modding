@@ -196,8 +196,12 @@ def main() -> int:
         aggregate=aggregate,
         readiness=readiness,
     )
+    summary = summary.replace(
+        f"- v0.2 readiness: **{readiness['status'].upper()}**",
+        "- Synthetic readiness-contract exercise: **PASSED** (not v0.2 release readiness)",
+    )
     banner = (
-        "> **Synthetic CI contract evidence only.** These results validate the evidence pipeline and do not establish real provider or model compatibility.\n\n"
+        "> **Synthetic CI contract evidence only.** These results validate the evidence pipeline and do not establish real provider or model compatibility. The repository remains not release-ready until reviewed real-provider evidence is supplied.\n\n"
     )
     (output / "pr-summary.md").write_text(banner + summary, encoding="utf-8", newline="\n")
     print(output / "pr-summary.md")
