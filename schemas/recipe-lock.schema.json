@@ -4,11 +4,23 @@
   "title": "Model Modding Recipe Lock",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "algorithm", "source_digest", "build_digest", "recipe", "components", "outputs"],
+  "required": ["schema_version", "algorithm", "source_digest", "digest_inputs", "build_digest", "recipe", "components", "outputs"],
   "properties": {
     "schema_version": {"const": "0.1"},
     "algorithm": {"const": "sha256"},
     "source_digest": {"$ref": "#/$defs/digest"},
+    "digest_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["build_schema_version", "lock_schema_version", "abom_schema_version", "source_digest", "system_prompt_sha256"],
+      "properties": {
+        "build_schema_version": {"const": "0.1"},
+        "lock_schema_version": {"const": "0.1"},
+        "abom_schema_version": {"const": "0.1"},
+        "source_digest": {"$ref": "#/$defs/digest"},
+        "system_prompt_sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
     "build_digest": {"$ref": "#/$defs/digest"},
     "recipe": {"$ref": "#/$defs/recipe"},
     "components": {
@@ -89,7 +101,7 @@
         "status": {"type": ["string", "null"]},
         "license": {"type": ["string", "null"]},
         "manifest": {"$ref": "#/$defs/file"},
-        "instructions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/file"}},
+        "instructions": {"type": "array", "items": {"$ref": "#/$defs/file"}},
         "capabilities": {"type": "array"},
         "dependencies": {"type": "array"},
         "conflicts": {"type": "array"},
