@@ -93,7 +93,7 @@ The lock does not include provider, model or generation settings. Those vary per
 
 The ABOM describes what behavioural material is packaged in the build. It includes the build-engine identity, recipe, ordered components, declared safeguards, source digest, build digest and compiled-prompt digest.
 
-An ABOM is not proof that a model obeyed the instructions. It is a build inventory. Compatibility claims still require reviewed execution evidence tied to an exact provider, model, configuration, fixture set and evaluator version.
+An ABOM does not prove model compliance. It is a build inventory, not evidence that a provider obeyed the instructions. Compatibility claims still require reviewed execution evidence tied to an exact provider, model, configuration, fixture set and evaluator version.
 
 ## Offline verification
 
