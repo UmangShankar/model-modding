@@ -58,16 +58,7 @@ jobs:
           pytest tests/test_evidence_comparison.py::test_matrix_command_writes_json_and_markdown
 
       - name: Test repeated evidence aggregation
-        run: pytest -vv --tb=long tests/test_release_pipeline.py::test_repeated_evidence_aggregate_requires_repetitions_and_zero_critical > repeated-evidence-test.log 2>&1
-
-      - name: Upload repeated evidence diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: repeated-evidence-test-${{ github.run_id }}
-          path: repeated-evidence-test.log
-          if-no-files-found: error
-          retention-days: 3
+        run: pytest tests/test_release_pipeline.py::test_repeated_evidence_aggregate_requires_repetitions_and_zero_critical
 
       - name: Test reviewed baseline activation
         run: pytest tests/test_release_pipeline.py::test_baseline_activation_preserves_verified_bundle
@@ -83,6 +74,14 @@ jobs:
 
       - name: Exercise complete synthetic CI evidence pipeline
         run: python scripts/generate_ci_evidence.py --output /tmp/model-modding-ci-evidence
+
+      - name: Exercise strict release-candidate assembly
+        run: |
+          python scripts/assemble_release_evidence.py \
+            --evidence-root /tmp/model-modding-ci-evidence/runs \
+            --output /tmp/model-modding-ci-release \
+            --minimum-repetitions 3 \
+            --minimum-cases 40
 
       - name: Test positioning contracts
         run: pytest tests/test_positioning.py
