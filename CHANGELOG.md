@@ -64,6 +64,15 @@ All notable changes to Model Modding are documented here.
 - Cross-platform line-ending normalisation without absolute paths, timestamps or machine identifiers.
 - Behavioural source mutation, generated-artifact tamper and line-ending stability tests.
 - Pull-request and clean-wheel gates for flagship build and ABOM verification.
+- A versioned durable run-evidence bundle schema.
+- `--evidence` support on provider-aware `run`, `evaluate` and `benchmark` commands.
+- `modding verify-evidence` for offline evidence schema, digest and artifact verification.
+- Raw response preservation in newline-delimited JSON with exact per-call execution metadata.
+- Prompt-private evidence records using prompt hashes instead of source text by default.
+- Separate interpreted evaluation artifacts without embedded prompt or response text.
+- Evidence manifests containing build, lock, ABOM, provider, model, generation, evaluator, fixture-set and source-control context.
+- Evidence, artifact and response digests with unmanaged-file and tamper detection.
+- Deterministic fixed-context evidence tests and mocked provider command coverage.
 
 ### Changed
 
@@ -82,20 +91,22 @@ All notable changes to Model Modding are documented here.
 - Anthropic applies and records a deliberate `max_tokens` default of 1024 when the required setting is omitted.
 - OpenAI maps neutral `max_tokens` to `max_output_tokens` on the Responses API.
 - OpenAI rejects unsupported seed and stop requests before execution instead of silently ignoring them.
-- `modding doctor` now requires the reproducible-build format schemas as part of repository readiness.
-- CI now reconstructs and verifies the flagship behavioural build before tests and again from the clean wheel.
+- `modding doctor` now requires reproducible-build and evidence format schemas as part of repository readiness.
+- CI now reconstructs and verifies the flagship behavioural build before evidence and regression tests and again from the clean wheel.
+- Raw execution evidence and interpreted evaluation are now durable, separate artifacts.
 
 ### Notes
 
 - Deterministic invariant and structured source comparisons block configured severity thresholds and cannot be overridden by aggregate scores.
 - The 40-case threshold is satisfied, but the evaluator does not perform unrestricted semantic extraction or guarantee detection of every paraphrased meaning change.
-- Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers, cloud providers or new build identities.
+- Existing published benchmark evidence remains immutable and does not retroactively include expanded fixtures, evaluator layers, cloud providers, build identities or the new evidence format.
 - Ollama, Anthropic and OpenAI are built-in providers.
 - Ollama defaults that are not reported by the API are not invented as effective settings.
 - Normal CI does not call Anthropic or OpenAI. Cloud compatibility claims require reviewed evidence from explicit paid runs.
-- Adapter availability alone does not establish cross-provider compatibility.
+- Adapter availability, a valid evidence bundle or a single score does not establish cross-provider compatibility.
 - A recipe lock and ABOM identify packaged behavioural inputs; they do not prove provider or model compliance.
-- Evaluation fixtures and runtime provider settings are intentionally excluded from the behavioural build digest and belong to execution evidence.
+- Prompt hashes reduce accidental source copying but are not a substitute for access controls or the original source during human review.
+- Evidence comparison, compatibility matrices and automatic critical regression summaries remain separate v0.1.7 increments.
 
 ## [0.1.1] - 2026-07-22
 
