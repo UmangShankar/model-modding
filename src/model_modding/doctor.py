@@ -63,6 +63,8 @@ def run_doctor(
         "schemas/abom.schema.json",
         "schemas/build-manifest.schema.json",
         "schemas/evidence-bundle.schema.json",
+        "schemas/evidence-comparison.schema.json",
+        "schemas/compatibility-matrix.schema.json",
         "mods",
         "recipes",
     ]

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://modelmodding.org/schemas/compatibility-matrix.schema.json",
+  "title": "Model Modding Compatibility Matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "document_type", "comparison_engine", "matrix_digest", "recipe", "evaluator", "fixture_set_digest", "target_count", "targets", "invariants", "limitations"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "document_type": {"const": "model-modding-compatibility-matrix"},
+    "comparison_engine": {"$ref": "#/$defs/engine"},
+    "matrix_digest": {"$ref": "#/$defs/digest"},
+    "recipe": {"type": "object"},
+    "evaluator": {"type": ["object", "null"]},
+    "fixture_set_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "target_count": {"type": "integer", "minimum": 1},
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "provider", "model", "evidence_digest", "status", "modded_failures", "invariant_observations"],
+        "properties": {
+          "key": {"type": "string", "minLength": 1},
+          "provider": {"type": "string", "minLength": 1},
+          "model": {"type": "string", "minLength": 1},
+          "evidence_digest": {"$ref": "#/$defs/digest"},
+          "status": {"enum": ["passed", "failed"]},
+          "modded_failures": {"$ref": "#/$defs/severityCounts"},
+          "invariant_observations": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "invariant", "severity", "targets"],
+        "properties": {
+          "kind": {"enum": ["preserve", "prohibit"]},
+          "invariant": {"type": "string", "minLength": 1},
+          "severity": {"enum": ["critical", "major", "minor"]},
+          "targets": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["tested", "passed", "failed", "status"],
+              "properties": {
+                "tested": {"type": "integer", "minimum": 1},
+                "passed": {"type": "integer", "minimum": 0},
+                "failed": {"type": "integer", "minimum": 0},
+                "status": {"enum": ["passed", "failed"]}
+              }
+            }
+          }
+        }
+      }
+    },
+    "limitations": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"const": "model-modding"},
+        "version": {"type": "string", "minLength": 1}
+      }
+    },
+    "severityCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["critical", "major", "minor"],
+      "properties": {
+        "critical": {"type": "integer", "minimum": 0},
+        "major": {"type": "integer", "minimum": 0},
+        "minor": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}
