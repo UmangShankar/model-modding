@@ -82,6 +82,7 @@ jobs:
           set -euo pipefail
           mkdir -p build/provider-evidence
           for repetition in $(seq 1 "${{ inputs.repetitions }}"); do
+            evidence_directory="build/provider-evidence/runs/run-$repetition"
             modding evaluate trusted-document-explainer \
               --provider "${{ inputs.provider }}" \
               --model "${{ inputs.model }}" \
@@ -90,8 +91,14 @@ jobs:
               --fail-on none \
               --timeout 120 \
               --output "build/provider-evidence/reports/run-$repetition" \
-              --evidence "build/provider-evidence/runs/run-$repetition"
-            modding verify-evidence "build/provider-evidence/runs/run-$repetition"
+              --evidence "$evidence_directory"
+            modding verify-evidence "$evidence_directory"
+            python - "$evidence_directory" <<'PY'
+          from pathlib import Path
+          import sys
+          from scripts.assemble_release_evidence import validate_release_bundle
+          validate_release_bundle(Path.cwd(), Path(sys.argv[1]), minimum_cases=40)
+          PY
           done
 
       - name: Aggregate repeated evidence
