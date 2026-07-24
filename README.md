@@ -10,6 +10,18 @@ Model Modding is an open framework for turning important assistant behaviour int
 
 The first product wedge is **meaning-preserving, evidence-backed transformation for high-stakes work**. The flagship proof is the `trusted-document-explainer` recipe: explain complex official or high-stakes text in plain English without silently changing deadlines, obligations, conditions, exceptions or uncertainty.
 
+## Current version status
+
+| State | Current value |
+| --- | --- |
+| Package version | `0.1.1` |
+| Engineering state on `main` | Roadmap increments through `v0.1.7` implemented |
+| Next evidence-backed release | `v0.2.0`, pending reviewed three-provider evidence and independent reproduction |
+
+The repository deliberately remains versioned as `0.1.1` while the v0.2 evidence operations are completed. The engineering pipeline is implemented, but adapter availability and synthetic CI evidence are not provider compatibility claims.
+
+Read [Version and release status](docs/version-status.md) for the exact language to use when describing the package, `main` and the v0.2 release boundary.
+
 ## Core concepts
 
 1. **Mod** — one versioned behavioural capability or safeguard.
@@ -213,6 +225,7 @@ Model Modding is not:
 
 ## Documentation
 
+- [Version and release status](docs/version-status.md)
 - [Core concepts](docs/concepts.md)
 - [Invariant declarations](docs/invariants.md)
 - [Structured source-output comparison](docs/source-output-comparison-design.md)
@@ -228,7 +241,13 @@ Model Modding is not:
 
 ## Project status
 
-The complete v0.1.7 engineering pipeline is implemented. v0.2.0 is **not yet an evidence-backed release claim**: reviewed three-provider runs, baseline approval and independent reproduction must still be supplied through the enforced pipeline.
+**Current package version:** `0.1.1`.
+
+**Current `main`:** the complete v0.1.7 engineering pipeline is implemented.
+
+**Next release:** v0.2.0 is not yet an evidence-backed release claim. Reviewed three-provider runs, baseline approval, a public case study and independent reproduction must still be supplied through the enforced pipeline.
+
+Track the remaining operational work in [Issue #36](https://github.com/UmangShankar/model-modding/issues/36).
 
 ## Licence
 
