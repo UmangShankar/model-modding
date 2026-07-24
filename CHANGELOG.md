@@ -4,6 +4,10 @@ All notable changes to Model Modding are documented here.
 
 ## [Unreleased]
 
+> **Version boundary:** `0.1.1` remains the current package version. The entries below describe engineering implemented on `main` after that release; they are not separate published `0.1.2`–`0.1.7` package releases. The next planned evidence-backed package release is `v0.2.0`, which remains blocked on reviewed three-provider evidence and independent reproduction.
+
+See [Version and release status](docs/version-status.md).
+
 ### Added
 
 - A standalone versioned invariant declaration schema.
