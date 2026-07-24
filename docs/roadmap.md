@@ -12,6 +12,16 @@ The flagship proof is one exceptional `trusted-document-explainer` recipe that c
 
 The objective is not to create a universal model leaderboard. The objective is to prove that the same versioned behavioural package can be built, locked, executed, inspected, evaluated and governed across different models.
 
+## Release state at a glance
+
+| State | Version or branch | Status |
+| --- | --- | --- |
+| Current package version | `0.1.1` | Published version identifier and current `pyproject.toml` version. |
+| Current development state | `main` | Engineering increments `v0.1.2` through `v0.1.7` are implemented but are not represented as separately published package releases. |
+| Next evidence-backed release | `v0.2.0` | Blocked until reviewed three-provider evidence, baseline approval, the public case study and independent reproduction pass the enforced release contract. |
+
+The repository deliberately remains at package version `0.1.1` while the evidence operations are completed. See [Version and release status](version-status.md) for the canonical wording.
+
 ## v0.1.0 — Foundation
 
 Delivered:
@@ -28,7 +38,7 @@ Delivered:
 
 ## v0.1.1 — Stabilisation and positioning
 
-Delivered:
+Current package release. Delivered:
 
 - Windows and POSIX mod-reference compatibility;
 - canonical POSIX references in generated metadata;
@@ -43,7 +53,7 @@ Delivered:
 
 ## v0.1.2 — Invariant specification and flagship refactor
 
-Delivered on the development line:
+Implemented on `main` after the `0.1.1` package release:
 
 - a controlled invariant reference vocabulary;
 - machine-readable preserve and prohibit declarations;
@@ -61,7 +71,7 @@ Delivered on the development line:
 
 ## v0.1.3 — Provider-neutral runtime
 
-Delivered on the development line:
+Implemented on `main` after the `0.1.1` package release:
 
 - provider-neutral request, response, usage and generation-option contracts;
 - validation for `temperature`, `top_p`, `max_tokens`, `seed` and stop sequences;
@@ -81,7 +91,7 @@ Delivered on the development line:
 
 ## v0.1.4 — Anthropic provider
 
-Delivered on the development line:
+Implemented on `main` after the `0.1.1` package release:
 
 - an optional `anthropic` dependency group;
 - `ANTHROPIC_API_KEY` and SDK readiness diagnostics;
@@ -98,7 +108,7 @@ Delivered on the development line:
 
 ## v0.1.5 — OpenAI provider
 
-Delivered on the development line:
+Implemented on `main` after the `0.1.1` package release:
 
 - an optional `openai` dependency group;
 - `OPENAI_API_KEY` and SDK readiness diagnostics;
@@ -117,7 +127,7 @@ Reviewed three-provider portability evidence remains a separate evidence publica
 
 ## v0.1.6 — Reproducible builds, locks and ABOM
 
-Delivered on the development line:
+Implemented on `main` after the `0.1.1` package release:
 
 - `modding build` for deterministic behavioural bundles;
 - `modding verify-build` for offline byte-level verification;
@@ -142,7 +152,7 @@ The ABOM identifies packaged behavioural inputs. It does not establish provider 
 
 ## v0.1.7 — Evidence comparison and regression gates
 
-Engineering delivered on the development line:
+Engineering complete on `main` after the `0.1.1` package release:
 
 - versioned durable run-evidence bundle schema;
 - `--evidence` support for provider-aware `run`, `evaluate` and `benchmark`;
@@ -182,7 +192,11 @@ Engineering complete; evidence operations remaining for a v0.2 release:
 - publish the case study with failures and limitations;
 - complete one independent reproduction using the documented guide.
 
+The operational checklist is tracked in [Issue #36](https://github.com/UmangShankar/model-modding/issues/36).
+
 ## v0.2.0 — Portable Assured Behaviour
+
+Status: evidence-gated and not yet released.
 
 Definition of done:
 

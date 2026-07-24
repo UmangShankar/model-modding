@@ -37,6 +37,33 @@ def test_readme_leads_with_portable_assured_behaviour() -> None:
     assert "No cloud-provider compatibility claim is implied" in readme
     assert "An ABOM is a build inventory" in readme
     assert "not yet an evidence-backed release claim" in readme
+    assert "## Current version status" in readme
+    assert "Package version | `0.1.1`" in readme
+    assert "Roadmap increments through `v0.1.7` implemented" in readme
+    assert "Version and release status" in readme
+    assert "Issue #36" in readme
+
+
+def test_version_status_is_explicit_and_consistent() -> None:
+    status = read("docs/version-status.md")
+    changelog = read("CHANGELOG.md")
+    contributing = read("CONTRIBUTING.md")
+
+    assert "Current package version | `0.1.1`" in status
+    assert "Current development state | `main`" in status
+    assert "Next evidence-backed release | `v0.2.0`" in status
+    assert "implemented machinery is not the same as reviewed provider compatibility evidence" in status
+    assert "Issue #36" in status
+    assert "Do not change `pyproject.toml` from `0.1.1`" in status
+
+    assert "`0.1.1` remains the current package version" in changelog
+    assert "not separate published `0.1.2`–`0.1.7` package releases" in changelog
+    assert "next planned evidence-backed package release is `v0.2.0`" in changelog
+
+    assert "## Current version boundary" in contributing
+    assert "package version remains `0.1.1`" in contributing
+    assert "Do not:" in contributing
+    assert "synthetic CI evidence as provider compatibility evidence" in contributing
 
 
 def test_core_vocabulary_is_documented_without_overclaiming() -> None:
@@ -159,6 +186,13 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
 
     positions = [roadmap.index(item) for item in expected]
     assert positions == sorted(positions)
+    assert "## Release state at a glance" in roadmap
+    assert "Current package version | `0.1.1`" in roadmap
+    assert "Current development state | `main`" in roadmap
+    assert "Next evidence-backed release | `v0.2.0`" in roadmap
+    assert "Current package release. Delivered" in roadmap
+    assert "Implemented on `main` after the `0.1.1` package release" in roadmap
+    assert "Status: evidence-gated and not yet released" in roadmap
     assert "provider-neutral request, response, usage and generation-option contracts" in roadmap
     assert "explicit provider selection on `run`, `evaluate` and `benchmark`" in roadmap
     assert "provider-aware report schema `0.4`" in roadmap
@@ -177,6 +211,7 @@ def test_roadmap_preserves_incremental_release_sequence() -> None:
     assert "v0.2 tag publication blocked unless reviewed evidence passes the gate" in roadmap
     assert "Engineering complete; evidence operations remaining for a v0.2 release" in roadmap
     assert "Reviewed three-provider portability evidence remains a separate" in roadmap
+    assert "Issue #36" in roadmap
 
 
 def test_package_metadata_matches_v011_positioning() -> None:
