@@ -19,6 +19,11 @@ from .provider import (
 DEFAULT_ANTHROPIC_ENDPOINT = "https://api.anthropic.com"
 DEFAULT_ANTHROPIC_MAX_TOKENS = 1024
 
+# Claude 5-series and later do not accept the temperature parameter.
+_NO_TEMPERATURE_MODELS: frozenset[str] = frozenset(
+    {"claude-sonnet-5", "claude-opus-5", "claude-fable-5", "claude-haiku-5"}
+)
+
 
 def _value(source: Any, name: str, default: Any = None) -> Any:
     if isinstance(source, Mapping):
@@ -117,6 +122,8 @@ class AnthropicProvider:
             raise ProviderConfigurationError("Anthropic does not support the portable seed option")
         max_tokens = request.options.max_tokens or DEFAULT_ANTHROPIC_MAX_TOKENS
         effective: dict[str, Any] = {**supplied, "max_tokens": max_tokens}
+        if request.model in _NO_TEMPERATURE_MODELS:
+            effective.pop("temperature", None)
         arguments: dict[str, Any] = {
             "model": request.model,
             "max_tokens": max_tokens,
@@ -124,7 +131,7 @@ class AnthropicProvider:
         }
         if request.system_prompt:
             arguments["system"] = request.system_prompt
-        if request.options.temperature is not None:
+        if request.options.temperature is not None and request.model not in _NO_TEMPERATURE_MODELS:
             arguments["temperature"] = request.options.temperature
         if request.options.top_p is not None:
             arguments["top_p"] = request.options.top_p
