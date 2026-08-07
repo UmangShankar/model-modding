@@ -6,6 +6,9 @@ import time
 from collections.abc import Mapping
 from typing import Any, Callable
 
+_RETRY_ATTEMPTS = 3
+_RETRY_BACKOFF = (1.0, 2.0, 4.0)
+
 from .provider import (
     ProviderConfigurationError,
     ProviderConnectionError,
@@ -147,13 +150,27 @@ class AnthropicProvider:
         arguments, effective = self._message_arguments(request)
         client = self._make_client(request.timeout)
         started = time.monotonic()
-        try:
-            message = client.messages.create(**arguments)
-        except Exception as exc:
-            raise _normalise_exception(exc) from exc
-        text = _text_content(message)
-        if not text:
-            raise ProviderResponseError("Anthropic response did not contain a text content block")
+        last_exc: Exception | None = None
+        for attempt, delay in enumerate((*_RETRY_BACKOFF, None)):
+            try:
+                message = client.messages.create(**arguments)
+            except Exception as exc:
+                normalised = _normalise_exception(exc)
+                if isinstance(normalised, (ProviderConnectionError, ProviderHTTPError)) and delay is not None:
+                    last_exc = normalised
+                    time.sleep(delay)
+                    continue
+                raise normalised from exc
+            text = _text_content(message)
+            if not text:
+                if delay is not None:
+                    last_exc = ProviderResponseError("Anthropic response did not contain a text content block")
+                    time.sleep(delay)
+                    continue
+                raise ProviderResponseError("Anthropic response did not contain a text content block")
+            break
+        else:
+            raise last_exc  # type: ignore[misc]
         if on_chunk is not None:
             on_chunk(text)
         usage = _value(message, "usage", {}) or {}
