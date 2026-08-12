@@ -19,7 +19,7 @@ from .evaluation import (
     markdown_report as evaluation_markdown,
 )
 from .ollama import compile_recipe_in_memory
-from .provider import ProviderConfigurationError, ProviderError, ProviderRequest
+from .provider import ProviderConfigurationError, ProviderError, ProviderRequest, ProviderResponse, ProviderUsage
 from .runtime import RuntimeConfig, generate_response, generation_options_from_values
 
 RUNTIME_COMMANDS = {"run", "evaluate", "benchmark"}
@@ -202,9 +202,10 @@ def evaluate_command(root: Path, args: argparse.Namespace, opener: Callable[...,
 
     rows: list[dict[str, Any]] = []
     evidence_records: list[dict[str, Any]] = []
-    try:
-        for index, case in enumerate(cases, 1):
-            print(f"[{index}/{len(cases)}] {case.mod}:{case.name}")
+    case_errors: list[str] = []
+    for index, case in enumerate(cases, 1):
+        print(f"[{index}/{len(cases)}] {case.mod}:{case.name}")
+        try:
             stock = adapter.generate(
                 ProviderRequest(model=args.model, prompt=case.prompt, options=runtime.options, timeout=args.timeout)
             )
@@ -217,38 +218,54 @@ def evaluate_command(root: Path, args: argparse.Namespace, opener: Callable[...,
                     timeout=args.timeout,
                 )
             )
-            rows.append({
-                "mod": case.mod,
-                "case": case.name,
-                "prompt": case.prompt,
-                "expected_behaviours": list(case.expected_behaviours),
-                "failure_indicators": list(case.failure_indicators),
-                "stock": _score_response(stock, case),
-                "modded": _score_response(modded, case),
-            })
-            evidence_records.extend([
-                response_record(
-                    identifier=f"evaluation:{index}:stock",
-                    role="stock",
-                    prompt=case.prompt,
-                    system_prompt="",
-                    response=stock,
-                    case=case.name,
-                    mod=case.mod,
-                ),
-                response_record(
-                    identifier=f"evaluation:{index}:modded",
-                    role="modded",
-                    prompt=case.prompt,
-                    system_prompt=compiled.system_prompt,
-                    response=modded,
-                    case=case.name,
-                    mod=case.mod,
-                ),
-            ])
-    except ProviderError as exc:
-        print(f"Evaluation run failed: {exc}", file=sys.stderr)
-        return 1
+        except ProviderError as exc:
+            error_msg = f"[{index}/{len(cases)}] {case.mod}:{case.name}: {exc}"
+            print(f"Case error (continuing): {error_msg}", file=sys.stderr)
+            case_errors.append(error_msg)
+            _empty = ProviderResponse(
+                provider=runtime.provider.casefold(),
+                model=args.model,
+                text="",
+                latency_seconds=0.0,
+                requested_options={},
+                effective_options={},
+                finish_reason="provider_error",
+                metadata={"provider_error": str(exc)},
+            )
+            stock, modded = _empty, _empty
+        rows.append({
+            "mod": case.mod,
+            "case": case.name,
+            "prompt": case.prompt,
+            "expected_behaviours": list(case.expected_behaviours),
+            "failure_indicators": list(case.failure_indicators),
+            "stock": _score_response(stock, case),
+            "modded": _score_response(modded, case),
+        })
+        evidence_records.extend([
+            response_record(
+                identifier=f"evaluation:{index}:stock",
+                role="stock",
+                prompt=case.prompt,
+                system_prompt="",
+                response=stock,
+                case=case.name,
+                mod=case.mod,
+            ),
+            response_record(
+                identifier=f"evaluation:{index}:modded",
+                role="modded",
+                prompt=case.prompt,
+                system_prompt=compiled.system_prompt,
+                response=modded,
+                case=case.name,
+                mod=case.mod,
+            ),
+        ])
+    if case_errors:
+        print(f"Completed with {len(case_errors)} case error(s):", file=sys.stderr)
+        for msg in case_errors:
+            print(f"  {msg}", file=sys.stderr)
 
     report = build_report(args.name, args.model, cases, rows, fail_on=args.fail_on)
     report["schema_version"] = REPORT_SCHEMA_VERSION
